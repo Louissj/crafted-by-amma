@@ -37,3 +37,7 @@ export function rateLimitOrder(ip: string) {
 export function rateLimitApi(ip: string) {
   return rateLimit(`api:${ip}`, 100, 60 * 1000); // 100 requests per minute
 }
+
+export function rateLimitTrack(ip: string) {
+  return rateLimit(`track:${ip}`, 10, 5 * 60 * 1000); // 10 lookups per 5 min
+}

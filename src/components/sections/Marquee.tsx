@@ -1,15 +1,43 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+
+type Offer = { id: string; icon: string; text: string };
+
+const STATIC_ITEMS = [
+  { icon: '🌾', text: 'No Preservatives' },
+  { icon: '🍃', text: 'No Added Sugar' },
+  { icon: '✨', text: 'No Artificial Flavours' },
+  { icon: '🏠', text: 'ಮನೆಯಲ್ಲಿ ತಯಾರಿಸಿದ' },
+  { icon: '✈️', text: 'Ships Worldwide' },
+  { icon: '💪', text: 'Millet Powered' },
+];
+
 export default function Marquee() {
-  const items = ['No Preservatives', 'No Added Sugar', 'No Artificial Flavours', 'ಮನೆಯಲ್ಲಿ ತಯಾರಿಸಿದ', 'Ships Worldwide', 'Millet Powered'];
-  const repeated = [...items, ...items];
+  const [offers, setOffers] = useState<{ icon: string; text: string }[]>(STATIC_ITEMS);
+
+  useEffect(() => {
+    fetch('/api/offers')
+      .then(r => r.json())
+      .then((data: Offer[]) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setOffers([...STATIC_ITEMS, ...data.map(o => ({ icon: o.icon, text: o.text }))]);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const repeated = [...offers, ...offers, ...offers];
 
   return (
-    <div className="py-4 overflow-hidden border-t border-b border-brass/[.06]"
-      style={{ background: 'linear-gradient(90deg,#1A2A14,#223218,#1A2A14)' }}>
+    <div className="py-4 overflow-hidden border-t border-b border-brass/[.07]"
+      style={{ background: 'linear-gradient(90deg,#1A2A14,#1E3018,#1A2A14)' }}>
       <div className="flex animate-scroll w-max">
         {repeated.map((item, i) => (
-          <div key={i} className="flex items-center gap-3.5 px-5 whitespace-nowrap text-[.72rem] text-millet/80 tracking-[1.5px] font-medium">
-            {item}
-            <span className="w-[3px] h-[3px] bg-sage rounded-full flex-shrink-0" />
+          <div key={i} className="flex items-center gap-2.5 px-5 whitespace-nowrap">
+            <span className="text-base opacity-70">{item.icon}</span>
+            <span className="text-[.68rem] font-semibold text-millet/70 tracking-[1.5px] uppercase">{item.text}</span>
+            <span className="ml-3 w-[3px] h-[3px] bg-brass/40 rounded-full flex-shrink-0" />
           </div>
         ))}
       </div>

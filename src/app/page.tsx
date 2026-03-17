@@ -4,8 +4,7 @@ import BioCard from '@/components/sections/BioCard';
 import Marquee from '@/components/sections/Marquee';
 import About from '@/components/sections/About';
 import Products from '@/components/sections/Products';
-import { Ingredients, BenefitsSection, WhyUs, Testimonials, Shipping, CTA, Footer } from '@/components/sections/Sections';
-import OrderForm from '@/components/sections/OrderForm';
+import { Ingredients, BenefitsSection, WhyUs, Testimonials, Shipping, CTA, Footer, CheckoutCTA } from '@/components/sections/Sections';
 
 export default function Home() {
   return (
@@ -20,7 +19,7 @@ export default function Home() {
       <WhyUs />
       <BenefitsSection />
       <Testimonials />
-      <OrderForm />
+      <CheckoutCTA />
       <Shipping />
       <CTA />
       <Footer />

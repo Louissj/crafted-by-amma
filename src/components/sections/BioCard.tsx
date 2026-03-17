@@ -50,11 +50,11 @@ export default function BioCard() {
           </div>
 
           {/* Stats */}
-          <div className="flex gap-2 md:gap-3 mb-5">
+          <div className="flex gap-1.5 md:gap-3 mb-5">
             {stats.map((s, i) => (
-              <RevealSection key={i} delay={i * 100} className="flex-1 flex items-center gap-2 px-3 py-2.5 md:px-4 md:py-3.5 rounded-xl border border-sage/[.06]"
+              <RevealSection key={i} delay={i * 100} className="flex-1 flex items-center gap-1.5 md:gap-2 px-2 py-2.5 md:px-4 md:py-3.5 rounded-xl border border-sage/[.06]"
                 style={{ background: 'linear-gradient(135deg,#1A2A14,#243420)' }}>
-                <span className="text-lg flex-shrink-0">{s.icon}</span>
+                <span className="text-base md:text-lg flex-shrink-0">{s.icon}</span>
                 <div>
                   <span className="font-display text-lg md:text-xl font-bold text-brass block leading-tight">{s.val}</span>
                   <span className="text-[.44rem] text-sand/[.45] tracking-[1.5px] uppercase">{s.label}</span>

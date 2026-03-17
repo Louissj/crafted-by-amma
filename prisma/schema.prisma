@@ -24,6 +24,7 @@ model Order {
   totalAmount       Float?
   deliveryCharge    Float?   @default(0)
   isKarnataka       Boolean  @default(false)
+  count             Int      @default(1)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -56,4 +57,49 @@ model DeliverySettings {
   karnatakFree Boolean  @default(true)
   note         String   @default("Free delivery in Karnataka for orders \u20b9350+")
   updatedAt    DateTime @updatedAt
+}
+
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  type      String   // 'page_view' | 'cart_view' | 'add_to_cart' | 'checkout_start' | 'order_placed'
+  sessionId String?  // anonymous browser fingerprint
+  productId String?  // for product-level events
+  packSize  String?  // for add_to_cart
+  page      String?  // for page_view
+  metadata  Json?    // any extra context
+  createdAt DateTime @default(now())
+
+  @@index([type])
+  @@index([createdAt])
+  @@index([sessionId])
+  @@index([productId])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  name      String
+  place     String
+  rating    Int      // 1–5
+  text      String
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([approved])
+  @@index([createdAt])
+}
+
+model Product {
+  id          String   @id
+  name        String
+  shortName   String
+  badge       String   @default("")
+  description String
+  ingredients String
+  usage       Json     // [{ type: string, instructions: string }]
+  prices      Json     // { "250g": 110, "500g": 190, ... }
+  images      Json     @default("[]") // ["/images/..."]
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

@@ -1,8 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['localhost', 'images.unsplash.com'],
-    unoptimized: false,
+    remotePatterns: [
+      { protocol: 'https', hostname: 'crafted-by-amma.s3.ap-south-1.amazonaws.com' },
+      { protocol: 'https', hostname: '*.s3.*.amazonaws.com' },
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+    ],
+    unoptimized: true,
   },
   experimental: {
     serverActions: {

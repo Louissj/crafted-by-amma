@@ -51,19 +51,14 @@ export function secureFilename(originalName: string): string {
   return `${Date.now()}-${random}.${safe}`;
 }
 
-// Calculate order total server-side
-export function calculateOrderTotal(products: string[], quantity: string): number {
-  const PRICES: Record<string, Record<string, number>> = {
-    'millet-malt': { '250g': 110, '500g': 190, '1kg': 350, '2kg': 680 },
-    'instant-dosa': { '250g': 85, '500g': 160, '1kg': 280, '2kg': 540 },
-  };
-
+// Calculate order total from cart items using prices fetched from DB
+export function calculateCartTotal(
+  cartItems: { productId: string; packSize: string; count: number }[],
+  priceMap: Record<string, Record<string, number>>
+): number {
   let total = 0;
-  for (const productId of products) {
-    const productPrices = PRICES[productId];
-    if (productPrices) {
-      total += productPrices[quantity] || productPrices['1kg'] || 0;
-    }
+  for (const item of cartItems) {
+    total += (priceMap[item.productId]?.[item.packSize] || 0) * item.count;
   }
   return total;
 }

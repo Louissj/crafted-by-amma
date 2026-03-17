@@ -1,7 +1,19 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx prisma:*)"
+      "Bash(npx prisma:*)",
+      "mcp__Neon__run_sql",
+      "Bash(npx next:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm install:*)",
+      "Bash(npm list:*)",
+      "Bash(npx tsx:*)",
+      "Bash(taskkill /f /im node.exe)",
+      "Bash(cmd /c \"taskkill /f /im node.exe\")",
+      "Bash(cmd /c \"taskkill /f /im node.exe && echo killed\")",
+      "Bash(powershell -Command \"Stop-Process -Name node -Force -ErrorAction SilentlyContinue; Write-Host ''done''\")",
+      "Bash(powershell -Command \"Stop-Process -Name node -Force -ErrorAction SilentlyContinue\")",
+      "Bash(grep -n \"ANALYTICS TAB\\\\|tab === ''analytics''\\\\|PRODUCT EDIT MODAL\" \"d:/Pavan/crafted-by-amma/crafted-by-amma/src/app/admin/page.tsx\")"
     ]
   }
 }
