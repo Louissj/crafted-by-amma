@@ -1,0 +1,10 @@
+node_modules/
+.next/
+*.db
+*.db-journal
+.env.local
+.env
+.env.railway
+public/uploads/*
+!public/uploads/.gitkeep
+*.pem
