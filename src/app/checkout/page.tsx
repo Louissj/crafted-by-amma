@@ -9,7 +9,7 @@ import { useProducts } from '@/lib/useProducts';
 import { PRODUCTS } from '@/lib/constants';
 import { trackEvent } from '@/lib/analytics';
 
-type DeliverySettings = { baseCharge: number; freeAboveAmt: number; karnatakFree: boolean; note: string };
+type DeliverySettings = { baseCharge: number; outstationCharge: number; freeAboveAmt: number; karnatakFree: boolean; note: string };
 
 const STEPS = ['Details', 'Payment'];
 
@@ -28,7 +28,12 @@ export default function CheckoutPage() {
   const { priceMap } = useProducts();
   const { cart, cartTotal, totalPacks, clearCart, mounted } = useCart(priceMap);
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState({ name: '', phone: '', city: '', isKarnataka: true, address: '', notes: '' });
+  const [form, setForm] = useState({ name: '', phone: '', city: '', address: '', notes: '' });
+  const [pincode, setPincode] = useState('');
+  const [pincodeLoading, setPincodeLoading] = useState(false);
+  const [pincodeState, setPincodeState] = useState('');
+  const [pincodeError, setPincodeError] = useState('');
+  const [deliveryZone, setDeliveryZone] = useState<'karnataka' | 'india' | 'international'>('india');
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -44,11 +49,52 @@ export default function CheckoutPage() {
     setIsMobile(/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent));
   }, []);
 
+  function isKarnatakaPincode(pin: string) {
+    const n = parseInt(pin, 10);
+    return n >= 560001 && n <= 597999;
+  }
+
+  useEffect(() => {
+    if (deliveryZone === 'international') return;
+    const pin = pincode.replace(/\D/g, '');
+    if (pin.length !== 6) {
+      setPincodeState('');
+      setPincodeError('');
+      setDeliveryZone('india');
+      return;
+    }
+    setPincodeLoading(true);
+    setPincodeError('');
+    setPincodeState('');
+    fetch(`https://api.postalpincode.in/pincode/${pin}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data?.[0]?.Status === 'Success' && data[0].PostOffice?.length > 0) {
+          const po = data[0].PostOffice[0];
+          const stateName: string = po.State || '';
+          setPincodeState(stateName);
+          const isKA = isKarnatakaPincode(pin);
+          setDeliveryZone(isKA ? 'karnataka' : 'india');
+          if (!form.city) setForm(f => ({ ...f, city: po.District || po.Name || '' }));
+        } else {
+          setPincodeError('Pincode not found');
+          setDeliveryZone('india');
+        }
+      })
+      .catch(() => setPincodeError('Could not verify pincode'))
+      .finally(() => setPincodeLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pincode]);
+
   const deliveryCharge = useMemo(() => {
     if (!delivery) return 0;
-    if (form.isKarnataka && delivery.karnatakFree && cartTotal >= delivery.freeAboveAmt) return 0;
-    return delivery.baseCharge;
-  }, [delivery, form.isKarnataka, cartTotal]);
+    if (deliveryZone === 'international') return 0;
+    if (deliveryZone === 'karnataka') {
+      if (delivery.karnatakFree && cartTotal >= delivery.freeAboveAmt) return 0;
+      return delivery.baseCharge;
+    }
+    return delivery.outstationCharge ?? 120;
+  }, [delivery, deliveryZone, cartTotal]);
 
   const grandTotal = cartTotal + deliveryCharge;
 
@@ -83,7 +129,7 @@ export default function CheckoutPage() {
       const fd = new FormData();
       fd.append('name', form.name); fd.append('phone', form.phone);
       fd.append('cartItems', JSON.stringify(cart));
-      fd.append('city', form.city); fd.append('isKarnataka', String(form.isKarnataka));
+      fd.append('city', form.city); fd.append('pincode', pincode); fd.append('deliveryZone', deliveryZone);
       fd.append('address', form.address); fd.append('notes', form.notes);
       fd.append('screenshot', file);
       const res = await fetch('/api/orders', { method: 'POST', body: fd });
@@ -270,27 +316,67 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <InputField label="Pincode">
+                    <div className="relative">
+                      <input
+                        value={pincode}
+                        onChange={e => { if (deliveryZone !== 'international') setPincode(e.target.value.replace(/\D/g, '').slice(0, 6)); }}
+                        className={`${inputCls} pr-10`}
+                        placeholder="6-digit pincode"
+                        inputMode="numeric"
+                        disabled={deliveryZone === 'international'}
+                      />
+                      {pincodeLoading && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-sage/30 border-t-sage rounded-full animate-spin" />
+                      )}
+                      {!pincodeLoading && pincodeState && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-sage">✓</div>
+                      )}
+                    </div>
+                    {pincodeState && !pincodeError && (
+                      <p className="text-[.6rem] mt-1 font-semibold" style={{ color: deliveryZone === 'karnataka' ? '#5A7A3A' : '#B87323' }}>
+                        {pincodeState} {deliveryZone === 'karnataka' ? '· Karnataka' : '· Outside KA'}
+                      </p>
+                    )}
+                    {pincodeError && <p className="text-[.6rem] mt-1 text-red-400">{pincodeError}</p>}
+                  </InputField>
                   <InputField label="City *">
                     <input value={form.city} onChange={e => setForm({ ...form, city: e.target.value })}
                       className={inputCls} placeholder="Mysuru, Bengaluru…" />
                   </InputField>
-                  <InputField label="Delivery State">
-                    <div className="flex gap-2 mt-0.5">
-                      {[{ val: true, label: '🏠 Karnataka' }, { val: false, label: '✈️ Outside KA' }].map(opt => (
-                        <button key={String(opt.val)} type="button"
-                          onClick={() => setForm({ ...form, isKarnataka: opt.val })}
-                          className={`flex-1 py-3 rounded-xl text-xs font-bold border-2 transition-all ${
-                            form.isKarnataka === opt.val
-                              ? 'text-brass border-forest'
-                              : 'border-forest/[.08] text-forest/45 bg-white hover:border-forest/15'
-                          }`}
-                          style={form.isKarnataka === opt.val ? { background: 'linear-gradient(135deg,#1A2A14,#243318)' } : {}}>
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
-                  </InputField>
                 </div>
+
+                {/* International checkbox */}
+                <label className="flex items-center gap-2.5 cursor-pointer select-none group">
+                  <div
+                    className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                      deliveryZone === 'international'
+                        ? 'border-blue-500 bg-blue-500'
+                        : 'border-forest/20 bg-white group-hover:border-forest/40'
+                    }`}
+                    onClick={() => {
+                      if (deliveryZone === 'international') {
+                        setDeliveryZone('india');
+                        setPincodeState('');
+                        setPincodeError('');
+                      } else {
+                        setDeliveryZone('international');
+                        setPincode('');
+                        setPincodeState('');
+                        setPincodeError('');
+                      }
+                    }}
+                  >
+                    {deliveryZone === 'international' && (
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                        <path d="M2 5l2.5 2.5L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )}
+                  </div>
+                  <span className={`text-xs font-medium transition-colors ${deliveryZone === 'international' ? 'text-blue-600' : 'text-forest/50 group-hover:text-forest/70'}`}>
+                    ✈️ International order — delivery confirmed via WhatsApp
+                  </span>
+                </label>
 
                 <InputField label="Full Address *">
                   <textarea value={form.address} onChange={e => setForm({ ...form, address: e.target.value })}
@@ -305,13 +391,21 @@ export default function CheckoutPage() {
               </div>
 
               {delivery && (
-                <div className="mt-5 p-3.5 rounded-xl border border-sage/10 bg-sage/[.02] flex items-center gap-2.5">
-                  <span className="text-base">🚚</span>
+                <div className={`mt-5 p-3.5 rounded-xl border flex items-center gap-2.5 ${
+                  deliveryZone === 'international'
+                    ? 'border-blue-200 bg-blue-50/60'
+                    : deliveryCharge === 0
+                    ? 'border-sage/15 bg-sage/[.03]'
+                    : 'border-amber-200/60 bg-amber-50/40'
+                }`}>
+                  <span className="text-base">{deliveryZone === 'international' ? '✈️' : '🚚'}</span>
                   <span className="text-xs text-forest/55">
-                    {deliveryCharge === 0
+                    {deliveryZone === 'international'
+                      ? <span className="text-blue-600 font-bold">International — delivery charge confirmed via WhatsApp</span>
+                      : deliveryCharge === 0
                       ? <span className="text-sage font-bold">Free delivery for your order!</span>
                       : <><strong className="text-forest">₹{deliveryCharge}</strong> delivery charge</>}
-                    {deliveryCharge > 0 && delivery.note && <span className="text-forest/35"> · {delivery.note}</span>}
+                    {deliveryZone !== 'international' && deliveryCharge > 0 && delivery.note && <span className="text-forest/35"> · {delivery.note}</span>}
                   </span>
                 </div>
               )}
@@ -370,7 +464,7 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                   <p className="text-[.58rem] text-forest/25 pt-1">
-                    For: {form.name} · {form.city} · {form.isKarnataka ? 'Karnataka' : 'Outside KA'}
+                    For: {form.name} · {form.city}{pincode ? ` · ${pincode}` : ''} · {deliveryZone === 'international' ? 'International' : deliveryZone === 'karnataka' ? 'Karnataka' : 'Outside KA'}
                   </p>
                 </div>
               </div>
