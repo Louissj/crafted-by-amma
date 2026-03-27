@@ -55,8 +55,7 @@ export async function notifyNewOrder(order: OrderNotifyPayload) {
     inline_keyboard: [[
       { text: '🖥️ Open Admin Panel', url: `${siteUrl}/admin` },
     ], [
-      { text: '📞 Call Customer', url: `tel:${order.phone}` },
-      { text: '💬 WhatsApp', url: `https://wa.me/91${order.phone.replace(/[^0-9]/g, '').slice(-10)}` },
+      { text: '💬 WhatsApp Customer', url: `https://wa.me/91${order.phone.replace(/[^0-9]/g, '').slice(-10)}` },
     ]],
   };
 
