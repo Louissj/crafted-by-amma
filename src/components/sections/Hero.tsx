@@ -45,7 +45,7 @@ export default function Hero() {
 
       {/* Floating badge - mobile top right */}
       <div className="absolute top-20 right-4 md:top-1/4 md:right-[9%] z-[3]">
-        <div className="px-3 py-1.5 rounded-full text-[.52rem] font-bold tracking-[1.5px] uppercase border"
+        <div className="px-3 py-1.5 rounded-full text-xs font-bold tracking-[1.5px] uppercase border"
           style={{ background: 'rgba(200,180,74,0.1)', borderColor: 'rgba(200,180,74,0.2)', color: 'rgba(200,180,74,0.7)', backdropFilter: 'blur(8px)' }}>
           ✦ Zero Preservatives
         </div>
@@ -88,19 +88,19 @@ export default function Hero() {
         <p className="text-[.85rem] md:text-[.9rem] leading-[1.9] text-sand/[.60] max-w-[430px] mx-auto md:mx-0 mb-8 opacity-0 animate-fade-up"
           style={{ animationDelay: '.5s', animationFillMode: 'forwards' }}>
           From Amma&apos;s kitchen in Mysuru — Millet Malt Powder & Instant Multigrain Dosa Powder.
-          <span className="block mt-1 text-brass/65 text-[.75rem] tracking-[1px]">Zero preservatives · Zero added sugar · 21+ ingredients</span>
+          <span className="block mt-1 text-brass/65 text-xs tracking-[1px]">Zero preservatives · Zero added sugar · 21+ ingredients</span>
         </p>
 
         {/* CTAs */}
         <div className="flex gap-3 justify-center md:justify-start flex-wrap mb-8 opacity-0 animate-fade-up"
           style={{ animationDelay: '.6s', animationFillMode: 'forwards' }}>
           <a href="#order"
-            className="px-7 py-3.5 rounded-full text-[.74rem] font-bold tracking-[1.5px] uppercase no-underline inline-flex items-center gap-2 transition-all hover:-translate-y-0.5 hover:shadow-xl active:scale-95"
+            className="px-7 py-3.5 rounded-full text-xs font-bold tracking-[1.5px] uppercase no-underline inline-flex items-center gap-2 transition-all hover:-translate-y-0.5 hover:shadow-xl active:scale-95"
             style={{ background: 'linear-gradient(135deg,#5A7A3A,#7A9A50)', color: '#F5F0E0', boxShadow: '0 6px 24px rgba(90,122,58,0.35)' }}>
             🛒 Order Now
           </a>
           <a href="#prods"
-            className="px-7 py-3.5 rounded-full text-[.74rem] font-bold tracking-[1.5px] uppercase no-underline inline-flex items-center gap-2 transition-all hover:border-brass/50 hover:text-brass active:scale-95 text-sand/80 border-[1.5px] border-sand/[.25]">
+            className="px-7 py-3.5 rounded-full text-xs font-bold tracking-[1.5px] uppercase no-underline inline-flex items-center gap-2 transition-all hover:border-brass/50 hover:text-brass active:scale-95 text-sand/80 border-[1.5px] border-sand/[.25]">
             Explore Products →
           </a>
         </div>
@@ -109,7 +109,7 @@ export default function Hero() {
         <div className="flex gap-2 justify-center md:justify-start flex-wrap opacity-0 animate-fade-up"
           style={{ animationDelay: '.75s', animationFillMode: 'forwards' }}>
           {['🌿 100% Natural', '🚫 No Chemicals', '✈️ Ships Worldwide'].map(t => (
-            <span key={t} className="text-[.58rem] font-semibold px-3 py-1 rounded-full"
+            <span key={t} className="text-xs font-semibold px-3 py-1 rounded-full"
               style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(235,225,200,0.65)' }}>
               {t}
             </span>
@@ -119,7 +119,7 @@ export default function Hero() {
         {/* Scroll hint */}
         <div className="flex flex-col items-center md:items-start gap-1 mt-10 animate-bounce opacity-0"
           style={{ animationDelay: '1.2s', animationFillMode: 'forwards' }}>
-          <span className="text-[.52rem] tracking-[3px] uppercase text-sand/[.14]">Scroll</span>
+          <span className="text-xs tracking-[3px] uppercase text-sand/[.14]">Scroll</span>
           <div className="w-px h-5 bg-gradient-to-b from-brass/15 to-transparent" />
         </div>
       </div>

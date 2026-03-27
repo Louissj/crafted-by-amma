@@ -116,9 +116,9 @@ export default function OrderForm() {
           <RevealSection className="mb-10">
             <div className="rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #1A2A14 0%, #243420 60%, #1E2E18 100%)' }}>
               <div className="px-5 pt-4 pb-1 flex items-center gap-3">
-                <span className="text-[.6rem] font-bold tracking-[3px] uppercase text-brass/60">Exclusive Offers</span>
+                <span className="text-xs font-bold tracking-[3px] uppercase text-brass/60">Exclusive Offers</span>
                 <div className="flex-1 h-px bg-brass/[.08]" />
-                <span className="text-[.6rem] text-brass/30">{offers.length} active</span>
+                <span className="text-xs text-brass/30">{offers.length} active</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3">
                 {offers.map(o => (
@@ -130,7 +130,7 @@ export default function OrderForm() {
                 ))}
               </div>
               {delivery?.note && (
-                <div className="px-5 pb-3 text-[.65rem] flex items-center gap-1.5" style={{ color: 'rgba(212,148,42,0.40)' }}>
+                <div className="px-5 pb-3 text-[.82rem] flex items-center gap-1.5" style={{ color: 'rgba(212,148,42,0.40)' }}>
                   <span>🚚</span> {delivery.note}
                 </div>
               )}
@@ -171,7 +171,7 @@ export default function OrderForm() {
                         ${step > i + 1 ? 'bg-sage text-white' : step === i + 1 ? 'bg-forest text-brass shadow-lg' : 'bg-forest/10 text-forest/30'}`}>
                         {step > i + 1 ? '✓' : i + 1}
                       </div>
-                      <span className={`text-[.6rem] font-semibold transition-all ${step === i + 1 ? 'text-forest' : 'text-forest/25'}`}>{label}</span>
+                      <span className={`text-xs font-semibold transition-all ${step === i + 1 ? 'text-forest' : 'text-forest/25'}`}>{label}</span>
                     </div>
                     {i < STEP_LABELS.length - 1 && (
                       <div className={`w-14 md:w-20 h-0.5 mb-4 mx-1 transition-all ${step > i + 1 ? 'bg-sage' : 'bg-forest/10'}`} />
@@ -193,10 +193,10 @@ export default function OrderForm() {
                     {/* Cart summary (read-only) */}
                     <div className="mb-6 p-3.5 rounded-xl border border-forest/[.05] bg-white">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-[.55rem] font-bold uppercase tracking-[2px] text-forest/40">
+                        <span className="text-xs font-bold uppercase tracking-[2px] text-forest/40">
                           Cart · {totalPacks} pack{totalPacks !== 1 ? 's' : ''}
                         </span>
-                        <Link href="/cart" className="text-[.6rem] font-semibold text-sage no-underline hover:underline">
+                        <Link href="/cart" className="text-xs font-semibold text-sage no-underline hover:underline">
                           Edit cart →
                         </Link>
                       </div>
@@ -213,13 +213,13 @@ export default function OrderForm() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                       <div>
-                        <label className="block text-[.58rem] font-semibold tracking-[2px] uppercase text-forest mb-1">Full Name *</label>
+                        <label className="block text-xs font-semibold tracking-[2px] uppercase text-forest mb-1">Full Name *</label>
                         <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
                           className="w-full px-3 py-2.5 border-[1.5px] border-forest/[.06] rounded-xl text-sm bg-white outline-none focus:border-sage focus:ring-2 focus:ring-sage/[.06] transition-all"
                           placeholder="Your name" />
                       </div>
                       <div>
-                        <label className="block text-[.58rem] font-semibold tracking-[2px] uppercase text-forest mb-1">WhatsApp Number *</label>
+                        <label className="block text-xs font-semibold tracking-[2px] uppercase text-forest mb-1">WhatsApp Number *</label>
                         <input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })}
                           className="w-full px-3 py-2.5 border-[1.5px] border-forest/[.06] rounded-xl text-sm bg-white outline-none focus:border-sage focus:ring-2 focus:ring-sage/[.06] transition-all"
                           placeholder="+91 XXXXX XXXXX" />
@@ -228,13 +228,13 @@ export default function OrderForm() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                       <div>
-                        <label className="block text-[.58rem] font-semibold tracking-[2px] uppercase text-forest mb-1">City *</label>
+                        <label className="block text-xs font-semibold tracking-[2px] uppercase text-forest mb-1">City *</label>
                         <input value={form.city} onChange={e => setForm({ ...form, city: e.target.value })}
                           className="w-full px-3 py-2.5 border-[1.5px] border-forest/[.06] rounded-xl text-sm bg-white outline-none focus:border-sage focus:ring-2 focus:ring-sage/[.06] transition-all"
                           placeholder="Mysuru, Bengaluru..." />
                       </div>
                       <div>
-                        <label className="block text-[.58rem] font-semibold tracking-[2px] uppercase text-forest mb-1">Delivery State</label>
+                        <label className="block text-xs font-semibold tracking-[2px] uppercase text-forest mb-1">Delivery State</label>
                         <div className="flex gap-2 mt-1">
                           {[{ val: true, label: '🏠 Karnataka' }, { val: false, label: '✈️ Outside KA' }].map(opt => (
                             <button key={String(opt.val)} type="button"
@@ -249,14 +249,14 @@ export default function OrderForm() {
                     </div>
 
                     <div className="mb-3">
-                      <label className="block text-[.58rem] font-semibold tracking-[2px] uppercase text-forest mb-1">Full Address *</label>
+                      <label className="block text-xs font-semibold tracking-[2px] uppercase text-forest mb-1">Full Address *</label>
                       <textarea value={form.address} onChange={e => setForm({ ...form, address: e.target.value })}
                         className="w-full px-3 py-2.5 border-[1.5px] border-forest/[.06] rounded-xl text-sm bg-white outline-none focus:border-sage focus:ring-2 focus:ring-sage/[.06] transition-all resize-y min-h-[70px]"
                         placeholder="House/Flat no., Street, Pincode" />
                     </div>
 
                     <div className="mb-5">
-                      <label className="block text-[.58rem] font-semibold tracking-[2px] uppercase text-forest mb-1">Special Notes (optional)</label>
+                      <label className="block text-xs font-semibold tracking-[2px] uppercase text-forest mb-1">Special Notes (optional)</label>
                       <input value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })}
                         className="w-full px-3 py-2.5 border-[1.5px] border-forest/[.06] rounded-xl text-sm bg-white outline-none focus:border-sage transition-all"
                         placeholder="Any preferences or instructions..." />
@@ -292,7 +292,7 @@ export default function OrderForm() {
 
                     {/* Order summary */}
                     <div className="mb-5 p-4 rounded-xl border border-forest/[.06] bg-white">
-                      <p className="text-[.58rem] font-bold uppercase tracking-[2px] text-forest/40 mb-3">Order Summary</p>
+                      <p className="text-xs font-bold uppercase tracking-[2px] text-forest/40 mb-3">Order Summary</p>
                       <div className="space-y-1.5 mb-2">
                         {cart.map(item => (
                           <div key={`${item.productId}-${item.packSize}`} className="flex justify-between text-xs text-forest/60">
@@ -315,7 +315,7 @@ export default function OrderForm() {
                           <span>Total to Pay</span><span className="text-sage">₹{grandTotal}</span>
                         </div>
                       </div>
-                      <p className="text-[.6rem] text-forest/30 mt-2">
+                      <p className="text-xs text-forest/30 mt-2">
                         For: {form.name} · {form.city} · {form.isKarnataka ? 'Karnataka' : 'Outside KA'}
                       </p>
                     </div>
@@ -323,30 +323,30 @@ export default function OrderForm() {
                     {/* QR code */}
                     <div className="mb-4 p-5 rounded-xl border-2 border-dashed border-brass/10 bg-white text-center">
                       <p className="text-xs font-bold text-forest mb-1">💳 Scan &amp; Pay ₹{grandTotal}</p>
-                      <p className="text-[.6rem] text-forest/25 mb-3">UPI · GPay · PhonePe · Any UPI App</p>
+                      <p className="text-xs text-forest/25 mb-3">UPI · GPay · PhonePe · Any UPI App</p>
                       <div className="w-[140px] h-[140px] mx-auto bg-cream rounded-xl border border-forest/[.04] flex flex-col items-center justify-center gap-1.5">
                         <span className="text-4xl">📱</span>
-                        <small className="text-[.52rem] text-forest/[.18] tracking-[1.5px] uppercase">Your QR Here</small>
+                        <small className="text-xs text-forest/[.18] tracking-[1.5px] uppercase">Your QR Here</small>
                       </div>
                     </div>
 
                     {/* Screenshot upload */}
                     <div className="mb-5">
-                      <label className="block text-[.58rem] font-semibold tracking-[2px] uppercase text-forest mb-1.5">Upload Payment Screenshot *</label>
+                      <label className="block text-xs font-semibold tracking-[2px] uppercase text-forest mb-1.5">Upload Payment Screenshot *</label>
                       <div className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all relative overflow-hidden bg-white
                         ${preview ? 'border-sage border-solid' : 'border-forest/[.06] hover:border-sage/40'}`}>
                         {!preview ? (
                           <div>
                             <div className="text-2xl mb-1">📤</div>
                             <div className="text-xs text-forest/30">Tap to upload payment screenshot</div>
-                            <div className="text-[.6rem] text-forest/20 mt-0.5">JPG, PNG, WebP · Max 5MB</div>
+                            <div className="text-xs text-forest/20 mt-0.5">JPG, PNG, WebP · Max 5MB</div>
                           </div>
                         ) : (
                           <div className="flex items-center gap-3">
                             <img src={preview} alt="" className="w-14 h-14 object-cover rounded-lg border-[1.5px] border-sage" />
                             <div className="text-left flex-1">
                               <div className="text-xs font-semibold text-sage truncate">{file?.name}</div>
-                              <div className="text-[.6rem] text-forest/30 mt-0.5">✅ Ready to upload</div>
+                              <div className="text-xs text-forest/30 mt-0.5">✅ Ready to upload</div>
                             </div>
                             <button type="button" onClick={removeFile} className="text-red-400 text-xs font-bold px-2 hover:text-red-600">✕</button>
                           </div>
@@ -368,7 +368,7 @@ export default function OrderForm() {
                         {submitting ? 'Placing Order...' : '✨ Place Order'}
                       </button>
                     </div>
-                    <p className="text-center text-[.56rem] text-forest/[.18] mt-2">WhatsApp confirmation in 2 hours</p>
+                    <p className="text-center text-xs text-forest/[.18] mt-2">WhatsApp confirmation in 2 hours</p>
                   </form>
                 )}
 

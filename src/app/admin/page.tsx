@@ -70,7 +70,6 @@ export default function AdminDashboard() {
   const [filter, setFilter] = useState('all');
   const [selected, setSelected] = useState<Order | null>(null);
   const [loading, setLoading] = useState(false);
-  const [waToast, setWaToast] = useState('');
   const [stats, setStats] = useState({ total: 0, pending: 0, confirmed: 0, revenue: 0 });
 
   const [offers, setOffers] = useState<Offer[]>([]);
@@ -268,18 +267,13 @@ export default function AdminDashboard() {
     if (target) {
       const phone = target.phone.replace(/[^0-9]/g, '').slice(-10);
       const msg = getWhatsAppMessage(target.name, status);
-      // Copy message to clipboard first (100% emoji-safe)
-      navigator.clipboard.writeText(msg).catch(() => {});
-      // Open WhatsApp chat — user pastes the copied message
       const a = document.createElement('a');
-      a.href = 'https://wa.me/91' + phone;
+      a.href = 'https://wa.me/91' + phone + '?text=' + encodeURIComponent(msg);
       a.target = '_blank';
       a.rel = 'noopener noreferrer';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      setWaToast('Message copied! Paste it in WhatsApp \uD83D\uDCCB');
-      setTimeout(() => setWaToast(''), 4000);
     }
   };
 
@@ -517,7 +511,7 @@ export default function AdminDashboard() {
 
               {/* Username field */}
               <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.35, duration: 0.4 }}>
-                <label className="block text-smfont-bold tracking-[2.5px] uppercase mb-2.5" style={{ color: 'rgba(200,180,74,0.5)' }}>
+                <label className="block text-sm font-bold tracking-[2.5px] uppercase mb-2.5" style={{ color: 'rgba(200,180,74,0.5)' }}>
                   Username
                 </label>
                 <div className="relative">
@@ -551,7 +545,7 @@ export default function AdminDashboard() {
 
               {/* Password field */}
               <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.42, duration: 0.4 }}>
-                <label className="block text-smfont-bold tracking-[2.5px] uppercase mb-2.5" style={{ color: 'rgba(200,180,74,0.5)' }}>
+                <label className="block text-sm font-bold tracking-[2.5px] uppercase mb-2.5" style={{ color: 'rgba(200,180,74,0.5)' }}>
                   Password
                 </label>
                 <div className="relative">
@@ -680,21 +674,6 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen flex overflow-x-hidden w-full" style={{ background: '#080F06' }}>
 
-      {/* WhatsApp copy toast */}
-      <AnimatePresence>
-        {waToast && (
-          <motion.div
-            initial={{ opacity: 0, y: 24, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 12, scale: 0.95 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-3 px-5 py-3.5 rounded-2xl text-smfont-semibold shadow-2xl"
-            style={{ background: 'linear-gradient(135deg,#25D366,#1da851)', color: '#fff', boxShadow: '0 8px 32px rgba(37,211,102,0.35)', whiteSpace: 'nowrap' }}>
-            <span>💬</span>
-            {waToast}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* ── SIDEBAR (desktop) ── */}
       <aside className="hidden md:flex flex-col w-[220px] flex-shrink-0 fixed top-0 left-0 h-full z-40"
         style={{ background: 'linear-gradient(180deg,#0D1A09 0%,#111E0D 60%,#0A1208 100%)', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
@@ -732,7 +711,7 @@ export default function AdminDashboard() {
               <span className="text-base flex-shrink-0">{item.icon}</span>
               <span className="text-sm tracking-[0.3px]">{item.label}</span>
               {item.id === 'orders' && stats.pending > 0 && (
-                <span className="ml-auto text-smfont-bold px-1.5 py-0.5 rounded-full"
+                <span className="ml-auto text-sm font-bold px-1.5 py-0.5 rounded-full"
                   style={{ background: 'rgba(251,191,36,0.2)', color: '#FBBF24' }}>
                   {stats.pending}
                 </span>
@@ -755,8 +734,8 @@ export default function AdminDashboard() {
             ))}
           </div>
           <button onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-smtext-white/20 hover:text-white/50 hover:bg-white/[.04] transition-all">
-            ← Sign Out
+            className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-sm text-white/40 hover:text-red-400/70 hover:bg-red-500/[.06] transition-all">
+            🚪 Sign Out
           </button>
         </div>
       </aside>
@@ -773,7 +752,7 @@ export default function AdminDashboard() {
               <div className="w-7 h-7 rounded-lg overflow-hidden border border-brass/20">
                 <Image src="/images/logo.png" alt="Logo" width={28} height={28} className="w-full h-full object-cover" />
               </div>
-              <span className="font-display text-smfont-bold text-white">Admin</span>
+              <span className="font-display text-sm font-bold text-white">Admin</span>
             </div>
 
             {/* Page title (desktop) */}
@@ -786,7 +765,7 @@ export default function AdminDashboard() {
 
             {stats.pending > 0 && (
               <button onClick={() => setTab('orders')}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-smfont-bold border transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold border transition-all"
                 style={{ color: '#D4942A', borderColor: 'rgba(212,148,42,0.3)', background: 'rgba(212,148,42,0.1)' }}>
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
@@ -813,13 +792,19 @@ export default function AdminDashboard() {
               <span className="text-base">{item.icon}</span>
               <span className="text-sm font-semibold capitalize tracking-wide">{item.label}</span>
               {item.id === 'orders' && stats.pending > 0 && (
-                <span className="absolute top-1 right-[calc(50%-14px)] w-3.5 h-3.5 rounded-full text-[.42rem] font-bold flex items-center justify-center text-white"
+                <span className="absolute top-1 right-[calc(50%-14px)] w-3.5 h-3.5 rounded-full text-[.6rem] font-bold flex items-center justify-center text-white"
                   style={{ background: '#D4942A' }}>
                   {stats.pending}
                 </span>
               )}
             </button>
           ))}
+          {/* Sign Out button on mobile */}
+          <button onClick={handleLogout}
+            className="flex-1 py-3 flex flex-col items-center gap-0.5 transition-all text-red-400/60 hover:text-red-400 active:scale-95">
+            <span className="text-base">🚪</span>
+            <span className="text-sm font-semibold tracking-wide">Sign Out</span>
+          </button>
         </div>
 
         {/* ── PAGE CONTENT ── */}
@@ -897,13 +882,13 @@ export default function AdminDashboard() {
                     {/* Top row: avatar + info + amount */}
                     <div className="flex items-center gap-3">
                       {/* Avatar */}
-                      <div className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center text-smfont-bold"
+                      <div className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center text-sm font-bold"
                         style={{ background: `${STATUS_META[order.status]?.color || '#888'}18`, color: STATUS_META[order.status]?.color || '#888', border: `1px solid ${STATUS_META[order.status]?.color || '#888'}30` }}>
                         {order.name.charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
-                          <div className="font-semibold text-smtext-white/90 truncate">{order.name}</div>
+                          <div className="font-semibold text-sm text-white/90 truncate">{order.name}</div>
                           <StatusBadge status={order.status} size="xs" />
                         </div>
                         <div className="flex items-center gap-2">
@@ -951,7 +936,7 @@ export default function AdminDashboard() {
                   <thead>
                     <tr style={{ background: 'rgba(200,180,74,0.05)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                       {['Order', 'Customer', 'Products', 'City', 'Amount', 'Status', 'Action'].map(h => (
-                        <th key={h} className="px-4 py-3.5 text-left text-smfont-bold uppercase tracking-[2px]" style={{ color: 'rgba(200,180,74,0.4)' }}>
+                        <th key={h} className="px-4 py-3.5 text-left text-sm font-bold uppercase tracking-[2px]" style={{ color: 'rgba(200,180,74,0.4)' }}>
                           {h}
                         </th>
                       ))}
@@ -964,12 +949,12 @@ export default function AdminDashboard() {
                         className="border-t border-white/[.04] cursor-pointer transition-all hover:bg-white/[.03]"
                         onClick={() => setSelected(order)}>
                         <td className="px-4 py-3.5">
-                          <span className="font-mono text-smfont-bold px-2 py-0.5 rounded-md" style={{ color: 'rgba(200,180,74,0.5)', background: 'rgba(200,180,74,0.08)' }}>
+                          <span className="font-mono text-sm font-bold px-2 py-0.5 rounded-md" style={{ color: 'rgba(200,180,74,0.5)', background: 'rgba(200,180,74,0.08)' }}>
                             #{order.id.slice(-6).toUpperCase()}
                           </span>
                         </td>
                         <td className="px-4 py-3.5">
-                          <div className="font-semibold text-smtext-white/90">{order.name}</div>
+                          <div className="font-semibold text-sm text-white/90">{order.name}</div>
                           <div className="text-[.85rem] text-white/30 mt-0.5">{order.phone}</div>
                         </td>
                         <td className="px-4 py-3.5">
@@ -1190,7 +1175,7 @@ export default function AdminDashboard() {
               { label: 'Free Delivery Above (₹)', key: 'freeAboveAmt', hint: 'Orders above this amount qualify for free delivery' },
             ].map(field => (
               <div key={field.key}>
-                <label className="block text-smfont-bold uppercase tracking-[2px] mb-1.5" style={{ color: 'rgba(200,180,74,0.5)' }}>{field.label}</label>
+                <label className="block text-sm font-bold uppercase tracking-[2px] mb-1.5" style={{ color: 'rgba(200,180,74,0.5)' }}>{field.label}</label>
                 <input type="number" min={0}
                   value={delivery[field.key as keyof DeliverySettings] as number}
                   onChange={e => setDelivery({ ...delivery, [field.key]: parseFloat(e.target.value) || 0 })}
@@ -1213,7 +1198,7 @@ export default function AdminDashboard() {
             </div>
 
             <div>
-              <label className="block text-smfont-bold uppercase tracking-[2px] mb-1.5" style={{ color: 'rgba(200,180,74,0.5)' }}>Customer-facing Note</label>
+              <label className="block text-sm font-bold uppercase tracking-[2px] mb-1.5" style={{ color: 'rgba(200,180,74,0.5)' }}>Customer-facing Note</label>
               <input value={delivery.note} onChange={e => setDelivery({ ...delivery, note: e.target.value })}
                 className="w-full px-4 py-3 border-[1.5px] border-white/[.08] rounded-xl text-smoutline-none transition-all placeholder:text-white/20"
                 style={{ background: 'rgba(255,255,255,0.06)', color: 'white' }}
@@ -1281,18 +1266,18 @@ export default function AdminDashboard() {
                     style={{ background: 'linear-gradient(to top, rgba(15,26,10,0.55), transparent)' }} />
                   {/* Image count badge */}
                   {(product.images ?? []).length > 1 && (
-                    <span className="absolute bottom-2.5 left-3 text-smfont-bold text-white/70 tracking-wide">
+                    <span className="absolute bottom-2.5 left-3 text-sm font-bold text-white/70 tracking-wide">
                       +{product.images.length - 1} more
                     </span>
                   )}
                   {/* Status badge */}
-                  <span className={`absolute top-2.5 right-2.5 text-smfont-bold px-2 py-0.5 rounded-full backdrop-blur-sm
+                  <span className={`absolute top-2.5 right-2.5 text-sm font-bold px-2 py-0.5 rounded-full backdrop-blur-sm
                     ${product.active ? 'bg-sage/80 text-white' : 'bg-black/40 text-white/60'}`}>
                     {product.active ? '● Live' : '○ Hidden'}
                   </span>
                   {/* Badge label */}
                   {product.badge && (
-                    <span className="absolute top-2.5 left-2.5 text-smfont-bold px-2 py-0.5 rounded-full backdrop-blur-sm"
+                    <span className="absolute top-2.5 left-2.5 text-sm font-bold px-2 py-0.5 rounded-full backdrop-blur-sm"
                       style={{ background: 'rgba(212,148,42,0.75)', color: '#fff' }}>
                       {product.badge}
                     </span>
@@ -1300,7 +1285,7 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="p-4">
-                  <h3 className="font-display text-smfont-bold text-white/90 leading-snug mb-1">{product.name}</h3>
+                  <h3 className="font-display text-sm font-bold text-white/90 leading-snug mb-1">{product.name}</h3>
                   <p className="text-[.85rem] text-white/30 line-clamp-2 mb-3">{product.description}</p>
 
                   {/* Price pills */}
@@ -1313,7 +1298,7 @@ export default function AdminDashboard() {
                   </div>
 
                   <button onClick={() => setEditingProduct({ ...product })}
-                    className="w-full py-2.5 rounded-xl text-smfont-bold transition-all hover:opacity-90 active:scale-[.98]"
+                    className="w-full py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-[.98]"
                     style={{ background: 'linear-gradient(135deg,#C8B44A,#D4942A)', color: '#0D1A09' }}>
                     Edit Product →
                   </button>
@@ -1643,26 +1628,26 @@ export default function AdminDashboard() {
                           <table className="w-full">
                             <thead>
                               <tr className="border-b border-white/[.06]" style={{ background: 'rgba(200,180,74,0.03)' }}>
-                                <th className="px-4 py-2.5 text-left text-smfont-bold tracking-[1.5px] uppercase" style={{ color: 'rgba(200,180,74,0.35)' }}>Product</th>
-                                <th className="px-4 py-2.5 text-left text-smfont-bold tracking-[1.5px] uppercase" style={{ color: 'rgba(200,180,74,0.35)' }}>Units</th>
-                                <th className="hidden md:table-cell px-4 py-2.5 text-left text-smfont-bold tracking-[1.5px] uppercase" style={{ color: 'rgba(200,180,74,0.35)' }}>Carts</th>
-                                <th className="px-4 py-2.5 text-left text-smfont-bold tracking-[1.5px] uppercase" style={{ color: 'rgba(200,180,74,0.35)' }}>Revenue</th>
-                                <th className="hidden md:table-cell px-4 py-2.5 text-left text-smfont-bold tracking-[1.5px] uppercase" style={{ color: 'rgba(200,180,74,0.35)' }}>Orders</th>
+                                <th className="px-4 py-2.5 text-left text-sm font-bold tracking-[1.5px] uppercase" style={{ color: 'rgba(200,180,74,0.35)' }}>Product</th>
+                                <th className="px-4 py-2.5 text-left text-sm font-bold tracking-[1.5px] uppercase" style={{ color: 'rgba(200,180,74,0.35)' }}>Units</th>
+                                <th className="hidden md:table-cell px-4 py-2.5 text-left text-sm font-bold tracking-[1.5px] uppercase" style={{ color: 'rgba(200,180,74,0.35)' }}>Carts</th>
+                                <th className="px-4 py-2.5 text-left text-sm font-bold tracking-[1.5px] uppercase" style={{ color: 'rgba(200,180,74,0.35)' }}>Revenue</th>
+                                <th className="hidden md:table-cell px-4 py-2.5 text-left text-sm font-bold tracking-[1.5px] uppercase" style={{ color: 'rgba(200,180,74,0.35)' }}>Orders</th>
                               </tr>
                             </thead>
                             <tbody>
                               {rest.map((p, i) => (
                                 <tr key={p.id} className={i < rest.length - 1 ? 'border-b border-white/[.04]' : ''}>
                                   <td className="px-4 py-3">
-                                    <div className="font-semibold text-smtext-white/70 leading-tight">{p.name}</div>
+                                    <div className="font-semibold text-sm text-white/70 leading-tight">{p.name}</div>
                                     <div className="mt-1 h-1 w-16 md:w-28 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }}>
                                       <div className="h-full rounded-full" style={{ width: `${(p.units / maxUnits) * 100}%`, background: 'rgba(200,180,74,0.4)' }} />
                                     </div>
                                   </td>
-                                  <td className="px-4 py-3 text-smfont-bold text-white/50">{p.units}</td>
-                                  <td className="hidden md:table-cell px-4 py-3 text-smfont-bold text-blue-400/70">{analyticsStats.addToCartByProduct[p.id] ?? 0}</td>
-                                  <td className="px-4 py-3 text-smfont-bold text-emerald-400/80">₹{p.revenue.toLocaleString()}</td>
-                                  <td className="hidden md:table-cell px-4 py-3 text-smfont-bold text-white/30">{p.orders}</td>
+                                  <td className="px-4 py-3 text-sm font-bold text-white/50">{p.units}</td>
+                                  <td className="hidden md:table-cell px-4 py-3 text-sm font-bold text-blue-400/70">{analyticsStats.addToCartByProduct[p.id] ?? 0}</td>
+                                  <td className="px-4 py-3 text-sm font-bold text-emerald-400/80">₹{p.revenue.toLocaleString()}</td>
+                                  <td className="hidden md:table-cell px-4 py-3 text-sm font-bold text-white/30">{p.orders}</td>
                                 </tr>
                               ))}
                             </tbody>
@@ -1721,7 +1706,7 @@ export default function AdminDashboard() {
                     <thead>
                       <tr className="border-b border-white/[.06]">
                         {['Customer', 'Phone', 'City', 'Orders', 'Total Spent', 'Last Order'].map(h => (
-                          <th key={h} className="px-4 py-2.5 text-left text-smfont-bold tracking-[1.5px] uppercase" style={{ color: 'rgba(200,180,74,0.35)' }}>{h}</th>
+                          <th key={h} className="px-4 py-2.5 text-left text-sm font-bold tracking-[1.5px] uppercase" style={{ color: 'rgba(200,180,74,0.35)' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -1744,8 +1729,8 @@ export default function AdminDashboard() {
                               className="ml-2 text-smtext-green-400 no-underline hover:underline">WA</a>
                           </td>
                           <td className="px-4 py-3 text-smtext-white/40 capitalize">{c.city}</td>
-                          <td className="px-4 py-3 text-smfont-bold text-white/50">{c.orders}</td>
-                          <td className="px-4 py-3 text-smfont-bold" style={{ color: '#C8B44A' }}>₹{Math.round(c.spent).toLocaleString()}</td>
+                          <td className="px-4 py-3 text-sm font-bold text-white/50">{c.orders}</td>
+                          <td className="px-4 py-3 text-sm font-bold" style={{ color: '#C8B44A' }}>₹{Math.round(c.spent).toLocaleString()}</td>
                           <td className="px-4 py-3 text-smtext-white/30">{new Date(c.lastOrder).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</td>
                         </tr>
                       ))}
@@ -1911,7 +1896,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-2">
                   {/* Active toggle */}
                   <button onClick={() => setEditingProduct(p => p ? { ...p, active: !p.active } : p)}
-                    className={`px-3 py-1.5 rounded-full text-smfont-bold transition-all`}
+                    className={`px-3 py-1.5 rounded-full text-sm font-bold transition-all`}
                     style={editingProduct.active ? { background: 'rgba(16,185,129,0.15)', color: '#34D399' } : { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.3)' }}>
                     {editingProduct.active ? 'Live' : 'Hidden'}
                   </button>
@@ -1929,7 +1914,7 @@ export default function AdminDashboard() {
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-[.57rem] font-bold uppercase tracking-[2.5px]" style={{ color: 'rgba(200,180,74,0.45)' }}>Product Images</p>
                     <button onClick={() => imageInputRef.current?.click()} disabled={imageUploading}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-smfont-bold transition-all disabled:opacity-40"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold transition-all disabled:opacity-40"
                       style={{ background: 'linear-gradient(135deg,#5A7A3A,#4a6830)', color: '#fff' }}>
                       {imageUploading
                         ? <><span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Uploading…</>
@@ -2173,7 +2158,7 @@ export default function AdminDashboard() {
                           <span>Delivery</span>
                           <span>{selected.deliveryCharge === 0 ? 'Free' : `₹${selected.deliveryCharge ?? 0}`}</span>
                         </div>
-                        <div className="flex justify-between text-smfont-bold text-white pt-1 border-t border-white/[.06]">
+                        <div className="flex justify-between text-sm font-bold text-white pt-1 border-t border-white/[.06]">
                           <span>Total Paid</span>
                           <span style={{ color: '#C8B44A' }}>₹{selected.totalAmount}</span>
                         </div>

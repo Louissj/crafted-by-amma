@@ -123,7 +123,7 @@ function ProductModal({
 
             {/* Badge */}
             {product.badge && (
-              <span className="absolute top-4 left-4 z-[3] px-3 py-1 rounded-full text-[.55rem] font-bold tracking-[2px] uppercase"
+              <span className="absolute top-4 left-4 z-[3] px-3 py-1 rounded-full text-xs font-bold tracking-[2px] uppercase"
                 style={{ background: 'linear-gradient(135deg,#D4942A,#B87323)', color: '#1A2A14', boxShadow: '0 2px 12px rgba(212,148,42,0.4)' }}>
                 {product.badge}
               </span>
@@ -171,14 +171,14 @@ function ProductModal({
 
             {/* Header */}
             <div className="mb-4">
-              <p className="text-[.5rem] font-bold tracking-[3px] uppercase mb-1.5" style={{ color: 'rgba(200,180,74,0.55)' }}>
+              <p className="text-[.82rem] font-bold tracking-[3px] uppercase mb-1.5" style={{ color: 'rgba(200,180,74,0.55)' }}>
                 Crafted by Amma · Homemade
               </p>
               <h2 className="font-display text-[1.35rem] md:text-[1.6rem] font-bold leading-tight mb-2"
                 style={{ color: 'rgba(235,225,200,0.95)' }}>
                 {product.name}
               </h2>
-              <p className="text-[.78rem] leading-relaxed" style={{ color: 'rgba(235,225,200,0.42)' }}>
+              <p className="text-xs leading-relaxed" style={{ color: 'rgba(235,225,200,0.42)' }}>
                 {product.description}
               </p>
             </div>
@@ -186,30 +186,30 @@ function ProductModal({
             {/* Price range */}
             <div className="flex items-center gap-3 mb-5 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
               <span className="font-display text-[1.25rem] font-bold" style={{ color: '#D4942A' }}>{priceRange}</span>
-              <span className="text-[.55rem] tracking-[1.5px] uppercase" style={{ color: 'rgba(235,225,200,0.3)' }}>per pack · incl. all sizes</span>
+              <span className="text-xs tracking-[1.5px] uppercase" style={{ color: 'rgba(235,225,200,0.3)' }}>per pack · incl. all sizes</span>
             </div>
 
             {/* Ingredients */}
             <div className="mb-3 px-3.5 py-3 rounded-xl" style={{ background: 'rgba(90,122,58,0.06)', border: '1px solid rgba(90,122,58,0.09)' }}>
-              <span className="text-[.46rem] font-bold tracking-[2.5px] uppercase block mb-1.5" style={{ color: 'rgba(212,148,42,0.55)' }}>
+              <span className="text-xs font-bold tracking-[2.5px] uppercase block mb-1.5" style={{ color: 'rgba(212,148,42,0.55)' }}>
                 🌾 Ingredients
               </span>
-              <p className="text-[.7rem] leading-relaxed" style={{ color: 'rgba(235,225,200,0.36)' }}>{product.ingredients}</p>
+              <p className="text-xs leading-relaxed" style={{ color: 'rgba(235,225,200,0.36)' }}>{product.ingredients}</p>
             </div>
 
             {/* Usage */}
             {(product.usage ?? []).map((u, i) => (
               <div key={i} className="mb-3 px-3.5 py-3 rounded-xl" style={{ background: 'rgba(90,122,58,0.06)', border: '1px solid rgba(90,122,58,0.09)' }}>
-                <span className="text-[.46rem] font-bold tracking-[2.5px] uppercase block mb-1.5" style={{ color: 'rgba(212,148,42,0.55)' }}>
+                <span className="text-xs font-bold tracking-[2.5px] uppercase block mb-1.5" style={{ color: 'rgba(212,148,42,0.55)' }}>
                   📋 How to Use · {u.type}
                 </span>
-                <p className="text-[.7rem] leading-relaxed" style={{ color: 'rgba(235,225,200,0.36)' }}>{u.instructions}</p>
+                <p className="text-xs leading-relaxed" style={{ color: 'rgba(235,225,200,0.36)' }}>{u.instructions}</p>
               </div>
             ))}
 
             {/* Pack size selector */}
             <div className="mt-auto pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-              <p className="text-[.48rem] font-bold tracking-[2.5px] uppercase mb-3" style={{ color: 'rgba(235,225,200,0.28)' }}>
+              <p className="text-[.8rem] font-bold tracking-[2.5px] uppercase mb-3" style={{ color: 'rgba(235,225,200,0.28)' }}>
                 Choose Pack Size &amp; Quantity
               </p>
               <div className="space-y-2">
@@ -230,13 +230,13 @@ function ProductModal({
                             {size}
                           </span>
                           {isBest && (
-                            <span className="text-[.38rem] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
+                            <span className="text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
                               style={{ background: 'linear-gradient(135deg,#D4942A,#B87323)', color: '#1A2A14' }}>
                               Best Value
                             </span>
                           )}
                         </div>
-                        <span className="text-[.64rem]" style={{ color: 'rgba(235,225,200,0.35)' }}>₹{price} per pack</span>
+                        <span className="text-[.82rem]" style={{ color: 'rgba(235,225,200,0.35)' }}>₹{price} per pack</span>
                       </div>
 
                       <div className="flex items-center gap-2 flex-shrink-0">
@@ -263,7 +263,7 @@ function ProductModal({
                       <div className="w-12 text-right flex-shrink-0">
                         {isActive
                           ? <span className="font-display text-sm font-bold" style={{ color: '#D4942A' }}>₹{price * count}</span>
-                          : <span className="text-[.6rem]" style={{ color: 'rgba(235,225,200,0.16)' }}>—</span>
+                          : <span className="text-xs" style={{ color: 'rgba(235,225,200,0.16)' }}>—</span>
                         }
                       </div>
                     </div>
@@ -278,12 +278,12 @@ function ProductModal({
                   style={{ background: 'linear-gradient(135deg,rgba(212,148,42,0.18),rgba(212,148,42,0.09))', border: '1.5px solid rgba(212,148,42,0.35)' }}>
                   <div className="flex items-center gap-2">
                     <span className="text-sm">🛒</span>
-                    <span className="text-[.7rem] font-bold" style={{ color: 'rgba(212,148,42,0.85)' }}>View Cart</span>
+                    <span className="text-xs font-bold" style={{ color: 'rgba(212,148,42,0.85)' }}>View Cart</span>
                   </div>
                   <span className="font-display text-base font-bold" style={{ color: '#D4942A' }}>₹{cardTotal} →</span>
                 </Link>
               ) : (
-                <p className="mt-3 text-center text-[.58rem] tracking-wider" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                <p className="mt-3 text-center text-xs tracking-wider" style={{ color: 'rgba(255,255,255,0.2)' }}>
                   Select a pack size above to add to cart
                 </p>
               )}
@@ -348,14 +348,14 @@ function ProductCard({
         )) : (
           <div className="w-full h-full flex flex-col items-center justify-center gap-2">
             <span className="text-6xl opacity-10">🫙</span>
-            <span className="text-[.55rem] tracking-widest uppercase" style={{ color: 'rgba(235,225,200,0.2)' }}>No image</span>
+            <span className="text-xs tracking-widest uppercase" style={{ color: 'rgba(235,225,200,0.2)' }}>No image</span>
           </div>
         )}
 
         {/* Overlay on hover */}
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
           style={{ background: 'rgba(0,0,0,0.35)' }}>
-          <div className="flex items-center gap-2 px-4 py-2.5 rounded-full font-semibold text-[.72rem] tracking-wide"
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-full font-semibold text-xs tracking-wide"
             style={{ background: 'rgba(200,180,74,0.15)', border: '1.5px solid rgba(200,180,74,0.5)', color: 'rgba(235,225,200,0.95)', backdropFilter: 'blur(8px)' }}>
             View Details
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -369,7 +369,7 @@ function ProductCard({
 
         {/* Badge */}
         {product.badge && (
-          <span className="absolute top-4 left-4 z-[3] px-3 py-1 rounded-full text-[.52rem] font-bold tracking-[2px] uppercase"
+          <span className="absolute top-4 left-4 z-[3] px-3 py-1 rounded-full text-xs font-bold tracking-[2px] uppercase"
             style={{ background: 'linear-gradient(135deg,#D4942A,#B87323)', color: '#1A2A14', boxShadow: '0 2px 12px rgba(212,148,42,0.4)' }}>
             {product.badge}
           </span>
@@ -379,8 +379,8 @@ function ProductCard({
         {packsInCart > 0 && (
           <div className="absolute top-4 right-4 z-[3] px-2.5 py-1 rounded-full flex items-center gap-1.5"
             style={{ background: 'rgba(212,148,42,0.18)', border: '1px solid rgba(212,148,42,0.45)', backdropFilter: 'blur(8px)' }}>
-            <span className="text-[.55rem]">🛒</span>
-            <span className="font-display text-[.65rem] font-bold" style={{ color: '#D4942A' }}>{packsInCart}</span>
+            <span className="text-xs">🛒</span>
+            <span className="font-display text-[.82rem] font-bold" style={{ color: '#D4942A' }}>{packsInCart}</span>
           </div>
         )}
 
@@ -400,18 +400,18 @@ function ProductCard({
         <h3 className="font-display text-[1.1rem] font-bold leading-snug mb-1.5" style={{ color: 'rgba(235,225,200,0.95)' }}>
           {product.name}
         </h3>
-        <p className="text-[.72rem] leading-relaxed mb-4 line-clamp-2" style={{ color: 'rgba(235,225,200,0.38)' }}>
+        <p className="text-xs leading-relaxed mb-4 line-clamp-2" style={{ color: 'rgba(235,225,200,0.38)' }}>
           {product.description}
         </p>
 
         <div className="mt-auto flex items-center justify-between">
           <div>
-            <span className="text-[.44rem] font-bold tracking-[2px] uppercase block mb-0.5" style={{ color: 'rgba(235,225,200,0.25)' }}>Starting from</span>
+            <span className="text-xs font-bold tracking-[2px] uppercase block mb-0.5" style={{ color: 'rgba(235,225,200,0.25)' }}>Starting from</span>
             <span className="font-display text-[1.1rem] font-bold" style={{ color: '#D4942A' }}>₹{minPrice}</span>
           </div>
           <button
             onClick={onOpen}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[.72rem] font-bold tracking-wide transition-all hover:scale-105 active:scale-95"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wide transition-all hover:scale-105 active:scale-95"
             style={{ background: 'linear-gradient(135deg,rgba(212,148,42,0.15),rgba(212,148,42,0.07))', border: '1.5px solid rgba(212,148,42,0.28)', color: 'rgba(212,148,42,0.9)' }}>
             {packsInCart > 0 ? `In Cart · ₹${totalInCart}` : 'Order Now'}
             <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
@@ -463,7 +463,7 @@ export default function Products() {
       <SectionHeader tag="Our Products" title="Amma's Signature Recipes" dark />
 
       <div className="max-w-[1040px] lg:max-w-[1120px] mx-auto mb-8 relative z-[2]">
-        <p className="text-center text-[.68rem] tracking-wide" style={{ color: 'rgba(235,225,200,0.28)' }}>
+        <p className="text-center text-xs tracking-wide" style={{ color: 'rgba(235,225,200,0.28)' }}>
           Tap any product to explore details, pick your size &amp; place your order
         </p>
       </div>
@@ -514,7 +514,7 @@ export default function Products() {
             <div className="flex items-center gap-2.5">
               <span className="text-base">🛒</span>
               <div>
-                <span className="text-[.52rem] font-bold uppercase tracking-[2px] block" style={{ color: 'rgba(212,148,42,0.55)' }}>
+                <span className="text-xs font-bold uppercase tracking-[2px] block" style={{ color: 'rgba(212,148,42,0.55)' }}>
                   {totalPacks} pack{totalPacks !== 1 ? 's' : ''} in cart
                 </span>
                 <span className="font-display text-sm font-bold" style={{ color: 'rgba(235,225,200,0.85)' }}>View Cart</span>
@@ -523,7 +523,7 @@ export default function Products() {
             <div className="flex-1" />
             <div className="text-right">
               <span className="font-display text-lg font-bold" style={{ color: '#D4942A' }}>₹{cartTotal}</span>
-              <span className="text-[.55rem] block" style={{ color: 'rgba(235,225,200,0.30)' }}>excl. delivery</span>
+              <span className="text-xs block" style={{ color: 'rgba(235,225,200,0.30)' }}>excl. delivery</span>
             </div>
             <span style={{ color: '#D4942A' }}>→</span>
           </Link>

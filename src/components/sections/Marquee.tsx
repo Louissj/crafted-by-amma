@@ -36,7 +36,7 @@ export default function Marquee() {
         {repeated.map((item, i) => (
           <div key={i} className="flex items-center gap-2.5 px-5 whitespace-nowrap">
             <span className="text-base opacity-70">{item.icon}</span>
-            <span className="text-[.68rem] font-semibold text-millet/70 tracking-[1.5px] uppercase">{item.text}</span>
+            <span className="text-xs font-semibold text-millet/70 tracking-[1.5px] uppercase">{item.text}</span>
             <span className="ml-3 w-[3px] h-[3px] bg-brass/40 rounded-full flex-shrink-0" />
           </div>
         ))}

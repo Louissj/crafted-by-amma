@@ -149,7 +149,7 @@ export default function About() {
         {/* Eyebrow */}
         <RevealSection>
           <div className="flex flex-col items-center gap-3 mb-8">
-            <p className="text-[.5rem] font-bold tracking-[6px] uppercase" style={{ color: 'rgba(200,180,74,0.6)' }}>
+            <p className="text-[.82rem] font-bold tracking-[6px] uppercase" style={{ color: 'rgba(200,180,74,0.6)' }}>
               {c.sublabel}
             </p>
             <Ornament />
@@ -177,7 +177,7 @@ export default function About() {
             style={{ background: 'rgba(200,180,74,0.06)', border: '1px solid rgba(200,180,74,0.18)' }}>
             {(['en', 'kn'] as const).map(l => (
               <button key={l} onClick={() => setLang(l)}
-                className="px-5 py-1.5 rounded-full text-[.7rem] font-semibold tracking-wider transition-all duration-300"
+                className="px-5 py-1.5 rounded-full text-xs font-semibold tracking-wider transition-all duration-300"
                 style={lang === l
                   ? { background: 'linear-gradient(135deg,#C8B44A,#E8D46A)', color: '#060C04' }
                   : { color: 'rgba(255,255,255,0.35)' }}>
@@ -240,7 +240,7 @@ export default function About() {
                     </div>
                     <div>
                       <p className="font-display font-bold text-[.85rem] md:text-[.92rem] leading-tight transition-all duration-300" style={{ color: 'rgba(255,248,220,0.95)' }}>{c.imgBrand}</p>
-                      <p className="text-[.42rem] md:text-[.46rem] tracking-[2px] uppercase font-semibold transition-all duration-300" style={{ color: 'rgba(200,180,74,0.55)' }}>{c.imgSubtitle}</p>
+                      <p className="text-xs md:text-xs tracking-[2px] uppercase font-semibold transition-all duration-300" style={{ color: 'rgba(200,180,74,0.55)' }}>{c.imgSubtitle}</p>
                     </div>
                   </div>
 
@@ -248,7 +248,7 @@ export default function About() {
                   <div className="rounded-xl md:rounded-2xl px-3 md:px-4 py-2 md:py-3 text-center flex-shrink-0"
                     style={{ background: 'linear-gradient(135deg,rgba(200,180,74,0.22),rgba(200,180,74,0.06))', border: '1px solid rgba(200,180,74,0.3)', backdropFilter: 'blur(12px)' }}>
                     <span className="font-display text-[1.5rem] md:text-[1.8rem] font-bold block leading-none" style={{ background: 'linear-gradient(180deg,#E8D46A,#C8A820)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>80</span>
-                    <span className="text-[.38rem] md:text-[.42rem] tracking-[2px] uppercase block mt-0.5 transition-all duration-300" style={{ color: 'rgba(200,180,74,0.55)' }}>{c.imgYears}</span>
+                    <span className="text-xs md:text-xs tracking-[2px] uppercase block mt-0.5 transition-all duration-300" style={{ color: 'rgba(200,180,74,0.55)' }}>{c.imgYears}</span>
                   </div>
                 </div>
               </div>
@@ -318,7 +318,7 @@ export default function About() {
           {/* Section label */}
           <RevealSection className="flex flex-col items-center mb-12">
             <Ornament />
-            <p className="text-[.5rem] font-bold tracking-[5px] uppercase mt-4" style={{ color: 'rgba(200,180,74,0.5)' }}>
+            <p className="text-[.82rem] font-bold tracking-[5px] uppercase mt-4" style={{ color: 'rgba(200,180,74,0.5)' }}>
               Three Generations · ಮೂರು ತಲೆಮಾರು
             </p>
           </RevealSection>
@@ -359,7 +359,7 @@ export default function About() {
                   {/* Year pill */}
                   <div className="inline-flex items-center px-2.5 py-1 rounded-full mb-3"
                     style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                    <span className="text-[.48rem] font-bold tracking-[2px] uppercase" style={{ color: 'rgba(255,255,255,0.3)' }}>{g.years}</span>
+                    <span className="text-[.8rem] font-bold tracking-[2px] uppercase" style={{ color: 'rgba(255,255,255,0.3)' }}>{g.years}</span>
                   </div>
 
                   {/* Role */}
@@ -367,7 +367,7 @@ export default function About() {
                     style={{ color: g.highlight ? 'rgba(200,180,74,0.92)' : 'rgba(255,248,220,0.72)' }}>
                     {g.role}
                   </h3>
-                  <p className="text-[.58rem] tracking-[1.5px] mb-3" style={{ color: 'rgba(255,255,255,0.28)' }}>
+                  <p className="text-xs tracking-[1.5px] mb-3" style={{ color: 'rgba(255,255,255,0.28)' }}>
                     {g.kannadaRole}
                   </p>
 
@@ -375,7 +375,7 @@ export default function About() {
                   <div className="h-px mb-3" style={{ background: g.highlight ? 'rgba(200,180,74,0.12)' : 'rgba(255,255,255,0.05)' }} />
 
                   {/* Description */}
-                  <p className="text-[.72rem] leading-[1.75]" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                  <p className="text-xs leading-[1.75]" style={{ color: 'rgba(255,255,255,0.4)' }}>
                     {g.desc}
                   </p>
 
@@ -415,8 +415,8 @@ export default function About() {
                     {f.icon}
                   </div>
                   <div>
-                    <h4 className="text-[.77rem] font-semibold" style={{ color: 'rgba(255,248,220,0.72)' }}>{f.title}</h4>
-                    <p className="text-[.62rem] leading-snug mt-0.5" style={{ color: 'rgba(255,255,255,0.28)' }}>{f.desc}</p>
+                    <h4 className="text-xs font-semibold" style={{ color: 'rgba(255,248,220,0.72)' }}>{f.title}</h4>
+                    <p className="text-[.8rem] leading-snug mt-0.5" style={{ color: 'rgba(255,255,255,0.28)' }}>{f.desc}</p>
                   </div>
                 </RevealSection>
               ))}

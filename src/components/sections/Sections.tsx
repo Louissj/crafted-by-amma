@@ -19,7 +19,7 @@ export function Ingredients() {
       <RevealSection className="flex flex-wrap justify-center gap-2.5 max-w-[720px] mx-auto">
         {items.map((item, i) => (
           <span key={i}
-            className="bg-white border border-forest/[.06] px-4 py-2 rounded-full text-[.74rem] font-semibold flex items-center gap-1.5 shadow-sm transition-all hover:bg-forest hover:text-brass hover:-translate-y-0.5 active:scale-[.94] cursor-default"
+            className="bg-white border border-forest/[.06] px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all hover:bg-forest hover:text-brass hover:-translate-y-0.5 active:scale-[.94] cursor-default"
             style={{ transitionDelay: `${i * 25}ms`, color: '#2d4a20' }}>
             {item}
           </span>
@@ -41,7 +41,7 @@ export function BenefitsSection() {
         </RevealSection>
         <div className="order-1 md:order-2">
           <RevealSection>
-            <p className="text-[.58rem] font-semibold tracking-[5px] uppercase mb-1.5 text-sage">Why Millets?</p>
+            <p className="text-xs font-semibold tracking-[5px] uppercase mb-1.5 text-sage">Why Millets?</p>
             <h2 className="font-display font-bold leading-tight text-[clamp(1.7rem,5vw,2.4rem)] text-forest">
               Benefits of Our Products
             </h2>
@@ -51,10 +51,10 @@ export function BenefitsSection() {
             {BENEFITS.map((b, i) => (
               <RevealSection key={i} delay={i * 70}
                 className="flex items-center gap-3.5 p-3.5 bg-white rounded-xl border border-sage/[.06] shadow-sm transition-all active:scale-[.98] md:hover:translate-x-1 md:hover:shadow-md">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sage to-sage-light flex items-center justify-center text-white text-[.7rem] font-bold flex-shrink-0 shadow-md">✓</div>
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sage to-sage-light flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-md">✓</div>
                 <div>
                   <strong className="text-[.86rem] text-forest block leading-snug">{b.title}</strong>
-                  <p className="text-[.7rem] text-forest/40 leading-snug mt-px">{b.desc}</p>
+                  <p className="text-xs text-forest/40 leading-snug mt-px">{b.desc}</p>
                 </div>
               </RevealSection>
             ))}
@@ -86,7 +86,7 @@ export function WhyUs() {
               {c.icon}
             </div>
             <h3 className="font-display text-[.85rem] font-bold mb-1.5 text-forest">{c.title}</h3>
-            <p className="text-[.68rem] text-forest/35 leading-relaxed">{c.desc}</p>
+            <p className="text-xs text-forest/35 leading-relaxed">{c.desc}</p>
           </RevealSection>
         ))}
       </div>
@@ -121,7 +121,7 @@ function StarPicker({ value, onChange }: { value: number; onChange: (v: number) 
           </button>
         ))}
       </div>
-      <span className="text-[.72rem] font-semibold tracking-wide transition-all duration-200 h-4"
+      <span className="text-xs font-semibold tracking-wide transition-all duration-200 h-4"
         style={{ color: active ? 'rgba(212,148,42,0.85)' : 'transparent' }}>
         {labels[active]}
       </span>
@@ -209,14 +209,14 @@ function ReviewModal({ onClose }: { onClose: () => void }) {
               <div className="text-center mb-6">
                 <div className="text-3xl mb-2">✍️</div>
                 <h3 className="font-display text-[1.2rem] font-bold mb-1" style={{ color: 'rgba(235,225,200,0.95)' }}>Share Your Experience</h3>
-                <p className="text-[.65rem] tracking-wide" style={{ color: 'rgba(255,255,255,0.28)' }}>Your review helps other families choose wisely · Appears after a quick check</p>
+                <p className="text-[.82rem] tracking-wide" style={{ color: 'rgba(255,255,255,0.28)' }}>Your review helps other families choose wisely · Appears after a quick check</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Stars — centered, big */}
                 <div className="flex flex-col items-center py-2 rounded-2xl"
                   style={{ background: 'rgba(200,180,74,0.04)', border: '1px solid rgba(200,180,74,0.1)' }}>
-                  <p className="text-[.52rem] font-bold tracking-[3px] uppercase mb-3 mt-3" style={{ color: 'rgba(200,180,74,0.5)' }}>Tap to Rate</p>
+                  <p className="text-xs font-bold tracking-[3px] uppercase mb-3 mt-3" style={{ color: 'rgba(200,180,74,0.5)' }}>Tap to Rate</p>
                   <StarPicker value={form.rating} onChange={v => setForm(f => ({ ...f, rating: v }))} />
                   <div className="mb-3" />
                 </div>
@@ -228,7 +228,7 @@ function ReviewModal({ onClose }: { onClose: () => void }) {
                     { key: 'place', label: 'City / Place', placeholder: 'e.g. Bangalore' },
                   ] as const).map(({ key, label, placeholder }) => (
                     <div key={key}>
-                      <label className="text-[.52rem] font-bold tracking-[2px] uppercase block mb-1.5" style={{ color: 'rgba(255,255,255,0.28)' }}>{label}</label>
+                      <label className="text-xs font-bold tracking-[2px] uppercase block mb-1.5" style={{ color: 'rgba(255,255,255,0.28)' }}>{label}</label>
                       <input
                         value={form[key]}
                         onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
@@ -243,7 +243,7 @@ function ReviewModal({ onClose }: { onClose: () => void }) {
 
                 {/* Review text */}
                 <div>
-                  <label className="text-[.52rem] font-bold tracking-[2px] uppercase block mb-1.5" style={{ color: 'rgba(255,255,255,0.28)' }}>Your Review</label>
+                  <label className="text-xs font-bold tracking-[2px] uppercase block mb-1.5" style={{ color: 'rgba(255,255,255,0.28)' }}>Your Review</label>
                   <textarea
                     value={form.text}
                     onChange={e => setForm(f => ({ ...f, text: e.target.value }))}
@@ -255,7 +255,7 @@ function ReviewModal({ onClose }: { onClose: () => void }) {
                 </div>
 
                 {error && (
-                  <p className="text-[.72rem] text-red-400 text-center py-1 rounded-lg" style={{ background: 'rgba(239,68,68,0.08)' }}>{error}</p>
+                  <p className="text-xs text-red-400 text-center py-1 rounded-lg" style={{ background: 'rgba(239,68,68,0.08)' }}>{error}</p>
                 )}
 
                 <button type="submit" disabled={submitting}
@@ -283,9 +283,9 @@ function ReviewModal({ onClose }: { onClose: () => void }) {
                 Thank You!
               </h3>
               <p className="text-[.8rem] leading-relaxed mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>Your review has been submitted successfully.</p>
-              <p className="text-[.72rem]" style={{ color: 'rgba(255,255,255,0.3)' }}>It will appear on the site once approved. We truly appreciate your love! ❤️</p>
+              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>It will appear on the site once approved. We truly appreciate your love! ❤️</p>
               <button onClick={handleClose}
-                className="mt-6 px-6 py-2.5 rounded-full text-[.75rem] font-semibold transition-all hover:opacity-80"
+                className="mt-6 px-6 py-2.5 rounded-full text-xs font-semibold transition-all hover:opacity-80"
                 style={{ background: 'rgba(200,180,74,0.1)', border: '1px solid rgba(200,180,74,0.2)', color: 'rgba(200,180,74,0.8)' }}>
                 Close
               </button>
@@ -336,7 +336,7 @@ export function Testimonials() {
 
         {/* ── Header ── */}
         <RevealSection className="text-center mb-12 md:mb-16">
-          <p className="text-[.5rem] font-bold tracking-[5px] uppercase mb-3" style={{ color: 'rgba(200,180,74,0.55)' }}>Customer Love ❤️</p>
+          <p className="text-[.82rem] font-bold tracking-[5px] uppercase mb-3" style={{ color: 'rgba(200,180,74,0.55)' }}>Customer Love ❤️</p>
           <h2 className="font-display font-bold text-[clamp(1.9rem,5vw,2.8rem)] leading-tight mb-5" style={{ color: 'rgba(255,248,220,0.95)' }}>
             What Families Say
           </h2>
@@ -345,14 +345,14 @@ export function Testimonials() {
             style={{ background: 'rgba(200,180,74,0.06)', border: '1px solid rgba(200,180,74,0.14)' }}>
             <div className="text-center">
               <p className="font-display text-[1.6rem] font-bold leading-none" style={{ color: '#D4942A' }}>{avgRating}</p>
-              <p className="text-[.46rem] tracking-[2px] uppercase mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>Avg Rating</p>
+              <p className="text-xs tracking-[2px] uppercase mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>Avg Rating</p>
             </div>
             <div className="w-px h-8" style={{ background: 'rgba(200,180,74,0.18)' }} />
             <div>
               <div className="flex gap-0.5 mb-0.5">
                 {[1,2,3,4,5].map(s => <span key={s} className="text-base" style={{ color: '#D4942A' }}>★</span>)}
               </div>
-              <p className="text-[.52rem] tracking-wide" style={{ color: 'rgba(255,255,255,0.3)' }}>{reviews.length} happy {reviews.length === 1 ? 'family' : 'families'}</p>
+              <p className="text-xs tracking-wide" style={{ color: 'rgba(255,255,255,0.3)' }}>{reviews.length} happy {reviews.length === 1 ? 'family' : 'families'}</p>
             </div>
           </div>
         </RevealSection>
@@ -395,17 +395,17 @@ export function Testimonials() {
 
                 {/* Author */}
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-[.75rem] flex-shrink-0"
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0"
                     style={{ background: AVATAR_GRADIENTS[i % AVATAR_GRADIENTS.length], color: 'rgba(255,248,220,0.95)', boxShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
                     {r.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <p className="font-semibold text-[.78rem]" style={{ color: 'rgba(255,248,220,0.8)' }}>{r.name}</p>
-                    <p className="text-[.6rem] mt-0.5" style={{ color: 'rgba(255,255,255,0.28)' }}>📍 {r.place}</p>
+                    <p className="font-semibold text-xs" style={{ color: 'rgba(255,248,220,0.8)' }}>{r.name}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.28)' }}>📍 {r.place}</p>
                   </div>
                   {i === 1 && (
                     <div className="ml-auto">
-                      <span className="text-[.48rem] font-bold tracking-[2px] uppercase px-2 py-1 rounded-full"
+                      <span className="text-[.8rem] font-bold tracking-[2px] uppercase px-2 py-1 rounded-full"
                         style={{ background: 'rgba(200,180,74,0.12)', color: 'rgba(200,180,74,0.7)', border: '1px solid rgba(200,180,74,0.15)' }}>
                         ✦ Featured
                       </span>
@@ -421,7 +421,7 @@ export function Testimonials() {
         <RevealSection className="flex flex-col items-center gap-3">
           <div className="flex items-center gap-4 mb-1">
             <div className="h-px w-16" style={{ background: 'linear-gradient(to right,transparent,rgba(200,180,74,0.3))' }} />
-            <span className="text-[.5rem] font-bold tracking-[4px] uppercase" style={{ color: 'rgba(200,180,74,0.4)' }}>Share Your Voice</span>
+            <span className="text-[.82rem] font-bold tracking-[4px] uppercase" style={{ color: 'rgba(200,180,74,0.4)' }}>Share Your Voice</span>
             <div className="h-px w-16" style={{ background: 'linear-gradient(to left,transparent,rgba(200,180,74,0.3))' }} />
           </div>
           <button onClick={() => setShowModal(true)}
@@ -429,7 +429,7 @@ export function Testimonials() {
             style={{ background: 'linear-gradient(135deg,rgba(212,148,42,0.14),rgba(212,148,42,0.06))', border: '1.5px solid rgba(212,148,42,0.3)', color: 'rgba(212,148,42,0.88)', boxShadow: '0 4px 24px rgba(212,148,42,0.1)' }}>
             ✍️ Write a Review
           </button>
-          <p className="text-[.56rem] tracking-wide" style={{ color: 'rgba(255,255,255,0.18)' }}>Your words help other families make the right choice</p>
+          <p className="text-xs tracking-wide" style={{ color: 'rgba(255,255,255,0.18)' }}>Your words help other families make the right choice</p>
         </RevealSection>
 
       </div>
@@ -477,7 +477,7 @@ export function Shipping() {
         {displayOffers.map((offer, i) => (
           <div key={i} className="flex items-center gap-2 px-5 whitespace-nowrap">
             <span className="text-base">{offer.icon}</span>
-            <span className="text-[.68rem] font-semibold tracking-[1.2px] uppercase text-millet/75">
+            <span className="text-xs font-semibold tracking-[1.2px] uppercase text-millet/75">
               {offer.text}
             </span>
             <span className="ml-4 w-1 h-1 bg-brass/40 rounded-full flex-shrink-0" />
@@ -496,15 +496,15 @@ export function CTA() {
       <SectionHeader tag="Questions?" title="We'd Love to Help" dark />
       <RevealSection className="flex gap-3 justify-center flex-wrap mb-5">
         <a href={CONTACT.instagram} target="_blank"
-          className="bg-gradient-to-br from-pink-500 to-orange-500 text-white px-7 py-3.5 rounded-full text-[.74rem] font-semibold tracking-[1.5px] no-underline inline-flex items-center gap-2 shadow-lg hover:-translate-y-0.5 transition-all active:scale-95">
+          className="bg-gradient-to-br from-pink-500 to-orange-500 text-white px-7 py-3.5 rounded-full text-xs font-semibold tracking-[1.5px] no-underline inline-flex items-center gap-2 shadow-lg hover:-translate-y-0.5 transition-all active:scale-95">
           📸 Instagram
         </a>
         <a href={`https://wa.me/${CONTACT.whatsapp}`} target="_blank"
-          className="bg-green-500 text-white px-7 py-3.5 rounded-full text-[.74rem] font-semibold tracking-[1.5px] no-underline inline-flex items-center gap-2 shadow-lg hover:-translate-y-0.5 transition-all active:scale-95">
+          className="bg-green-500 text-white px-7 py-3.5 rounded-full text-xs font-semibold tracking-[1.5px] no-underline inline-flex items-center gap-2 shadow-lg hover:-translate-y-0.5 transition-all active:scale-95">
           💬 WhatsApp
         </a>
       </RevealSection>
-      <p className="text-[.72rem] text-brass/65">
+      <p className="text-xs text-brass/65">
         📱 {CONTACT.phone1} · {CONTACT.phone2}
       </p>
     </section>
@@ -523,7 +523,7 @@ export function CheckoutCTA() {
       style={{ background: 'linear-gradient(180deg,#F5F0E0,#FAF3E6)' }}>
       <div className="max-w-[680px] mx-auto">
         <RevealSection>
-          <p className="text-[.6rem] font-bold tracking-[4px] uppercase text-sage mb-2">Ready to Order?</p>
+          <p className="text-xs font-bold tracking-[4px] uppercase text-sage mb-2">Ready to Order?</p>
           <h2 className="font-display font-bold text-[clamp(1.6rem,4vw,2.2rem)] text-forest leading-tight mb-3">
             From Amma&apos;s Kitchen<br />to Your Doorstep
           </h2>
@@ -539,7 +539,7 @@ export function CheckoutCTA() {
                     <span className="text-xl md:text-2xl">{s.icon}</span>
                   </div>
                   <div className="text-center">
-                    <span className="text-[.6rem] font-bold text-forest block leading-snug">{s.label}</span>
+                    <span className="text-xs font-bold text-forest block leading-snug">{s.label}</span>
                     <span className="text-[.54rem] text-forest/55 hidden md:block">{s.desc}</span>
                   </div>
                 </div>
@@ -581,8 +581,8 @@ export function Footer() {
                 className="rounded-full border border-brass/[.1] flex-shrink-0" />
               <span className="font-display text-base font-bold text-millet">Crafted by Amma</span>
             </div>
-            <p className="font-kannada text-[.65rem] text-cream-light/[.1] mb-1.5">ಅಮ್ಮನಿಂದ ಕರಕುಶಲ</p>
-            <p className="text-[.7rem] text-cream-light/[.14] leading-relaxed mb-3">
+            <p className="font-kannada text-[.82rem] text-cream-light/[.1] mb-1.5">ಅಮ್ಮನಿಂದ ಕರಕುಶಲ</p>
+            <p className="text-xs text-cream-light/[.14] leading-relaxed mb-3">
               Homemade millet products from Namma Mysuru. Pure, natural, and made with love.
             </p>
             {/* Address */}
@@ -628,7 +628,7 @@ export function Footer() {
                 {col.links.map(l => (
                   <li key={l.label}>
                     <a href={l.href}
-                      className="text-cream-light/[.15] text-[.7rem] no-underline hover:text-sage/80 transition-colors">
+                      className="text-cream-light/[.15] text-xs no-underline hover:text-sage/80 transition-colors">
                       {l.label}
                     </a>
                   </li>
@@ -651,7 +651,7 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-cream-light/[.03] pt-4 flex flex-col md:flex-row items-center justify-between gap-2 text-[.58rem] text-cream-light/[.08]">
+        <div className="border-t border-cream-light/[.03] pt-4 flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-cream-light/[.08]">
           <span>© 2026 Crafted by Amma · ಅಮ್ಮನಿಂದ ಕರಕುಶಲ</span>
           <a href="https://maps.google.com/?q=#234+7th+Cross+G+Block+Ramakrishna+Nagar+Mysore+570023" target="_blank"
             className="no-underline text-cream-light/[.08] hover:text-sage/40 transition-colors">

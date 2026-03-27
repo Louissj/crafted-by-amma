@@ -24,7 +24,7 @@ function CartBadge() {
   if (count === 0) return null;
 
   return (
-    <span className="absolute -top-1.5 -right-1.5 w-4.5 h-4.5 min-w-[18px] min-h-[18px] flex items-center justify-center rounded-full text-[.52rem] font-bold text-white leading-none px-1"
+    <span className="absolute -top-1.5 -right-1.5 w-4.5 h-4.5 min-w-[18px] min-h-[18px] flex items-center justify-center rounded-full text-xs font-bold text-white leading-none px-1"
       style={{ background: 'linear-gradient(135deg,#D4942A,#B87323)', boxShadow: '0 1px 6px rgba(212,148,42,0.5)' }}>
       {count > 9 ? '9+' : count}
     </span>
