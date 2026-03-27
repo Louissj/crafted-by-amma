@@ -55,9 +55,9 @@ export default function Hero() {
       <div className="relative z-[2] text-center px-5 pt-28 pb-16 max-w-[640px] w-full md:text-left md:pt-40 md:pb-24 md:px-[8%] md:max-w-none">
 
         {/* Logo */}
-        <div className="w-[72px] h-[72px] md:w-[82px] md:h-[82px] rounded-full border-[2px] border-brass/[.25] mx-auto md:mx-0 mb-5 md:mb-6 overflow-hidden animate-pulse-glow"
-          style={{ boxShadow: '0 8px 32px rgba(0,0,0,.3),0 0 48px rgba(200,180,74,.07)' }}>
-          <Image src="/images/logo.png" alt="Crafted by Amma" width={82} height={82} className="w-full h-full object-contain" />
+        <div className="w-[120px] h-[120px] md:w-[148px] md:h-[148px] rounded-full border-[2.5px] border-brass/[.30] mx-auto md:mx-0 mb-5 md:mb-6 overflow-hidden animate-pulse-glow"
+          style={{ boxShadow: '0 12px 48px rgba(0,0,0,.35),0 0 64px rgba(200,180,74,.10)' }}>
+          <Image src="/images/logo.png" alt="Crafted by Amma" width={148} height={148} className="w-full h-full object-contain" />
         </div>
 
         {/* Location pill */}
