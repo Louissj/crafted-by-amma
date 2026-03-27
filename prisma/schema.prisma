@@ -51,12 +51,13 @@ model Offer {
 }
 
 model DeliverySettings {
-  id           String   @id @default("singleton")
-  baseCharge   Float    @default(50)
-  freeAboveAmt Float    @default(350)
-  karnatakFree Boolean  @default(true)
-  note         String   @default("Free delivery in Karnataka for orders \u20b9350+")
-  updatedAt    DateTime @updatedAt
+  id               String   @id @default("singleton")
+  baseCharge       Float    @default(50)
+  outstationCharge Float    @default(120)
+  freeAboveAmt     Float    @default(350)
+  karnatakFree     Boolean  @default(true)
+  note             String   @default("Free delivery in Karnataka for orders \u20b9350+")
+  updatedAt        DateTime @updatedAt
 }
 
 model AnalyticsEvent {

@@ -24,7 +24,9 @@ export async function POST(req: NextRequest) {
     const city = sanitize(formData.get('city') as string || '');
     const address = sanitize(formData.get('address') as string || '');
     const notes = sanitize(formData.get('notes') as string || '');
-    const isKarnataka = formData.get('isKarnataka') === 'true';
+    const pincode = sanitize(formData.get('pincode') as string || '');
+    const deliveryZone = (formData.get('deliveryZone') as string) || 'india'; // 'karnataka' | 'india' | 'international'
+    const isKarnataka = deliveryZone === 'karnataka';
     const screenshot = formData.get('screenshot') as File | null;
 
     // Validate required fields
@@ -71,13 +73,20 @@ export async function POST(req: NextRequest) {
     const totalCount = cartItems.reduce((s, i) => s + i.count, 0);
     const uniqueSizes = cartItems.map(i => i.packSize).filter((s, idx, arr) => arr.indexOf(s) === idx).join(',');
 
-    // Fetch delivery settings and calculate charge
+    // Fetch delivery settings and calculate charge based on zone
     let deliveryCharge = 0;
     try {
-      const deliverySettings = await prisma.deliverySettings.findUnique({ where: { id: 'singleton' } });
-      if (deliverySettings) {
-        const qualifiesFree = isKarnataka && deliverySettings.karnatakFree && productSubtotal >= deliverySettings.freeAboveAmt;
-        deliveryCharge = qualifiesFree ? 0 : deliverySettings.baseCharge;
+      const ds = await prisma.deliverySettings.findUnique({ where: { id: 'singleton' } });
+      if (ds) {
+        if (deliveryZone === 'international') {
+          deliveryCharge = 0; // confirmed via WhatsApp after payment
+        } else if (deliveryZone === 'karnataka') {
+          const qualifiesFree = ds.karnatakFree && productSubtotal >= ds.freeAboveAmt;
+          deliveryCharge = qualifiesFree ? 0 : ds.baseCharge;
+        } else {
+          // outstation India
+          deliveryCharge = (ds as typeof ds & { outstationCharge: number }).outstationCharge ?? 120;
+        }
       }
     } catch { /* use 0 if settings not found */ }
 
@@ -89,6 +98,7 @@ export async function POST(req: NextRequest) {
         products: cartItems,
         quantity: uniqueSizes,
         city, address, notes,
+        pincode: pincode || null,
         paymentScreenshot: screenshotPath || null,
         totalAmount,
         deliveryCharge,

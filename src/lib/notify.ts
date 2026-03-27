@@ -12,7 +12,7 @@ type OrderNotifyPayload = {
 export async function notifyNewOrder(order: OrderNotifyPayload) {
   const token = process.env.TELEGRAM_BOT_TOKEN || '8617040819:AAGbw1-7RVG1G_zV9O3vBoF1Iiz3TjwGpeg';
   const chatIds = process.env.TELEGRAM_CHAT_IDS || '1255645863';
-  const siteUrl = (process.env.SITE_URL || 'https://craftedbyamma.in').replace(/\/$/, '');
+  const siteUrl = (process.env.SITE_URL || 'https://craftedbyamma.com').replace(/\/$/, '');
 
   if (!token || !chatIds) return;
   const ids = chatIds.split(',').map(s => s.trim()).filter(Boolean);

@@ -16,7 +16,7 @@ type Order = {
 };
 
 type Offer = { id: string; icon: string; text: string; active: boolean; sortOrder: number };
-type DeliverySettings = { id: string; baseCharge: number; freeAboveAmt: number; karnatakFree: boolean; note: string };
+type DeliverySettings = { id: string; baseCharge: number; outstationCharge: number; freeAboveAmt: number; karnatakFree: boolean; note: string };
 type AdminReview = { id: string; name: string; place: string; rating: number; text: string; approved: boolean; createdAt: string };
 type Tab = 'orders' | 'offers' | 'delivery' | 'products' | 'analytics' | 'reviews';
 
@@ -1171,8 +1171,9 @@ export default function AdminDashboard() {
           <div className="rounded-2xl p-6 border border-white/[.07] space-y-5"
             style={{ background: 'rgba(15,24,10,0.8)', boxShadow: '0 8px 30px rgba(0,0,0,0.3)' }}>
             {[
-              { label: 'Base Delivery Charge (₹)', key: 'baseCharge', hint: 'Applied when free delivery conditions aren\'t met' },
-              { label: 'Free Delivery Above (₹)', key: 'freeAboveAmt', hint: 'Orders above this amount qualify for free delivery' },
+              { label: 'Karnataka Delivery Charge (₹)', key: 'baseCharge', hint: 'Applied when Karnataka order is below free delivery threshold' },
+              { label: 'Outstation India Charge (₹)', key: 'outstationCharge', hint: 'Applied for all non-Karnataka Indian orders (auto-detected by pincode)' },
+              { label: 'Free Delivery Above (₹)', key: 'freeAboveAmt', hint: 'Karnataka orders above this amount get free delivery' },
             ].map(field => (
               <div key={field.key}>
                 <label className="block text-sm font-bold uppercase tracking-[2px] mb-1.5" style={{ color: 'rgba(200,180,74,0.5)' }}>{field.label}</label>

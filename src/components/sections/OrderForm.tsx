@@ -8,17 +8,28 @@ import { RevealSection } from '../ui/RevealSection';
 import { useCart, CART_PRICES } from '@/lib/useCart';
 
 type Offer = { id: string; icon: string; text: string };
-type DeliverySettings = { baseCharge: number; freeAboveAmt: number; karnatakFree: boolean; note: string };
+type DeliverySettings = { baseCharge: number; outstationCharge: number; freeAboveAmt: number; karnatakFree: boolean; note: string };
+type DeliveryZone = 'karnataka' | 'india' | 'international';
 
 const STEP_LABELS = ['Details', 'Payment'];
+
+// Karnataka pincodes: 560001–597999
+function isKarnatakaPincode(pin: string) {
+  const n = parseInt(pin, 10);
+  return n >= 560001 && n <= 597999;
+}
 
 export default function OrderForm() {
   const { cart, cartTotal, totalPacks, clearCart } = useCart();
 
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState({
-    name: '', phone: '', city: '', isKarnataka: true, address: '', notes: '',
-  });
+  const [form, setForm] = useState({ name: '', phone: '', city: '', address: '', notes: '' });
+  const [pincode, setPincode] = useState('');
+  const [deliveryZone, setDeliveryZone] = useState<DeliveryZone>('india');
+  const [pincodeLoading, setPincodeLoading] = useState(false);
+  const [pincodeState, setPincodeState] = useState('');
+  const [pincodeError, setPincodeError] = useState('');
+
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -34,11 +45,44 @@ export default function OrderForm() {
     fetch('/api/settings/delivery').then(r => r.json()).then(d => setDelivery(d)).catch(() => {});
   }, []);
 
+  // Auto-detect state when 6-digit pincode entered
+  useEffect(() => {
+    if (deliveryZone === 'international') return;
+    if (pincode.length !== 6 || !/^\d{6}$/.test(pincode)) {
+      setPincodeState('');
+      setPincodeError('');
+      return;
+    }
+    setPincodeLoading(true);
+    setPincodeError('');
+    fetch(`https://api.postalpincode.in/pincode/${pincode}`)
+      .then(r => r.json())
+      .then(data => {
+        const post = data?.[0];
+        if (post?.Status === 'Success' && post.PostOffice?.length > 0) {
+          const po = post.PostOffice[0];
+          const state: string = po.State;
+          const district: string = po.District;
+          setPincodeState(state);
+          if (!form.city) setForm(f => ({ ...f, city: district }));
+          setDeliveryZone(isKarnatakaPincode(pincode) ? 'karnataka' : 'india');
+        } else {
+          setPincodeError('Pincode not found. Please enter manually.');
+        }
+      })
+      .catch(() => setPincodeError('Could not verify pincode. Please continue manually.'))
+      .finally(() => setPincodeLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pincode, deliveryZone]);
+
   const deliveryCharge = useMemo(() => {
     if (!delivery) return 0;
-    if (form.isKarnataka && delivery.karnatakFree && cartTotal >= delivery.freeAboveAmt) return 0;
-    return delivery.baseCharge;
-  }, [delivery, form.isKarnataka, cartTotal]);
+    if (deliveryZone === 'international') return 0;
+    if (deliveryZone === 'karnataka') {
+      return delivery.karnatakFree && cartTotal >= delivery.freeAboveAmt ? 0 : delivery.baseCharge;
+    }
+    return delivery.outstationCharge ?? 120;
+  }, [delivery, deliveryZone, cartTotal]);
 
   const grandTotal = cartTotal + deliveryCharge;
 
@@ -59,10 +103,12 @@ export default function OrderForm() {
 
   const validateStep1 = () => {
     if (!form.name.trim() || form.name.trim().length < 2) { setError('Enter your full name'); return false; }
-    const cleaned = form.phone.replace(/[\s\-\(\)]/g, '');
-    if (!/^(\+91|91)?[6-9]\d{9}$/.test(cleaned)) { setError('Enter a valid Indian WhatsApp number'); return false; }
+    if (!form.phone.trim()) { setError('Enter your WhatsApp number'); return false; }
     if (!form.city.trim() || form.city.trim().length < 2) { setError('Enter your city'); return false; }
     if (!form.address.trim() || form.address.trim().length < 5) { setError('Enter your full address'); return false; }
+    if (deliveryZone !== 'international' && pincode.length > 0 && !/^\d{6}$/.test(pincode)) {
+      setError('Enter a valid 6-digit pincode'); return false;
+    }
     return true;
   };
 
@@ -83,7 +129,9 @@ export default function OrderForm() {
       fd.append('phone', form.phone);
       fd.append('cartItems', JSON.stringify(cart));
       fd.append('city', form.city);
-      fd.append('isKarnataka', String(form.isKarnataka));
+      fd.append('pincode', pincode);
+      fd.append('deliveryZone', deliveryZone);
+      fd.append('isKarnataka', String(deliveryZone === 'karnataka'));
       fd.append('address', form.address);
       fd.append('notes', form.notes);
       fd.append('screenshot', file);
@@ -92,7 +140,10 @@ export default function OrderForm() {
       if (res.ok) {
         setSuccess(true);
         clearCart();
-        setForm({ name: '', phone: '', city: '', isKarnataka: true, address: '', notes: '' });
+        setForm({ name: '', phone: '', city: '', address: '', notes: '' });
+        setPincode('');
+        setDeliveryZone('india');
+        setPincodeState('');
         removeFile();
         setStep(1);
       } else {
@@ -226,24 +277,72 @@ export default function OrderForm() {
                       </div>
                     </div>
 
+                    {/* Pincode + auto-detect */}
+                    <div className="mb-3">
+                      <label className="block text-xs font-semibold tracking-[2px] uppercase text-forest mb-1">
+                        Pincode {deliveryZone !== 'international' && <span className="text-forest/40 normal-case tracking-normal font-normal">(auto-detects delivery charge)</span>}
+                      </label>
+                      {deliveryZone === 'international' ? (
+                        <div className="px-3 py-2.5 border-[1.5px] border-forest/[.06] rounded-xl text-sm bg-forest/[.03] text-forest/40 italic">
+                          International order — no pincode needed
+                        </div>
+                      ) : (
+                        <div className="relative">
+                          <input
+                            value={pincode}
+                            onChange={e => { setPincode(e.target.value.replace(/\D/g, '').slice(0, 6)); setPincodeState(''); }}
+                            className="w-full px-3 py-2.5 border-[1.5px] border-forest/[.06] rounded-xl text-sm bg-white outline-none focus:border-sage focus:ring-2 focus:ring-sage/[.06] transition-all pr-28"
+                            placeholder="e.g. 570001"
+                            maxLength={6}
+                          />
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs">
+                            {pincodeLoading && <span className="text-forest/40 animate-pulse">Detecting…</span>}
+                            {!pincodeLoading && pincodeState && (
+                              <span className={`font-semibold ${deliveryZone === 'karnataka' ? 'text-sage' : 'text-amber-600'}`}>
+                                {deliveryZone === 'karnataka' ? '🏠' : '📦'} {pincodeState}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      {pincodeError && <p className="text-xs text-amber-600 mt-1">{pincodeError}</p>}
+                    </div>
+
+                    {/* International toggle */}
+                    <div className="mb-3">
+                      <button type="button"
+                        onClick={() => {
+                          setDeliveryZone(z => z === 'international' ? 'india' : 'international');
+                          setPincode('');
+                          setPincodeState('');
+                        }}
+                        className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all
+                          ${deliveryZone === 'international' ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-forest/10 text-forest/40 hover:border-forest/20'}`}>
+                        ✈️ {deliveryZone === 'international' ? 'International order (no upfront delivery charge)' : 'Ordering from outside India?'}
+                      </button>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                       <div>
                         <label className="block text-xs font-semibold tracking-[2px] uppercase text-forest mb-1">City *</label>
                         <input value={form.city} onChange={e => setForm({ ...form, city: e.target.value })}
                           className="w-full px-3 py-2.5 border-[1.5px] border-forest/[.06] rounded-xl text-sm bg-white outline-none focus:border-sage focus:ring-2 focus:ring-sage/[.06] transition-all"
-                          placeholder="Mysuru, Bengaluru..." />
+                          placeholder="Mysuru, Bengaluru…" />
                       </div>
-                      <div>
-                        <label className="block text-xs font-semibold tracking-[2px] uppercase text-forest mb-1">Delivery State</label>
-                        <div className="flex gap-2 mt-1">
-                          {[{ val: true, label: '🏠 Karnataka' }, { val: false, label: '✈️ Outside KA' }].map(opt => (
-                            <button key={String(opt.val)} type="button"
-                              onClick={() => setForm({ ...form, isKarnataka: opt.val })}
-                              className={`flex-1 py-2.5 rounded-xl text-xs font-semibold border-2 transition-all
-                                ${form.isKarnataka === opt.val ? 'bg-forest text-brass border-forest' : 'border-forest/10 text-forest/50 bg-white hover:border-forest/20'}`}>
-                              {opt.label}
-                            </button>
-                          ))}
+                      <div className="flex flex-col justify-end">
+                        {/* Delivery charge preview */}
+                        <div className={`px-3 py-2.5 rounded-xl border text-xs font-medium ${
+                          deliveryZone === 'international'
+                            ? 'bg-blue-50 border-blue-200 text-blue-700'
+                            : deliveryCharge === 0
+                              ? 'bg-sage/[.06] border-sage/20 text-sage'
+                              : 'bg-amber-50 border-amber-200 text-amber-700'
+                        }`}>
+                          🚚 {deliveryZone === 'international'
+                            ? 'Delivery charge confirmed via WhatsApp'
+                            : deliveryCharge === 0
+                              ? 'Free delivery!'
+                              : `Delivery: ₹${deliveryCharge}`}
                         </div>
                       </div>
                     </div>
@@ -252,7 +351,7 @@ export default function OrderForm() {
                       <label className="block text-xs font-semibold tracking-[2px] uppercase text-forest mb-1">Full Address *</label>
                       <textarea value={form.address} onChange={e => setForm({ ...form, address: e.target.value })}
                         className="w-full px-3 py-2.5 border-[1.5px] border-forest/[.06] rounded-xl text-sm bg-white outline-none focus:border-sage focus:ring-2 focus:ring-sage/[.06] transition-all resize-y min-h-[70px]"
-                        placeholder="House/Flat no., Street, Pincode" />
+                        placeholder="House/Flat no., Street, Area" />
                     </div>
 
                     <div className="mb-5">
@@ -262,18 +361,6 @@ export default function OrderForm() {
                         placeholder="Any preferences or instructions..." />
                     </div>
 
-                    {delivery && (
-                      <div className="mb-5 p-3 rounded-xl border border-sage/10 bg-sage/[.02] flex items-center gap-2 text-xs">
-                        <span>🚚</span>
-                        <span className="text-forest/60">
-                          {deliveryCharge === 0
-                            ? <span className="text-sage font-semibold">Free delivery for your order!</span>
-                            : <><span>Delivery charge: </span><strong className="text-forest">₹{deliveryCharge}</strong></>
-                          }
-                          {deliveryCharge > 0 && delivery.note && <span className="text-forest/40"> · {delivery.note}</span>}
-                        </span>
-                      </div>
-                    )}
 
                     {error && <p className="text-xs text-red-500 mb-3 px-1">{error}</p>}
 
