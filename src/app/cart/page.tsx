@@ -49,7 +49,7 @@ export default function CartPage() {
     if (pin.length !== 6) {
       setPincodeState('');
       setPincodeError('');
-      if (deliveryZone !== 'international') setDeliveryZone('india');
+      setDeliveryZone('india');
       return;
     }
     setPincodeLoading(true);
