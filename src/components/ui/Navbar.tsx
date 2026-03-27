@@ -34,11 +34,25 @@ function CartBadge() {
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    const read = () => {
+      try {
+        const stored = localStorage.getItem('cba-cart');
+        const items: Array<{ count: number }> = stored ? JSON.parse(stored) : [];
+        setCartCount(items.reduce((s, i) => s + (i.count || 0), 0));
+      } catch { setCartCount(0); }
+    };
+    read();
+    window.addEventListener('cartUpdate', read);
+    return () => window.removeEventListener('cartUpdate', read);
   }, []);
 
   const links = [
@@ -99,8 +113,8 @@ export default function Navbar() {
             </Link>
           </li>
           <li>
-            <Link href="/checkout" className="bg-gradient-to-br from-sage to-sage-light text-cream-light px-5 py-2 rounded-full text-[0.68rem] font-medium tracking-[2.5px] uppercase shadow-md no-underline">
-              Order Now
+            <Link href={cartCount > 0 ? '/cart' : '/#prods'} className="bg-gradient-to-br from-sage to-sage-light text-cream-light px-5 py-2 rounded-full text-[0.68rem] font-medium tracking-[2.5px] uppercase shadow-md no-underline">
+              {cartCount > 0 ? `Cart (${cartCount})` : 'Order Now'}
             </Link>
           </li>
         </ul>
@@ -144,8 +158,10 @@ export default function Navbar() {
         </Link>
         <Link href="/track" onClick={() => setMenuOpen(false)}
           className="font-display text-2xl font-semibold text-forest/60 no-underline">Track Order</Link>
-        <Link href="/checkout" onClick={() => setMenuOpen(false)}
-          className="font-display text-2xl font-semibold text-sage no-underline">Order Now</Link>
+        <Link href={cartCount > 0 ? '/cart' : '/#prods'} onClick={() => setMenuOpen(false)}
+          className="font-display text-2xl font-semibold text-sage no-underline">
+          {cartCount > 0 ? `🛒 Cart (${cartCount})` : 'Order Now'}
+        </Link>
       </div>
     </>
   );
