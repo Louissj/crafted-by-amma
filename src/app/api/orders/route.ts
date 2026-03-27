@@ -4,6 +4,7 @@ import { getAuthUser } from '@/lib/auth';
 import { getClientIP, sanitize, isValidPhone, validateFile, calculateCartTotal } from '@/lib/security';
 import { rateLimitOrder, rateLimitApi } from '@/lib/rateLimit';
 import { uploadToS3 } from '@/lib/s3';
+import { notifyNewOrder } from '@/lib/notify';
 
 type CartItem = { productId: string; packSize: string; count: number };
 
@@ -96,6 +97,10 @@ export async function POST(req: NextRequest) {
         status: 'pending',
       },
     });
+
+    // Fire-and-forget notification (doesn't block order response)
+    const productNames = cartItems.map(i => `${i.productId} ${i.packSize}×${i.count}`).join(', ');
+    notifyNewOrder({ orderId: order.id, name, phone, city, products: productNames, total: totalAmount }).catch(() => {});
 
     return NextResponse.json({ success: true, orderId: order.id }, { status: 201 });
   } catch (error) {
