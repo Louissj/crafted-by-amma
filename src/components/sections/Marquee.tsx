@@ -31,13 +31,13 @@ export default function Marquee() {
 
   return (
     <div className="py-4 overflow-hidden border-t border-b border-brass/[.07]"
-      style={{ background: 'linear-gradient(90deg,#1A2A14,#1E3018,#1A2A14)' }}>
+      style={{ background: 'linear-gradient(90deg,#253D1C,#2C4822,#253D1C)' }}>
       <div className="flex animate-scroll w-max">
         {repeated.map((item, i) => (
           <div key={i} className="flex items-center gap-2.5 px-5 whitespace-nowrap">
-            <span className="text-base opacity-70">{item.icon}</span>
-            <span className="text-xs font-semibold text-millet/70 tracking-[1.5px] uppercase">{item.text}</span>
-            <span className="ml-3 w-[3px] h-[3px] bg-brass/40 rounded-full flex-shrink-0" />
+            <span className="text-base opacity-90">{item.icon}</span>
+            <span className="text-sm font-semibold text-millet/90 tracking-[1.5px] uppercase">{item.text}</span>
+            <span className="ml-3 w-[3px] h-[3px] bg-brass/60 rounded-full flex-shrink-0" />
           </div>
         ))}
       </div>

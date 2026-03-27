@@ -19,7 +19,7 @@ export function Ingredients() {
       <RevealSection className="flex flex-wrap justify-center gap-2.5 max-w-[720px] mx-auto">
         {items.map((item, i) => (
           <span key={i}
-            className="bg-white border border-forest/[.06] px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all hover:bg-forest hover:text-brass hover:-translate-y-0.5 active:scale-[.94] cursor-default"
+            className="bg-white border border-forest/[.06] px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-1.5 shadow-sm transition-all hover:bg-forest hover:text-brass hover:-translate-y-0.5 active:scale-[.94] cursor-default"
             style={{ transitionDelay: `${i * 25}ms`, color: '#2d4a20' }}>
             {item}
           </span>
@@ -32,7 +32,7 @@ export function Ingredients() {
 /* ══════ BENEFITS ══════ */
 export function BenefitsSection() {
   return (
-    <section id="benefits" className="py-20 md:py-28 px-4 md:px-[6%] lg:px-[8%]"
+    <section id="benefits" className="py-16 sm:py-20 md:py-28 px-4 sm:px-6 md:px-[6%] lg:px-[8%]"
       style={{ background: 'linear-gradient(180deg,#F5F0E0,#FAF3E6,#FBF5EC)' }}>
       <div className="grid grid-cols-1 md:grid-cols-[1fr_1.1fr] gap-10 md:gap-16 lg:gap-20 items-center max-w-[1100px] mx-auto">
         <RevealSection className="rounded-2xl overflow-hidden shadow-[0_16px_50px_rgba(26,42,20,.1)] order-2 md:order-1">
@@ -42,7 +42,7 @@ export function BenefitsSection() {
         <div className="order-1 md:order-2">
           <RevealSection>
             <p className="text-xs font-semibold tracking-[5px] uppercase mb-1.5 text-sage">Why Millets?</p>
-            <h2 className="font-display font-bold leading-tight text-[clamp(1.7rem,5vw,2.4rem)] text-forest">
+            <h2 className="font-display font-bold leading-tight text-[clamp(2rem,5vw,2.6rem)] text-forest">
               Benefits of Our Products
             </h2>
             <div className="w-[50px] h-0.5 bg-gradient-to-r from-sage to-brass rounded mt-3.5 mb-6" />
@@ -53,8 +53,8 @@ export function BenefitsSection() {
                 className="flex items-center gap-3.5 p-3.5 bg-white rounded-xl border border-sage/[.06] shadow-sm transition-all active:scale-[.98] md:hover:translate-x-1 md:hover:shadow-md">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sage to-sage-light flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-md">✓</div>
                 <div>
-                  <strong className="text-[.86rem] text-forest block leading-snug">{b.title}</strong>
-                  <p className="text-xs text-forest/40 leading-snug mt-px">{b.desc}</p>
+                  <strong className="text-base text-forest block leading-snug">{b.title}</strong>
+                  <p className="text-sm text-forest/40 leading-snug mt-px">{b.desc}</p>
                 </div>
               </RevealSection>
             ))}
@@ -74,7 +74,7 @@ export function WhyUs() {
     { icon: '✈️', title: 'Ships Worldwide', desc: 'Free shipping in Karnataka (1kg+).' },
   ];
   return (
-    <section id="why" className="py-20 md:py-24 px-4 max-w-[1000px] mx-auto">
+    <section id="why" className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 max-w-[1000px] mx-auto">
       <SectionHeader tag="The Amma Difference" title="Why Families Choose Us" />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         {cards.map((c, i) => (
@@ -85,8 +85,8 @@ export function WhyUs() {
             <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-sand/30 to-sage/[.07] mx-auto mb-3 flex items-center justify-center text-xl transition-all group-hover:scale-110 group-hover:rotate-3 shadow-sm">
               {c.icon}
             </div>
-            <h3 className="font-display text-[.85rem] font-bold mb-1.5 text-forest">{c.title}</h3>
-            <p className="text-xs text-forest/35 leading-relaxed">{c.desc}</p>
+            <h3 className="font-display text-base font-bold mb-1.5 text-forest">{c.title}</h3>
+            <p className="text-sm text-forest/35 leading-relaxed">{c.desc}</p>
           </RevealSection>
         ))}
       </div>
@@ -208,8 +208,8 @@ function ReviewModal({ onClose }: { onClose: () => void }) {
               {/* Header */}
               <div className="text-center mb-6">
                 <div className="text-3xl mb-2">✍️</div>
-                <h3 className="font-display text-[1.2rem] font-bold mb-1" style={{ color: 'rgba(235,225,200,0.95)' }}>Share Your Experience</h3>
-                <p className="text-[.82rem] tracking-wide" style={{ color: 'rgba(255,255,255,0.28)' }}>Your review helps other families choose wisely · Appears after a quick check</p>
+                <h3 className="font-display text-xl font-bold mb-1" style={{ color: 'rgba(235,225,200,0.95)' }}>Share Your Experience</h3>
+                <p className="text-sm tracking-wide" style={{ color: 'rgba(255,255,255,0.28)' }}>Your review helps other families choose wisely · Appears after a quick check</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-5">
@@ -322,116 +322,150 @@ export function Testimonials() {
     : '5.0';
 
   return (
-    <section id="testi" className="relative overflow-hidden py-20 md:py-28">
-      {/* Background */}
-      <div className="absolute inset-0" style={{ background: 'linear-gradient(160deg,#0E1A0A 0%,#152112 40%,#1A2A14 70%,#0E1A0A 100%)' }} />
-      <div className="absolute inset-0 opacity-[.03]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E")`, backgroundSize: '300px' }} />
-      {/* Gold glow top-right */}
-      <div className="absolute top-0 right-0 w-[500px] h-[300px] pointer-events-none" style={{ background: 'radial-gradient(ellipse at top right,rgba(200,180,74,0.06),transparent 65%)' }} />
-      {/* Big decorative quote */}
-      <div className="absolute top-8 left-4 font-display font-bold leading-none pointer-events-none select-none hidden md:block"
-        style={{ fontSize: 220, color: 'rgba(200,180,74,0.03)', lineHeight: 1 }}>&ldquo;</div>
+    <section id="testi" className="relative overflow-hidden py-16 sm:py-20 md:py-28">
 
-      <div className="relative z-10 max-w-[1100px] mx-auto px-4 md:px-8">
+      {/* ── Rich dark background ── */}
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(150deg,#0C1A08 0%,#142210 35%,#1A2C12 60%,#0E1A0A 100%)' }} />
+      {/* Gold halo top-center */}
+      <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[400px] pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse at center,rgba(200,180,74,0.09),transparent 65%)' }} />
+      {/* Bottom edge glow */}
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-[180px] pointer-events-none"
+        style={{ background: 'linear-gradient(to top,rgba(200,180,74,0.04),transparent)' }} />
+      {/* Grain */}
+      <div className="absolute inset-0 opacity-[.025]"
+        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E")`, backgroundSize: '300px' }} />
+      {/* Decorative large quote */}
+      <div className="absolute top-4 left-4 font-display font-bold pointer-events-none select-none hidden md:block"
+        style={{ fontSize: 260, color: 'rgba(200,180,74,0.04)', lineHeight: 1 }}>&ldquo;</div>
+
+      <div className="relative z-10 px-4 sm:px-6 md:px-8 max-w-[1100px] mx-auto">
 
         {/* ── Header ── */}
-        <RevealSection className="text-center mb-12 md:mb-16">
-          <p className="text-[.82rem] font-bold tracking-[5px] uppercase mb-3" style={{ color: 'rgba(200,180,74,0.55)' }}>Customer Love ❤️</p>
-          <h2 className="font-display font-bold text-[clamp(1.9rem,5vw,2.8rem)] leading-tight mb-5" style={{ color: 'rgba(255,248,220,0.95)' }}>
+        <RevealSection className="text-center mb-10 sm:mb-12 md:mb-16">
+          {/* Eyebrow with lines */}
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="h-px w-10 sm:w-16" style={{ background: 'linear-gradient(to right,transparent,rgba(200,180,74,0.4))' }} />
+            <p className="text-[10px] sm:text-xs font-bold tracking-[5px] uppercase" style={{ color: 'rgba(200,180,74,0.7)' }}>
+              Customer Love
+            </p>
+            <div className="h-px w-10 sm:w-16" style={{ background: 'linear-gradient(to left,transparent,rgba(200,180,74,0.4))' }} />
+          </div>
+
+          <h2 className="font-display font-bold text-[clamp(1.9rem,6vw,3.2rem)] leading-tight mb-6"
+            style={{ color: 'rgba(255,248,220,0.97)', textShadow: '0 2px 24px rgba(0,0,0,0.5)' }}>
             What Families Say
           </h2>
-          {/* Rating summary strip */}
-          <div className="inline-flex items-center gap-4 px-5 py-3 rounded-2xl"
-            style={{ background: 'rgba(200,180,74,0.06)', border: '1px solid rgba(200,180,74,0.14)' }}>
+
+          {/* Rating pill */}
+          <div className="inline-flex items-center gap-3 sm:gap-4 px-4 sm:px-6 py-2.5 sm:py-3 rounded-2xl"
+            style={{ background: 'rgba(200,180,74,0.07)', border: '1px solid rgba(200,180,74,0.2)' }}>
             <div className="text-center">
-              <p className="font-display text-[1.6rem] font-bold leading-none" style={{ color: '#D4942A' }}>{avgRating}</p>
-              <p className="text-xs tracking-[2px] uppercase mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>Avg Rating</p>
+              <p className="font-display text-xl sm:text-2xl font-bold leading-none" style={{ color: '#D4942A' }}>{avgRating}</p>
+              <p className="text-[10px] tracking-[2px] uppercase mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Rating</p>
             </div>
-            <div className="w-px h-8" style={{ background: 'rgba(200,180,74,0.18)' }} />
+            <div className="w-px h-7" style={{ background: 'rgba(200,180,74,0.2)' }} />
             <div>
               <div className="flex gap-0.5 mb-0.5">
-                {[1,2,3,4,5].map(s => <span key={s} className="text-base" style={{ color: '#D4942A' }}>★</span>)}
+                {[1,2,3,4,5].map(s => (
+                  <span key={s} className="text-sm" style={{ color: '#D4942A', filter: 'drop-shadow(0 0 4px rgba(212,148,42,0.5))' }}>★</span>
+                ))}
               </div>
-              <p className="text-xs tracking-wide" style={{ color: 'rgba(255,255,255,0.3)' }}>{reviews.length} happy {reviews.length === 1 ? 'family' : 'families'}</p>
+              <p className="text-[10px] sm:text-xs tracking-wide" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                {reviews.length} happy {reviews.length === 1 ? 'family' : 'families'}
+              </p>
             </div>
           </div>
         </RevealSection>
+      </div>
 
-        {/* ── Review cards ── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-12 md:mb-16">
-          {reviews.map((r, i) => (
-            <RevealSection key={r.id} delay={i * 90}>
-              <div className={`relative h-full rounded-2xl p-6 flex flex-col transition-all duration-400 hover:-translate-y-1.5 group
-                ${i === 1 ? 'md:mt-6' : ''}`}
+      {/* ── Horizontal scroll ── */}
+      <RevealSection>
+        <div className="overflow-x-auto md:overflow-visible" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
+          <div className="flex gap-3 sm:gap-4 px-4 sm:px-6 md:px-8 pb-3 w-max md:w-full md:justify-center" style={{ scrollSnapType: 'x mandatory' }}>
+            {reviews.map((r, i) => (
+              <div key={r.id}
+                className="flex-shrink-0 flex flex-col relative overflow-hidden"
                 style={{
-                  background: i === 1
-                    ? 'linear-gradient(145deg,rgba(200,180,74,0.1),rgba(200,180,74,0.03))'
-                    : 'rgba(255,255,255,0.025)',
-                  border: `1px solid ${i === 1 ? 'rgba(200,180,74,0.2)' : 'rgba(255,255,255,0.06)'}`,
-                  boxShadow: i === 1 ? '0 8px 40px rgba(200,180,74,0.08)' : 'none',
+                  width: 'min(76vw, 290px)',
+                  scrollSnapAlign: 'start',
+                  borderRadius: 20,
+                  background: i === 0
+                    ? 'linear-gradient(145deg,#FFFBEA,#FFF3A8,#FFE97A,#F5DC60)'
+                    : 'linear-gradient(145deg,#FFFAEA,#FFF0A0,#FFE878)',
+                  border: `1px solid ${i === 0 ? 'rgba(255,235,100,0.60)' : 'rgba(245,220,80,0.40)'}`,
+                  boxShadow: i === 0
+                    ? '0 12px 48px rgba(255,220,60,0.28),0 4px 14px rgba(0,0,0,0.18)'
+                    : '0 8px 30px rgba(245,205,40,0.20),0 2px 8px rgba(0,0,0,0.14)',
+                  padding: '20px',
                 }}>
-                {/* Corner gold glow on featured */}
-                {i === 1 && <div className="absolute top-0 right-0 w-20 h-20 rounded-2xl overflow-hidden pointer-events-none"><div className="w-full h-full" style={{ background: 'radial-gradient(circle at top right,rgba(200,180,74,0.15),transparent 70%)' }} /></div>}
+
+                {/* Shimmer overlay */}
+                <div className="absolute inset-0 pointer-events-none rounded-[20px]"
+                  style={{ background: 'linear-gradient(135deg,rgba(255,255,255,0.30) 0%,rgba(255,255,255,0.08) 45%,transparent 70%)' }} />
 
                 {/* Stars */}
-                <div className="flex gap-0.5 mb-4">
-                  {[1,2,3,4,5].map(s => (
-                    <span key={s} style={{ color: s <= r.rating ? '#D4942A' : 'rgba(255,255,255,0.1)', fontSize: 14,
-                      filter: s <= r.rating ? 'drop-shadow(0 0 4px rgba(212,148,42,0.5))' : 'none' }}>★</span>
-                  ))}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex gap-0.5">
+                    {[1,2,3,4,5].map(s => (
+                      <span key={s} style={{ color: s <= r.rating ? '#3D1F00' : 'rgba(0,0,0,0.25)', fontSize: 14 }}>★</span>
+                    ))}
+                  </div>
+                  {i === 0 && (
+                    <span className="text-[9px] font-bold tracking-[2px] uppercase px-2 py-0.5 rounded-full"
+                      style={{ background: 'rgba(0,0,0,0.16)', color: '#1A0800', border: '1px solid rgba(0,0,0,0.16)' }}>
+                      ✦ Featured
+                    </span>
+                  )}
                 </div>
 
                 {/* Quote mark */}
-                <span className="font-display text-[2rem] leading-none mb-1 block" style={{ color: 'rgba(200,180,74,0.18)' }}>&ldquo;</span>
+                <span className="font-display leading-none block mb-1.5"
+                  style={{ fontSize: 36, color: 'rgba(40,20,0,0.30)', lineHeight: 1 }}>&ldquo;</span>
 
                 {/* Review text */}
-                <p className="font-display text-[.92rem] md:text-[.95rem] leading-[1.85] flex-1 mb-5"
-                  style={{ color: 'rgba(235,225,200,0.55)', fontStyle: 'italic' }}>
+                <p className="text-sm leading-[1.8] flex-1 mb-4 font-display italic"
+                  style={{ color: '#1C0E00' }}>
                   {r.text}
                 </p>
 
                 {/* Divider */}
-                <div className="h-px mb-4" style={{ background: i === 1 ? 'rgba(200,180,74,0.12)' : 'rgba(255,255,255,0.05)' }} />
+                <div className="h-px mb-3" style={{ background: 'rgba(0,0,0,0.15)' }} />
 
                 {/* Author */}
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0"
-                    style={{ background: AVATAR_GRADIENTS[i % AVATAR_GRADIENTS.length], color: 'rgba(255,248,220,0.95)', boxShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
+                    style={{ background: 'rgba(0,0,0,0.22)', color: '#FFF8E0', boxShadow: '0 2px 8px rgba(0,0,0,0.25)' }}>
                     {r.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <p className="font-semibold text-xs" style={{ color: 'rgba(255,248,220,0.8)' }}>{r.name}</p>
-                    <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.28)' }}>📍 {r.place}</p>
+                    <p className="font-semibold text-sm leading-tight" style={{ color: '#1A0A00' }}>{r.name}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'rgba(30,14,0,0.65)' }}>📍 {r.place}</p>
                   </div>
-                  {i === 1 && (
-                    <div className="ml-auto">
-                      <span className="text-[.8rem] font-bold tracking-[2px] uppercase px-2 py-1 rounded-full"
-                        style={{ background: 'rgba(200,180,74,0.12)', color: 'rgba(200,180,74,0.7)', border: '1px solid rgba(200,180,74,0.15)' }}>
-                        ✦ Featured
-                      </span>
-                    </div>
-                  )}
                 </div>
               </div>
-            </RevealSection>
-          ))}
+            ))}
+            <div className="flex-shrink-0 w-4 sm:w-6 md:hidden" />
+          </div>
         </div>
+        <p className="text-center text-[11px] mt-2.5 tracking-widest sm:hidden" style={{ color: 'rgba(200,180,74,0.35)' }}>swipe for more →</p>
+      </RevealSection>
 
-        {/* ── Write review CTA ── */}
-        <RevealSection className="flex flex-col items-center gap-3">
-          <div className="flex items-center gap-4 mb-1">
-            <div className="h-px w-16" style={{ background: 'linear-gradient(to right,transparent,rgba(200,180,74,0.3))' }} />
-            <span className="text-[.82rem] font-bold tracking-[4px] uppercase" style={{ color: 'rgba(200,180,74,0.4)' }}>Share Your Voice</span>
-            <div className="h-px w-16" style={{ background: 'linear-gradient(to left,transparent,rgba(200,180,74,0.3))' }} />
+      {/* ── Write a Review — always below ── */}
+      <div className="relative z-10 px-4 sm:px-6 md:px-8 max-w-[1100px] mx-auto">
+        <RevealSection className="flex flex-col items-center gap-3 mt-10 sm:mt-12 md:mt-16">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="h-px w-12" style={{ background: 'linear-gradient(to right,transparent,rgba(200,180,74,0.3))' }} />
+            <span className="text-[10px] font-bold tracking-[5px] uppercase" style={{ color: 'rgba(200,180,74,0.5)' }}>Share Your Voice</span>
+            <div className="h-px w-12" style={{ background: 'linear-gradient(to left,transparent,rgba(200,180,74,0.3))' }} />
           </div>
           <button onClick={() => setShowModal(true)}
-            className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full font-semibold text-[.8rem] tracking-wide transition-all duration-300 hover:scale-105 active:scale-95"
-            style={{ background: 'linear-gradient(135deg,rgba(212,148,42,0.14),rgba(212,148,42,0.06))', border: '1.5px solid rgba(212,148,42,0.3)', color: 'rgba(212,148,42,0.88)', boxShadow: '0 4px 24px rgba(212,148,42,0.1)' }}>
+            className="inline-flex items-center gap-2.5 px-6 sm:px-7 py-3 sm:py-3.5 rounded-full font-semibold text-sm tracking-wide transition-all duration-300 hover:scale-105 active:scale-95"
+            style={{ background: 'linear-gradient(135deg,rgba(200,180,74,0.15),rgba(200,180,74,0.06))', color: 'rgba(200,180,74,0.92)', border: '1.5px solid rgba(200,180,74,0.28)', boxShadow: '0 4px 20px rgba(200,180,74,0.10)' }}>
             ✍️ Write a Review
           </button>
-          <p className="text-xs tracking-wide" style={{ color: 'rgba(255,255,255,0.18)' }}>Your words help other families make the right choice</p>
+          <p className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.22)' }}>Your words help other families make the right choice</p>
         </RevealSection>
-
       </div>
 
       {showModal && <ReviewModal onClose={() => setShowModal(false)} />}

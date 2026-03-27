@@ -84,9 +84,9 @@ function ProductModal({
     >
       {/* Modal panel */}
       <div
-        className="relative w-full md:max-w-[860px] rounded-t-[28px] md:rounded-[24px] overflow-hidden flex flex-col md:flex-row"
+        className="relative w-full md:max-w-[560px] rounded-t-[28px] md:rounded-[24px] overflow-hidden flex flex-col"
         style={{
-          background: 'linear-gradient(145deg,#111a0d,#0d1509)',
+          background: 'linear-gradient(145deg,#1E3014,#192C10)',
           border: '1px solid rgba(255,255,255,0.07)',
           boxShadow: '0 40px 120px rgba(0,0,0,0.8)',
           maxHeight: '92vh',
@@ -100,12 +100,12 @@ function ProductModal({
         <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
           style={{ background: 'linear-gradient(90deg,transparent,rgba(200,180,74,0.6),rgba(212,148,42,0.9),rgba(200,180,74,0.6),transparent)' }} />
 
-        {/* ── Left: Image gallery ── */}
-        <div className="relative md:w-[360px] md:flex-shrink-0 flex flex-col"
-          style={{ background: 'linear-gradient(160deg,#1a2e14,#0f1e0b)' }}>
+        {/* ── Top: Image gallery ── */}
+        <div className="relative w-full flex-shrink-0 flex flex-col"
+          style={{ background: 'linear-gradient(160deg,#263C1C,#1C3012)' }}>
 
           {/* Main image */}
-          <div className="relative overflow-hidden" style={{ height: 260, minHeight: 220 }}>
+          <div className="relative overflow-hidden" style={{ height: 280 }}>
             {images.length > 0 ? images.map((src, i) => (
               <img key={i} src={src} alt={product.name}
                 className="absolute inset-0 w-full h-full object-cover transition-opacity duration-400"
@@ -165,8 +165,8 @@ function ProductModal({
           )}
         </div>
 
-        {/* ── Right: Details + Order ── */}
-        <div className="flex-1 overflow-y-auto flex flex-col" style={{ maxHeight: '92vh' }}>
+        {/* ── Bottom: Details + Order ── */}
+        <div className="flex-1 overflow-y-auto flex flex-col">
           <div className="p-5 md:p-6 flex-1 flex flex-col">
 
             {/* Header */}
@@ -178,7 +178,7 @@ function ProductModal({
                 style={{ color: 'rgba(235,225,200,0.95)' }}>
                 {product.name}
               </h2>
-              <p className="text-xs leading-relaxed" style={{ color: 'rgba(235,225,200,0.42)' }}>
+              <p className="text-base leading-relaxed" style={{ color: 'rgba(235,225,200,0.78)' }}>
                 {product.description}
               </p>
             </div>
@@ -194,7 +194,7 @@ function ProductModal({
               <span className="text-xs font-bold tracking-[2.5px] uppercase block mb-1.5" style={{ color: 'rgba(212,148,42,0.55)' }}>
                 🌾 Ingredients
               </span>
-              <p className="text-xs leading-relaxed" style={{ color: 'rgba(235,225,200,0.36)' }}>{product.ingredients}</p>
+              <p className="text-base leading-relaxed" style={{ color: 'rgba(235,225,200,0.78)' }}>{product.ingredients}</p>
             </div>
 
             {/* Usage */}
@@ -203,13 +203,13 @@ function ProductModal({
                 <span className="text-xs font-bold tracking-[2.5px] uppercase block mb-1.5" style={{ color: 'rgba(212,148,42,0.55)' }}>
                   📋 How to Use · {u.type}
                 </span>
-                <p className="text-xs leading-relaxed" style={{ color: 'rgba(235,225,200,0.36)' }}>{u.instructions}</p>
+                <p className="text-base leading-relaxed" style={{ color: 'rgba(235,225,200,0.78)' }}>{u.instructions}</p>
               </div>
             ))}
 
             {/* Pack size selector */}
             <div className="mt-auto pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-              <p className="text-[.8rem] font-bold tracking-[2.5px] uppercase mb-3" style={{ color: 'rgba(235,225,200,0.28)' }}>
+              <p className="text-sm font-bold tracking-[2.5px] uppercase mb-3" style={{ color: 'rgba(235,225,200,0.28)' }}>
                 Choose Pack Size &amp; Quantity
               </p>
               <div className="space-y-2">
@@ -236,7 +236,7 @@ function ProductModal({
                             </span>
                           )}
                         </div>
-                        <span className="text-[.82rem]" style={{ color: 'rgba(235,225,200,0.35)' }}>₹{price} per pack</span>
+                        <span className="text-sm" style={{ color: 'rgba(235,225,200,0.35)' }}>₹{price} per pack</span>
                       </div>
 
                       <div className="flex items-center gap-2 flex-shrink-0">
@@ -332,15 +332,15 @@ function ProductCard({
     <div
       className="group rounded-[24px] overflow-hidden cursor-pointer transition-all duration-400 hover:-translate-y-1.5 h-full flex flex-col"
       style={{
-        background: 'linear-gradient(145deg,rgba(255,255,255,.05),rgba(255,255,255,.015))',
-        border: `1px solid ${packsInCart > 0 ? 'rgba(212,148,42,0.3)' : 'rgba(255,255,255,0.07)'}`,
+        background: 'linear-gradient(145deg,rgba(255,255,255,.09),rgba(255,255,255,.04))',
+        border: `1px solid ${packsInCart > 0 ? 'rgba(212,148,42,0.4)' : 'rgba(255,255,255,0.14)'}`,
         boxShadow: packsInCart > 0 ? '0 8px 40px rgba(212,148,42,0.12)' : '0 8px 30px rgba(0,0,0,0.25)',
         transition: 'border-color 0.3s, box-shadow 0.3s, transform 0.4s',
       }}
       onClick={onOpen}
     >
       {/* Image */}
-      <div className="relative overflow-hidden flex-shrink-0" style={{ height: 260, background: 'linear-gradient(160deg,#1E3018,#162A12)' }}>
+      <div className="relative overflow-hidden flex-shrink-0" style={{ height: 260, background: 'linear-gradient(160deg,#2A4020,#1E3418)' }}>
         {images.length > 0 ? images.map((img, i) => (
           <Image key={i} src={img} alt={product.name} width={640} height={400} unoptimized
             className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-[1.05]
@@ -397,16 +397,16 @@ function ProductCard({
 
       {/* Card body */}
       <div className="p-5 flex-1 flex flex-col">
-        <h3 className="font-display text-[1.1rem] font-bold leading-snug mb-1.5" style={{ color: 'rgba(235,225,200,0.95)' }}>
+        <h3 className="font-display text-xl font-bold leading-snug mb-1.5" style={{ color: 'rgba(235,225,200,0.98)' }}>
           {product.name}
         </h3>
-        <p className="text-xs leading-relaxed mb-4 line-clamp-2" style={{ color: 'rgba(235,225,200,0.38)' }}>
+        <p className="text-base leading-relaxed mb-4 line-clamp-2" style={{ color: 'rgba(235,225,200,0.72)' }}>
           {product.description}
         </p>
 
         <div className="mt-auto flex items-center justify-between">
           <div>
-            <span className="text-xs font-bold tracking-[2px] uppercase block mb-0.5" style={{ color: 'rgba(235,225,200,0.25)' }}>Starting from</span>
+            <span className="text-sm font-bold tracking-[2px] uppercase block mb-0.5" style={{ color: 'rgba(235,225,200,0.60)' }}>Starting from</span>
             <span className="font-display text-[1.1rem] font-bold" style={{ color: '#D4942A' }}>₹{minPrice}</span>
           </div>
           <button
@@ -449,21 +449,21 @@ export default function Products() {
     cart.find(i => i.productId === productId && i.packSize === packSize)?.count || 0;
 
   return (
-    <section id="prods" className="py-20 md:py-28 px-4 relative overflow-hidden"
-      style={{ background: 'linear-gradient(170deg,#121E0E 0%,#1A2A14 40%,#1E3018 70%,#121E0E 100%)' }}>
+    <section id="prods" className="py-16 sm:py-20 md:py-28 px-4 sm:px-5 relative overflow-hidden"
+      style={{ background: 'linear-gradient(170deg,#1E3414 0%,#273E1C 40%,#2C4420 70%,#1E3414 100%)' }}>
 
       {/* Ambient glows */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-24 left-1/4 w-96 h-96 rounded-full opacity-[.04]"
+        <div className="absolute -top-24 left-1/4 w-96 h-96 rounded-full opacity-[.08]"
           style={{ background: 'radial-gradient(circle,#D4942A,transparent 70%)' }} />
-        <div className="absolute bottom-0 right-1/4 w-[36rem] h-[36rem] rounded-full opacity-[.04]"
+        <div className="absolute bottom-0 right-1/4 w-[36rem] h-[36rem] rounded-full opacity-[.08]"
           style={{ background: 'radial-gradient(circle,#5A7A3A,transparent 70%)' }} />
       </div>
 
       <SectionHeader tag="Our Products" title="Amma's Signature Recipes" dark />
 
       <div className="max-w-[1040px] lg:max-w-[1120px] mx-auto mb-8 relative z-[2]">
-        <p className="text-center text-xs tracking-wide" style={{ color: 'rgba(235,225,200,0.28)' }}>
+        <p className="text-center text-base tracking-wide" style={{ color: 'rgba(235,225,200,0.72)' }}>
           Tap any product to explore details, pick your size &amp; place your order
         </p>
       </div>
@@ -507,7 +507,7 @@ export default function Products() {
           <Link href="/cart"
             className="flex items-center gap-4 px-5 py-3.5 rounded-2xl no-underline transition-all hover:scale-[1.02]"
             style={{
-              background: 'linear-gradient(135deg,#1A2A14,#243420)',
+              background: 'linear-gradient(135deg,#243A1C,#2E4824)',
               border: '1px solid rgba(212,148,42,0.25)',
               boxShadow: '0 8px 32px rgba(0,0,0,0.40)',
             }}>

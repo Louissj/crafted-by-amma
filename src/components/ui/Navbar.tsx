@@ -85,7 +85,7 @@ export default function Navbar() {
         <ul className="hidden md:flex gap-5 items-center list-none">
           {links.map(l => (
             <li key={l.href}>
-              <a href={l.href} className={`no-underline text-[0.68rem] font-medium tracking-[2.5px] uppercase transition-colors
+              <a href={l.href} className={`no-underline text-sm font-medium tracking-[2px] uppercase transition-colors
                 ${scrolled ? 'text-forest' : 'text-white/90'} hover:text-sage`}>
                 {l.label}
               </a>
@@ -107,13 +107,13 @@ export default function Navbar() {
           </li>
 
           <li>
-            <Link href="/track" className={`no-underline text-[0.68rem] font-medium tracking-[2.5px] uppercase transition-colors
+            <Link href="/track" className={`no-underline text-sm font-medium tracking-[2px] uppercase transition-colors
               ${scrolled ? 'text-forest' : 'text-white/90'} hover:text-sage`}>
               Track
             </Link>
           </li>
           <li>
-            <Link href={cartCount > 0 ? '/cart' : '/#prods'} className="bg-gradient-to-br from-sage to-sage-light text-cream-light px-5 py-2 rounded-full text-[0.68rem] font-medium tracking-[2.5px] uppercase shadow-md no-underline">
+            <Link href={cartCount > 0 ? '/cart' : '/#prods'} className="bg-gradient-to-br from-sage to-sage-light text-cream-light px-5 py-2 rounded-full text-sm font-medium tracking-[2px] uppercase shadow-md no-underline">
               {cartCount > 0 ? `Cart (${cartCount})` : 'Order Now'}
             </Link>
           </li>

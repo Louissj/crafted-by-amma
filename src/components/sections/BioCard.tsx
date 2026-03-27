@@ -43,7 +43,7 @@ export default function BioCard() {
             </div>
             <div>
               <h2 className="font-display text-[1.35rem] font-bold text-forest leading-tight">Crafted by Amma</h2>
-              <span className="text-xs text-sage font-bold tracking-[2px] inline-block mt-1 px-2.5 py-0.5 bg-gradient-to-br from-sage/[.06] to-millet/[.04] border border-sage/[.08] rounded-full uppercase">
+              <span className="text-sm text-sage font-bold tracking-[2px] inline-block mt-1 px-2.5 py-0.5 bg-gradient-to-br from-sage/[.06] to-millet/[.04] border border-sage/[.08] rounded-full uppercase">
                 Homemade Millet Products · Mysuru
               </span>
             </div>
@@ -57,7 +57,7 @@ export default function BioCard() {
                 <span className="text-base md:text-lg flex-shrink-0">{s.icon}</span>
                 <div>
                   <span className="font-display text-lg md:text-xl font-bold text-brass block leading-tight">{s.val}</span>
-                  <span className="text-xs text-sand/[.45] tracking-[1.5px] uppercase">{s.label}</span>
+                  <span className="text-sm text-sand/[.45] tracking-[1.5px] uppercase">{s.label}</span>
                 </div>
               </RevealSection>
             ))}
@@ -71,8 +71,8 @@ export default function BioCard() {
                   {d.icon}
                 </div>
                 <div>
-                  <strong className="text-xs text-forest block leading-snug">{d.title}</strong>
-                  <p className="text-xs text-forest/40 leading-snug mt-px">{d.desc}</p>
+                  <strong className="text-sm text-forest block leading-snug">{d.title}</strong>
+                  <p className="text-sm text-forest/40 leading-snug mt-px">{d.desc}</p>
                 </div>
               </RevealSection>
             ))}
@@ -86,7 +86,7 @@ export default function BioCard() {
                   <div className="w-14 h-14 rounded-full border-2 border-sage/[.1] flex items-center justify-center text-xl bg-gradient-to-br from-cream-light to-sage/[.03] shadow-[0_4px_14px_rgba(26,42,20,.03),inset_0_2px_4px_rgba(255,255,255,.5),0_0_0_3px_rgba(90,122,58,.02)] transition-all active:scale-90">
                     {h.icon}
                   </div>
-                  <span className="text-[.82rem] text-sage tracking-[.8px] font-semibold uppercase">{h.label}</span>
+                  <span className="text-sm text-sage tracking-[.8px] font-semibold uppercase">{h.label}</span>
                 </>
               );
               return h.href
