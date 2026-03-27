@@ -355,80 +355,129 @@ export default function AdminDashboard() {
 
   if (!loggedIn) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
-        style={{ background: 'radial-gradient(ellipse at 30% 20%, #243318 0%, #0F1A0A 50%, #080E05 100%)' }}>
-        {/* Decorative grain */}
-        <div className="absolute inset-0 opacity-[.035]"
-          style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")' }} />
+      <div className="min-h-screen flex relative overflow-hidden" style={{ background: '#060D04' }}>
 
-        {/* Glow orbs */}
-        <div className="absolute top-1/4 left-1/4 w-80 h-80 rounded-full opacity-10 blur-[120px]"
-          style={{ background: 'radial-gradient(circle, #5A7A3A, transparent)' }} />
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full opacity-8 blur-[100px]"
-          style={{ background: 'radial-gradient(circle, #D4942A, transparent)' }} />
+        {/* ── Left brand panel (desktop only) ── */}
+        <div className="hidden lg:flex flex-col justify-between w-[420px] flex-shrink-0 relative overflow-hidden px-12 py-14"
+          style={{ background: 'linear-gradient(160deg,#1A2A14 0%,#0E1A0A 50%,#0A1208 100%)' }}>
+          {/* Dot grid */}
+          <div className="absolute inset-0 opacity-[.07]"
+            style={{ backgroundImage: 'radial-gradient(circle, #C8B44A 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
+          {/* Glow */}
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-72 h-72 rounded-full blur-[100px] opacity-20"
+            style={{ background: 'radial-gradient(circle,#5A7A3A,transparent)' }} />
+          <div className="absolute bottom-1/4 right-0 w-48 h-48 rounded-full blur-[80px] opacity-15"
+            style={{ background: 'radial-gradient(circle,#D4942A,transparent)' }} />
 
-        <motion.div initial={{ opacity: 0, y: 24, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="w-full max-w-[380px] relative">
+          {/* Logo + name */}
+          <div className="relative z-10">
+            <div className="w-14 h-14 rounded-2xl border border-brass/30 overflow-hidden mb-5"
+              style={{ boxShadow: '0 0 32px rgba(200,180,74,0.2)' }}>
+              <Image src="/images/logo.png" alt="Logo" width={56} height={56} className="w-full h-full object-cover" />
+            </div>
+            <h1 className="font-display text-3xl font-bold text-white leading-tight mb-2">Crafted<br />by Amma</h1>
+            <p className="text-[.6rem] font-bold tracking-[3px] uppercase" style={{ color: 'rgba(200,180,74,0.5)' }}>Admin Console</p>
+          </div>
 
-          <div className="rounded-[28px] overflow-hidden border border-white/[.07]"
-            style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(40px)', boxShadow: '0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08)' }}>
-
-            {/* Brand header */}
-            <div className="px-8 pt-8 pb-6 text-center border-b border-white/[.05]">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full border-2 border-brass/30 overflow-hidden shadow-lg"
-                style={{ boxShadow: '0 0 30px rgba(212,148,42,0.2)' }}>
-                <Image src="/images/logo.png" alt="Logo" width={64} height={64} className="w-full h-full object-cover" />
+          {/* Stats preview */}
+          <div className="relative z-10 space-y-3">
+            {[
+              { label: 'Total Orders', val: stats.total || '—', color: '#5A7A3A' },
+              { label: 'Pending Review', val: stats.pending || '—', color: '#D4942A' },
+              { label: 'Revenue', val: stats.revenue ? `₹${stats.revenue.toLocaleString('en-IN')}` : '—', color: '#C8B44A' },
+            ].map(s => (
+              <div key={s.label} className="flex items-center justify-between px-4 py-3 rounded-2xl border border-white/[.06]"
+                style={{ background: 'rgba(255,255,255,0.03)' }}>
+                <span className="text-xs text-white/40">{s.label}</span>
+                <span className="text-sm font-bold" style={{ color: s.color }}>{s.val}</span>
               </div>
-              <h1 className="font-display text-xl font-bold text-white mb-0.5">Admin Access</h1>
-              <p className="text-[.62rem] text-white/30 tracking-[2px] uppercase">Crafted by Amma</p>
+            ))}
+            <div className="flex items-center gap-2 pt-1">
+              <span className="relative flex h-1.5 w-1.5 flex-shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
+              </span>
+              <span className="text-[.52rem] text-white/20 tracking-[1px]">Live Dashboard</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Right login form ── */}
+        <div className="flex-1 flex items-center justify-center p-6 relative">
+          {/* Background texture */}
+          <div className="absolute inset-0 opacity-[.025]"
+            style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+          <div className="absolute top-0 right-0 w-96 h-96 rounded-full blur-[120px] opacity-10"
+            style={{ background: 'radial-gradient(circle,#D4942A,transparent)' }} />
+
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="w-full max-w-[400px]">
+
+            {/* Mobile logo */}
+            <div className="lg:hidden flex items-center gap-3 mb-8">
+              <div className="w-10 h-10 rounded-xl border border-brass/30 overflow-hidden">
+                <Image src="/images/logo.png" alt="Logo" width={40} height={40} className="w-full h-full object-cover" />
+              </div>
+              <div>
+                <p className="font-display text-base font-bold text-white">Crafted by Amma</p>
+                <p className="text-[.52rem] tracking-[2px] uppercase" style={{ color: 'rgba(200,180,74,0.5)' }}>Admin Console</p>
+              </div>
             </div>
 
-            <form onSubmit={handleLogin} className="px-8 py-7 space-y-4">
+            <div className="mb-8">
+              <h2 className="font-display text-2xl font-bold text-white mb-1.5">Welcome back</h2>
+              <p className="text-sm text-white/35">Sign in to manage your orders & store</p>
+            </div>
+
+            <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-[.58rem] font-semibold tracking-[2px] uppercase text-white/35 mb-1.5">Username</label>
-                <input value={username} onChange={e => setUsername(e.target.value)} placeholder="Enter username"
-                  className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/20 outline-none transition-all"
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.08)' }}
-                  onFocus={e => e.target.style.borderColor = 'rgba(212,148,42,0.5)'}
+                <label className="block text-[.58rem] font-bold tracking-[2.5px] uppercase mb-2" style={{ color: 'rgba(200,180,74,0.5)' }}>Username</label>
+                <input value={username} onChange={e => setUsername(e.target.value)} placeholder="Enter username" autoComplete="username"
+                  className="w-full px-4 py-3.5 rounded-2xl text-sm text-white placeholder-white/20 outline-none transition-all"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1.5px solid rgba(255,255,255,0.08)' }}
+                  onFocus={e => e.target.style.borderColor = 'rgba(200,180,74,0.45)'}
                   onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'} />
               </div>
               <div>
-                <label className="block text-[.58rem] font-semibold tracking-[2px] uppercase text-white/35 mb-1.5">Password</label>
-                <input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="••••••••"
-                  className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/20 outline-none transition-all"
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.08)' }}
-                  onFocus={e => e.target.style.borderColor = 'rgba(212,148,42,0.5)'}
+                <label className="block text-[.58rem] font-bold tracking-[2.5px] uppercase mb-2" style={{ color: 'rgba(200,180,74,0.5)' }}>Password</label>
+                <input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="••••••••" autoComplete="current-password"
+                  className="w-full px-4 py-3.5 rounded-2xl text-sm text-white placeholder-white/20 outline-none transition-all"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1.5px solid rgba(255,255,255,0.08)' }}
+                  onFocus={e => e.target.style.borderColor = 'rgba(200,180,74,0.45)'}
                   onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'} />
               </div>
 
               <AnimatePresence>
                 {loginError && (
-                  <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                    className="text-xs text-red-400 flex items-center gap-1.5">
+                  <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl text-xs text-red-400"
+                    style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)' }}>
                     <span>⚠</span>{loginError}
-                  </motion.p>
+                  </motion.div>
                 )}
               </AnimatePresence>
 
               <button type="submit" disabled={loggingIn || !username || !password}
-                className="w-full py-3.5 rounded-xl font-semibold text-sm tracking-[1px] transition-all disabled:opacity-40 mt-2"
-                style={{ background: 'linear-gradient(135deg, #D4942A, #B87323)', color: '#0F1A0A', boxShadow: '0 8px 24px rgba(212,148,42,0.25)' }}>
-                {loggingIn ? 'Signing in…' : 'Sign In →'}
+                className="w-full py-4 rounded-2xl font-bold text-sm tracking-[1px] transition-all disabled:opacity-40 relative overflow-hidden group mt-2"
+                style={{ background: 'linear-gradient(135deg,#C8B44A,#D4942A)', color: '#0A1208', boxShadow: '0 8px 32px rgba(200,180,74,0.25)' }}>
+                <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{ background: 'linear-gradient(135deg,#D4942A,#C8B44A)' }} />
+                <span className="relative">{loggingIn ? 'Signing in…' : 'Sign In →'}</span>
               </button>
             </form>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
       </div>
     );
   }
 
   /* ─── DASHBOARD ──────────────────────────────────────────── */
   const STAT_CARDS = [
-    { label: 'Total Orders', value: stats.total,    icon: '📦', grad: 'from-[#1A2A14] to-[#243318]', accent: '#5A7A3A' },
-    { label: 'Pending',      value: stats.pending,  icon: '⏳', grad: 'from-[#2A1F0A] to-[#332610]', accent: '#D4942A' },
-    { label: 'Confirmed',    value: stats.confirmed,icon: '✅', grad: 'from-[#0A2A1A] to-[#103322]', accent: '#10B981' },
-    { label: 'Revenue',      value: `₹${stats.revenue.toLocaleString('en-IN')}`, icon: '💰', grad: 'from-[#2A1A0A] to-[#332210]', accent: '#C8B44A' },
+    { label: 'Total Orders', value: stats.total,    icon: '📦', grad: 'from-[#1A2A14] to-[#243318]', accent: '#5A7A3A',  pct: 100 },
+    { label: 'Pending',      value: stats.pending,  icon: '⏳', grad: 'from-[#2A1F0A] to-[#332610]', accent: '#D4942A',  pct: stats.total ? Math.round((stats.pending / stats.total) * 100) : 0 },
+    { label: 'Confirmed',    value: stats.confirmed,icon: '✅', grad: 'from-[#0A2A1A] to-[#103322]', accent: '#10B981',  pct: stats.total ? Math.round((stats.confirmed / stats.total) * 100) : 0 },
+    { label: 'Revenue',      value: `₹${stats.revenue.toLocaleString('en-IN')}`, icon: '💰', grad: 'from-[#2A1A0A] to-[#332210]', accent: '#C8B44A', pct: null },
   ];
 
   const NAV_ITEMS: { id: Tab; icon: string; label: string }[] = [
@@ -587,15 +636,27 @@ export default function AdminDashboard() {
               <motion.div key={s.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.06, duration: 0.4 }}
                 className={`bg-gradient-to-br ${s.grad} rounded-2xl p-4 border border-white/[.06] relative overflow-hidden`}
-                style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
-                <div className="absolute top-3 right-3 text-xl opacity-25">{s.icon}</div>
-                <p className="text-[.55rem] font-semibold tracking-[2px] uppercase mb-2"
-                  style={{ color: `${s.accent}88` }}>
-                  {s.label}
-                </p>
-                <p className="font-display text-xl md:text-2xl font-bold text-white truncate">{s.value}</p>
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 opacity-30 rounded-b-2xl"
-                  style={{ background: `linear-gradient(90deg, transparent, ${s.accent}, transparent)` }} />
+                style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.25)' }}>
+                {/* Icon badge */}
+                <div className="absolute top-3 right-3 w-8 h-8 rounded-xl flex items-center justify-center text-base"
+                  style={{ background: `${s.accent}18` }}>{s.icon}</div>
+                <p className="text-[.52rem] font-bold tracking-[2.5px] uppercase mb-2.5"
+                  style={{ color: `${s.accent}99` }}>{s.label}</p>
+                <p className="font-display text-2xl font-bold text-white truncate mb-3">{s.value}</p>
+                {/* Progress bar */}
+                {s.pct !== null && (
+                  <div className="space-y-1">
+                    <div className="h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                      <motion.div className="h-full rounded-full"
+                        initial={{ width: 0 }} animate={{ width: `${s.pct}%` }}
+                        transition={{ delay: i * 0.1 + 0.3, duration: 0.8, ease: 'easeOut' }}
+                        style={{ background: `linear-gradient(90deg,${s.accent}88,${s.accent})` }} />
+                    </div>
+                    <p className="text-[.48rem] text-white/20">{s.pct}% of total</p>
+                  </div>
+                )}
+                <div className="absolute bottom-0 left-0 right-0 h-px"
+                  style={{ background: `linear-gradient(90deg, transparent, ${s.accent}44, transparent)` }} />
               </motion.div>
             ))}
           </div>
@@ -626,45 +687,58 @@ export default function AdminDashboard() {
             {orders.map((order, idx) => (
               <motion.div key={order.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.04 }}
-                className="rounded-2xl border border-white/[.07] overflow-hidden cursor-pointer transition-all hover:border-brass/20"
-                style={{ background: 'linear-gradient(135deg,rgba(26,42,20,0.6),rgba(13,20,9,0.8))', boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}
+                className="rounded-2xl border border-white/[.06] overflow-hidden cursor-pointer transition-all hover:border-white/[.12] hover:shadow-lg active:scale-[.99]"
+                style={{ background: 'linear-gradient(135deg,rgba(22,36,18,0.9),rgba(10,16,8,0.95))', boxShadow: '0 2px 16px rgba(0,0,0,0.3)' }}
                 onClick={() => setSelected(order)}>
-                <div className="px-4 py-3.5">
-                  {/* Top row: info + amount */}
-                  <div className="flex items-start gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                        <span className="font-mono text-[.65rem] font-bold text-brass/50">#{order.id.slice(-6).toUpperCase()}</span>
-                        <StatusBadge status={order.status} size="xs" />
+                <div className="flex">
+                  {/* Left status stripe */}
+                  <div className="w-1 flex-shrink-0 rounded-l-2xl"
+                    style={{ background: STATUS_META[order.status]?.color || '#888' }} />
+                  <div className="flex-1 px-4 py-3.5">
+                    {/* Top row: avatar + info + amount */}
+                    <div className="flex items-center gap-3">
+                      {/* Avatar */}
+                      <div className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center text-xs font-bold"
+                        style={{ background: `${STATUS_META[order.status]?.color || '#888'}18`, color: STATUS_META[order.status]?.color || '#888', border: `1px solid ${STATUS_META[order.status]?.color || '#888'}30` }}>
+                        {order.name.charAt(0).toUpperCase()}
                       </div>
-                      <div className="font-semibold text-sm text-white/90 truncate">{order.name}</div>
-                      <div className="text-[.62rem] text-white/30 truncate">{order.city} · {order.phone}</div>
-                    </div>
-                    <div className="font-display text-base font-bold flex-shrink-0" style={{ color: '#C8B44A' }}>
-                      ₹{order.totalAmount ?? '—'}
-                    </div>
-                  </div>
-                  {/* Products */}
-                  <div className="text-[.6rem] text-white/25 mt-2 truncate">{getProductNames(order.products)}</div>
-                  {/* Status select — full width below, easy to tap */}
-                  {(() => {
-                    const flow = ['pending', 'verified', 'confirmed', 'shipped', 'delivered'];
-                    const currentIdx = flow.indexOf(order.status);
-                    if (order.status === 'cancelled' || order.status === 'delivered') return null;
-                    const forward = flow.slice(currentIdx);
-                    const opts = [...forward, 'cancelled'].map(v => ORDER_STATUSES.find(s => s.value === v)!).filter(Boolean);
-                    return (
-                      <div className="mt-2.5" onClick={e => e.stopPropagation()}>
-                        <select value={order.status} onChange={e => { e.stopPropagation(); updateStatus(order.id, e.target.value); }}
-                          disabled={loading}
-                          className="w-full text-xs border border-white/20 rounded-lg px-3 py-2 outline-none cursor-pointer"
-                          style={{ background: '#1A2A14', color: '#E8DEB0' }}>
-                          {opts.map(s => <option key={s.value} value={s.value} style={{ background: '#1A2A14', color: '#E8DEB0' }}>{s.label}</option>)}
-                        </select>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <div className="font-semibold text-sm text-white/90 truncate">{order.name}</div>
+                          <StatusBadge status={order.status} size="xs" />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[.58rem] text-brass/40">#{order.id.slice(-6).toUpperCase()}</span>
+                          <span className="text-white/20 text-[.5rem]">·</span>
+                          <span className="text-[.6rem] text-white/30 truncate">{order.city}</span>
+                        </div>
                       </div>
-                    );
-                  })()}
-                </div>
+                      <div className="font-display text-base font-bold flex-shrink-0" style={{ color: '#C8B44A' }}>
+                        ₹{order.totalAmount ?? '—'}
+                      </div>
+                    </div>
+                    {/* Products */}
+                    <div className="text-[.6rem] text-white/25 mt-2.5 truncate pl-12">{getProductNames(order.products)}</div>
+                    {/* Status select — full width below, easy to tap */}
+                    {(() => {
+                      const flow = ['pending', 'verified', 'confirmed', 'shipped', 'delivered'];
+                      const currentIdx = flow.indexOf(order.status);
+                      if (order.status === 'cancelled' || order.status === 'delivered') return null;
+                      const forward = flow.slice(currentIdx);
+                      const opts = [...forward, 'cancelled'].map(v => ORDER_STATUSES.find(s => s.value === v)!).filter(Boolean);
+                      return (
+                        <div className="mt-2.5 pl-12" onClick={e => e.stopPropagation()}>
+                          <select value={order.status} onChange={e => { e.stopPropagation(); updateStatus(order.id, e.target.value); }}
+                            disabled={loading}
+                            className="w-full text-xs border border-white/20 rounded-lg px-3 py-2 outline-none cursor-pointer"
+                            style={{ background: '#1A2A14', color: '#E8DEB0' }}>
+                            {opts.map(s => <option key={s.value} value={s.value} style={{ background: '#1A2A14', color: '#E8DEB0' }}>{s.label}</option>)}
+                          </select>
+                        </div>
+                      );
+                    })()}
+                  </div>{/* end flex-1 */}
+                </div>{/* end flex */}
               </motion.div>
             ))}
           </div>
