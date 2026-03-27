@@ -403,7 +403,7 @@ export default function OrderForm() {
                         </div>
                       </div>
                       <p className="text-xs text-forest/30 mt-2">
-                        For: {form.name} · {form.city} · {form.isKarnataka ? 'Karnataka' : 'Outside KA'}
+                        For: {form.name} · {form.city} · {deliveryZone === 'karnataka' ? 'Karnataka' : deliveryZone === 'international' ? 'International' : 'Outstation'}
                       </p>
                     </div>
 
