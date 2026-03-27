@@ -99,8 +99,8 @@ export async function POST(req: NextRequest) {
     });
 
     // Fire-and-forget notification (doesn't block order response)
-    const productNames = cartItems.map(i => `${i.productId} ${i.packSize}×${i.count}`).join(', ');
-    notifyNewOrder({ orderId: order.id, name, phone, city, products: productNames, total: totalAmount }).catch(() => {});
+    const productNames = cartItems.map(i => `${i.productId} ${i.packSize}×${i.count}`).join('\n');
+    notifyNewOrder({ orderId: order.id, name, phone, city, products: productNames, total: totalAmount, deliveryCharge, isKarnataka }).catch(() => {});
 
     return NextResponse.json({ success: true, orderId: order.id }, { status: 201 });
   } catch (error) {
