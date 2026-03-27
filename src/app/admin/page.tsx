@@ -42,7 +42,7 @@ function StatusBadge({ status, size = 'sm' }: { status: string; size?: 'xs' | 's
   const meta = STATUS_META[status] || { label: status, color: '#888', bg: 'rgba(136,136,136,0.1)', icon: '•' };
   return (
     <span className={`inline-flex items-center gap-1 font-semibold rounded-full whitespace-nowrap
-      ${size === 'xs' ? 'text-[.55rem] px-2 py-0.5' : 'text-[.65rem] px-2.5 py-1'}`}
+      ${size === 'xs' ? 'text-sm px-2 py-0.5' : 'text-[.88rem] px-2.5 py-1'}`}
       style={{ color: meta.color, background: meta.bg }}>
       <span>{meta.icon}</span>{meta.label}
     </span>
@@ -70,6 +70,7 @@ export default function AdminDashboard() {
   const [filter, setFilter] = useState('all');
   const [selected, setSelected] = useState<Order | null>(null);
   const [loading, setLoading] = useState(false);
+  const [waToast, setWaToast] = useState('');
   const [stats, setStats] = useState({ total: 0, pending: 0, confirmed: 0, revenue: 0 });
 
   const [offers, setOffers] = useState<Offer[]>([]);
@@ -267,14 +268,18 @@ export default function AdminDashboard() {
     if (target) {
       const phone = target.phone.replace(/[^0-9]/g, '').slice(-10);
       const msg = getWhatsAppMessage(target.name, status);
-      const waUrl = 'https://wa.me/91' + phone + '?text=' + encodeURIComponent(msg);
+      // Copy message to clipboard first (100% emoji-safe)
+      navigator.clipboard.writeText(msg).catch(() => {});
+      // Open WhatsApp chat — user pastes the copied message
       const a = document.createElement('a');
-      a.href = waUrl;
+      a.href = 'https://wa.me/91' + phone;
       a.target = '_blank';
       a.rel = 'noopener noreferrer';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+      setWaToast('Message copied! Paste it in WhatsApp \uD83D\uDCCB');
+      setTimeout(() => setWaToast(''), 4000);
     }
   };
 
@@ -496,14 +501,14 @@ export default function AdminDashboard() {
               <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.4 }}
                 className="text-center">
                 <h1 className="font-display text-xl font-bold mb-0.5" style={{ color: '#F5EED8' }}>Crafted by Amma</h1>
-                <p className="text-[.55rem] font-bold tracking-[3.5px] uppercase" style={{ color: 'rgba(200,180,74,0.45)' }}>Admin Console</p>
+                <p className="text-sm font-bold tracking-[3.5px] uppercase" style={{ color: 'rgba(200,180,74,0.45)' }}>Admin Console</p>
               </motion.div>
             </div>
 
             {/* Divider */}
             <div className="flex items-center gap-3 mb-7">
               <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.08))' }} />
-              <span className="text-[.5rem] tracking-[3px] uppercase font-bold" style={{ color: 'rgba(200,180,74,0.3)' }}>Secure Sign In</span>
+              <span className="text-[.88rem] tracking-[3px] uppercase font-bold" style={{ color: 'rgba(200,180,74,0.3)' }}>Secure Sign In</span>
               <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg,rgba(255,255,255,0.08),transparent)' }} />
             </div>
 
@@ -512,18 +517,18 @@ export default function AdminDashboard() {
 
               {/* Username field */}
               <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.35, duration: 0.4 }}>
-                <label className="block text-[.56rem] font-bold tracking-[2.5px] uppercase mb-2.5" style={{ color: 'rgba(200,180,74,0.5)' }}>
+                <label className="block text-smfont-bold tracking-[2.5px] uppercase mb-2.5" style={{ color: 'rgba(200,180,74,0.5)' }}>
                   Username
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm pointer-events-none" style={{ color: 'rgba(200,180,74,0.35)' }}>
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-smpointer-events-none" style={{ color: 'rgba(200,180,74,0.35)' }}>
                     👤
                   </span>
                   <input
                     value={username} onChange={e => setUsername(e.target.value)}
                     placeholder="Enter your username"
                     autoComplete="username"
-                    className="w-full pl-10 pr-4 py-3.5 rounded-2xl text-sm outline-none transition-all duration-200"
+                    className="w-full pl-10 pr-4 py-3.5 rounded-2xl text-smoutline-none transition-all duration-200"
                     style={{
                       background: 'rgba(255,255,255,0.04)',
                       border: '1.5px solid rgba(255,255,255,0.09)',
@@ -546,11 +551,11 @@ export default function AdminDashboard() {
 
               {/* Password field */}
               <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.42, duration: 0.4 }}>
-                <label className="block text-[.56rem] font-bold tracking-[2.5px] uppercase mb-2.5" style={{ color: 'rgba(200,180,74,0.5)' }}>
+                <label className="block text-smfont-bold tracking-[2.5px] uppercase mb-2.5" style={{ color: 'rgba(200,180,74,0.5)' }}>
                   Password
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm pointer-events-none" style={{ color: 'rgba(200,180,74,0.35)' }}>
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-smpointer-events-none" style={{ color: 'rgba(200,180,74,0.35)' }}>
                     🔑
                   </span>
                   <input
@@ -558,7 +563,7 @@ export default function AdminDashboard() {
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
                     autoComplete="current-password"
-                    className="w-full pl-10 pr-12 py-3.5 rounded-2xl text-sm outline-none transition-all duration-200"
+                    className="w-full pl-10 pr-12 py-3.5 rounded-2xl text-smoutline-none transition-all duration-200"
                     style={{
                       background: 'rgba(255,255,255,0.04)',
                       border: '1.5px solid rgba(255,255,255,0.09)',
@@ -577,7 +582,7 @@ export default function AdminDashboard() {
                     }}
                   />
                   <button type="button" onClick={() => setShowPassword(p => !p)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs transition-opacity hover:opacity-80"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-smtransition-opacity hover:opacity-80"
                     style={{ color: 'rgba(200,180,74,0.4)', lineHeight: 1 }}>
                     {showPassword ? '🙈' : '👁️'}
                   </button>
@@ -588,7 +593,7 @@ export default function AdminDashboard() {
               <AnimatePresence>
                 {loginError && (
                   <motion.div initial={{ opacity: 0, y: -6, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }}
-                    className="flex items-center gap-2.5 px-4 py-3 rounded-2xl text-xs"
+                    className="flex items-center gap-2.5 px-4 py-3 rounded-2xl text-sm"
                     style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#FCA5A5' }}>
                     <span className="flex-shrink-0">⚠️</span>
                     <span>{loginError}</span>
@@ -599,7 +604,7 @@ export default function AdminDashboard() {
               {/* Submit */}
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.4 }}>
                 <button type="submit" disabled={loggingIn || !username || !password}
-                  className="w-full py-4 rounded-2xl font-bold text-sm tracking-[0.5px] transition-all duration-200 mt-1 relative overflow-hidden group"
+                  className="w-full py-4 rounded-2xl font-bold text-smtracking-[0.5px] transition-all duration-200 mt-1 relative overflow-hidden group"
                   style={{
                     background: loggingIn ? 'rgba(200,180,74,0.4)' : 'linear-gradient(135deg,#C8B44A 0%,#B09838 50%,#D4942A 100%)',
                     color: '#0A1208',
@@ -623,7 +628,7 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-center gap-2 mt-7 pt-5"
               style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/60 animate-pulse" />
-              <span className="text-[.52rem] tracking-[2px] uppercase font-medium" style={{ color: 'rgba(255,255,255,0.18)' }}>
+              <span className="text-sm tracking-[2px] uppercase font-medium" style={{ color: 'rgba(255,255,255,0.18)' }}>
                 Encrypted · Secure Access
               </span>
             </div>
@@ -675,6 +680,21 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen flex overflow-x-hidden w-full" style={{ background: '#080F06' }}>
 
+      {/* WhatsApp copy toast */}
+      <AnimatePresence>
+        {waToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 24, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 12, scale: 0.95 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-3 px-5 py-3.5 rounded-2xl text-smfont-semibold shadow-2xl"
+            style={{ background: 'linear-gradient(135deg,#25D366,#1da851)', color: '#fff', boxShadow: '0 8px 32px rgba(37,211,102,0.35)', whiteSpace: 'nowrap' }}>
+            <span>💬</span>
+            {waToast}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ── SIDEBAR (desktop) ── */}
       <aside className="hidden md:flex flex-col w-[220px] flex-shrink-0 fixed top-0 left-0 h-full z-40"
         style={{ background: 'linear-gradient(180deg,#0D1A09 0%,#111E0D 60%,#0A1208 100%)', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
@@ -688,7 +708,7 @@ export default function AdminDashboard() {
             </div>
             <div>
               <span className="font-display text-[.85rem] font-bold text-white block leading-tight">Crafted by Amma</span>
-              <span className="text-[.46rem] text-brass/40 tracking-[2px] uppercase">Admin Console</span>
+              <span className="text-sm text-brass/40 tracking-[2px] uppercase">Admin Console</span>
             </div>
           </div>
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.04)' }}>
@@ -696,7 +716,7 @@ export default function AdminDashboard() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
             </span>
-            <span className="text-[.52rem] text-white/25 tracking-[1px]">Live · {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
+            <span className="text-sm text-white/25 tracking-[1px]">Live · {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
           </div>
         </div>
 
@@ -710,9 +730,9 @@ export default function AdminDashboard() {
                   : 'text-white/35 hover:text-white/70 hover:bg-white/[.04]'}`}
               style={tab === item.id ? { background: 'linear-gradient(135deg,#C8B44A,#D4942A)', boxShadow: '0 4px 16px rgba(200,180,74,0.25)' } : {}}>
               <span className="text-base flex-shrink-0">{item.icon}</span>
-              <span className="text-[.78rem] tracking-[0.3px]">{item.label}</span>
+              <span className="text-sm tracking-[0.3px]">{item.label}</span>
               {item.id === 'orders' && stats.pending > 0 && (
-                <span className="ml-auto text-[.52rem] font-bold px-1.5 py-0.5 rounded-full"
+                <span className="ml-auto text-smfont-bold px-1.5 py-0.5 rounded-full"
                   style={{ background: 'rgba(251,191,36,0.2)', color: '#FBBF24' }}>
                   {stats.pending}
                 </span>
@@ -730,12 +750,12 @@ export default function AdminDashboard() {
             ].map(({ label, val, color }) => (
               <div key={label} className="rounded-xl px-3 py-2 text-center" style={{ background: 'rgba(255,255,255,0.04)' }}>
                 <div className="text-sm font-bold" style={{ color }}>{val}</div>
-                <div className="text-[.46rem] text-white/20 uppercase tracking-[1px]">{label}</div>
+                <div className="text-sm text-white/20 uppercase tracking-[1px]">{label}</div>
               </div>
             ))}
           </div>
           <button onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-[.68rem] text-white/20 hover:text-white/50 hover:bg-white/[.04] transition-all">
+            className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-smtext-white/20 hover:text-white/50 hover:bg-white/[.04] transition-all">
             ← Sign Out
           </button>
         </div>
@@ -753,20 +773,20 @@ export default function AdminDashboard() {
               <div className="w-7 h-7 rounded-lg overflow-hidden border border-brass/20">
                 <Image src="/images/logo.png" alt="Logo" width={28} height={28} className="w-full h-full object-cover" />
               </div>
-              <span className="font-display text-sm font-bold text-white">Admin</span>
+              <span className="font-display text-smfont-bold text-white">Admin</span>
             </div>
 
             {/* Page title (desktop) */}
             <div className="hidden md:block">
               <h1 className="font-display text-base font-bold text-white leading-tight">{tabLabels[tab]}</h1>
-              <p className="text-[.52rem] text-white/25 tracking-[1.5px] uppercase">{new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
+              <p className="text-sm text-white/25 tracking-[1.5px] uppercase">{new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
             </div>
 
             <div className="flex-1" />
 
             {stats.pending > 0 && (
               <button onClick={() => setTab('orders')}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-smfont-bold border transition-all"
                 style={{ color: '#D4942A', borderColor: 'rgba(212,148,42,0.3)', background: 'rgba(212,148,42,0.1)' }}>
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
@@ -791,7 +811,7 @@ export default function AdminDashboard() {
                   style={{ background: 'linear-gradient(90deg,#C8B44A,#D4942A)' }} />
               )}
               <span className="text-base">{item.icon}</span>
-              <span className="text-[.46rem] font-semibold capitalize tracking-wide">{item.label}</span>
+              <span className="text-sm font-semibold capitalize tracking-wide">{item.label}</span>
               {item.id === 'orders' && stats.pending > 0 && (
                 <span className="absolute top-1 right-[calc(50%-14px)] w-3.5 h-3.5 rounded-full text-[.42rem] font-bold flex items-center justify-center text-white"
                   style={{ background: '#D4942A' }}>
@@ -819,7 +839,7 @@ export default function AdminDashboard() {
                 {/* Icon badge */}
                 <div className="absolute top-3 right-3 w-8 h-8 rounded-xl flex items-center justify-center text-base"
                   style={{ background: `${s.accent}18` }}>{s.icon}</div>
-                <p className="text-[.52rem] font-bold tracking-[2.5px] uppercase mb-2.5"
+                <p className="text-sm font-bold tracking-[2.5px] uppercase mb-2.5"
                   style={{ color: `${s.accent}99` }}>{s.label}</p>
                 <p className="font-display text-2xl font-bold text-white truncate mb-3">{s.value}</p>
                 {/* Progress bar */}
@@ -831,7 +851,7 @@ export default function AdminDashboard() {
                         transition={{ delay: i * 0.1 + 0.3, duration: 0.8, ease: 'easeOut' }}
                         style={{ background: `linear-gradient(90deg,${s.accent}88,${s.accent})` }} />
                     </div>
-                    <p className="text-[.48rem] text-white/20">{s.pct}% of total</p>
+                    <p className="text-[.85rem] text-white/20">{s.pct}% of total</p>
                   </div>
                 )}
                 <div className="absolute bottom-0 left-0 right-0 h-px"
@@ -846,7 +866,7 @@ export default function AdminDashboard() {
               const meta = s === 'all' ? null : STATUS_META[s];
               return (
                 <button key={s} onClick={() => setFilter(s)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all border flex-shrink-0 ${
+                  className={`px-3.5 py-1.5 rounded-full text-smfont-semibold transition-all border flex-shrink-0 ${
                     filter === s
                       ? 'text-white border-transparent shadow-md'
                       : 'text-white/30 border-white/[.08] hover:border-white/20 hover:text-white/50'
@@ -861,7 +881,7 @@ export default function AdminDashboard() {
           {/* Mobile order cards */}
           <div className="md:hidden px-4 pb-8 space-y-3">
             {orders.length === 0 && (
-              <div className="py-16 text-center text-white/20 text-sm rounded-2xl border border-white/[.06]" style={{ background: 'rgba(255,255,255,0.03)' }}>No orders found</div>
+              <div className="py-16 text-center text-white/20 text-smrounded-2xl border border-white/[.06]" style={{ background: 'rgba(255,255,255,0.03)' }}>No orders found</div>
             )}
             {orders.map((order, idx) => (
               <motion.div key={order.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
@@ -877,19 +897,19 @@ export default function AdminDashboard() {
                     {/* Top row: avatar + info + amount */}
                     <div className="flex items-center gap-3">
                       {/* Avatar */}
-                      <div className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center text-xs font-bold"
+                      <div className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center text-smfont-bold"
                         style={{ background: `${STATUS_META[order.status]?.color || '#888'}18`, color: STATUS_META[order.status]?.color || '#888', border: `1px solid ${STATUS_META[order.status]?.color || '#888'}30` }}>
                         {order.name.charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
-                          <div className="font-semibold text-sm text-white/90 truncate">{order.name}</div>
+                          <div className="font-semibold text-smtext-white/90 truncate">{order.name}</div>
                           <StatusBadge status={order.status} size="xs" />
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-[.58rem] text-brass/40">#{order.id.slice(-6).toUpperCase()}</span>
-                          <span className="text-white/20 text-[.5rem]">·</span>
-                          <span className="text-[.6rem] text-white/30 truncate">{order.city}</span>
+                          <span className="font-mono text-smtext-brass/40">#{order.id.slice(-6).toUpperCase()}</span>
+                          <span className="text-white/20 text-[.88rem]">·</span>
+                          <span className="text-sm text-white/30 truncate">{order.city}</span>
                         </div>
                       </div>
                       <div className="font-display text-base font-bold flex-shrink-0" style={{ color: '#C8B44A' }}>
@@ -897,7 +917,7 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     {/* Products */}
-                    <div className="text-[.6rem] text-white/25 mt-2.5 truncate pl-12">{getProductNames(order.products)}</div>
+                    <div className="text-sm text-white/25 mt-2.5 truncate pl-12">{getProductNames(order.products)}</div>
                     {/* Status select — full width below, easy to tap */}
                     {(() => {
                       const flow = ['pending', 'verified', 'confirmed', 'shipped', 'delivered'];
@@ -909,7 +929,7 @@ export default function AdminDashboard() {
                         <div className="mt-2.5 pl-12" onClick={e => e.stopPropagation()}>
                           <select value={order.status} onChange={e => { e.stopPropagation(); updateStatus(order.id, e.target.value, order); }}
                             disabled={loading}
-                            className="w-full text-xs border border-white/20 rounded-lg px-3 py-2 outline-none cursor-pointer disabled:opacity-50"
+                            className="w-full text-smborder border-white/20 rounded-lg px-3 py-2 outline-none cursor-pointer disabled:opacity-50"
                             style={{ background: '#1A2A14', color: '#E8DEB0', minWidth: 120 }}>
                             {opts.map(s => <option key={s.value} value={s.value} style={{ background: '#1A2A14', color: '#E8DEB0' }}>{s.label}</option>)}
                           </select>
@@ -931,7 +951,7 @@ export default function AdminDashboard() {
                   <thead>
                     <tr style={{ background: 'rgba(200,180,74,0.05)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                       {['Order', 'Customer', 'Products', 'City', 'Amount', 'Status', 'Action'].map(h => (
-                        <th key={h} className="px-4 py-3.5 text-left text-[.58rem] font-bold uppercase tracking-[2px]" style={{ color: 'rgba(200,180,74,0.4)' }}>
+                        <th key={h} className="px-4 py-3.5 text-left text-smfont-bold uppercase tracking-[2px]" style={{ color: 'rgba(200,180,74,0.4)' }}>
                           {h}
                         </th>
                       ))}
@@ -944,19 +964,19 @@ export default function AdminDashboard() {
                         className="border-t border-white/[.04] cursor-pointer transition-all hover:bg-white/[.03]"
                         onClick={() => setSelected(order)}>
                         <td className="px-4 py-3.5">
-                          <span className="font-mono text-[.68rem] font-bold px-2 py-0.5 rounded-md" style={{ color: 'rgba(200,180,74,0.5)', background: 'rgba(200,180,74,0.08)' }}>
+                          <span className="font-mono text-smfont-bold px-2 py-0.5 rounded-md" style={{ color: 'rgba(200,180,74,0.5)', background: 'rgba(200,180,74,0.08)' }}>
                             #{order.id.slice(-6).toUpperCase()}
                           </span>
                         </td>
                         <td className="px-4 py-3.5">
-                          <div className="font-semibold text-sm text-white/90">{order.name}</div>
-                          <div className="text-[.62rem] text-white/30 mt-0.5">{order.phone}</div>
+                          <div className="font-semibold text-smtext-white/90">{order.name}</div>
+                          <div className="text-[.85rem] text-white/30 mt-0.5">{order.phone}</div>
                         </td>
                         <td className="px-4 py-3.5">
-                          <span className="text-xs text-white/40 line-clamp-1 max-w-[200px] block">{getProductNames(order.products)}</span>
+                          <span className="text-sm text-white/40 line-clamp-1 max-w-[200px] block">{getProductNames(order.products)}</span>
                         </td>
                         <td className="px-4 py-3.5">
-                          <span className="text-xs text-white/40">{order.city}</span>
+                          <span className="text-sm text-white/40">{order.city}</span>
                         </td>
                         <td className="px-4 py-3.5">
                           <span className="text-sm font-bold" style={{ color: '#C8B44A' }}>₹{order.totalAmount ?? '—'}</span>
@@ -968,14 +988,14 @@ export default function AdminDashboard() {
                           {(() => {
                             const flow = ['pending', 'verified', 'confirmed', 'shipped', 'delivered'];
                             const currentIdx = flow.indexOf(order.status);
-                            if (order.status === 'cancelled') return <span className="text-[.62rem] text-red-400/50 italic">Cancelled</span>;
-                            if (order.status === 'delivered') return <span className="text-[.62rem] text-emerald-400/50 italic">Delivered</span>;
+                            if (order.status === 'cancelled') return <span className="text-[.85rem] text-red-400/50 italic">Cancelled</span>;
+                            if (order.status === 'delivered') return <span className="text-[.85rem] text-emerald-400/50 italic">Delivered</span>;
                             const forward = flow.slice(currentIdx);
                             const opts = [...forward, 'cancelled'].map(v => ORDER_STATUSES.find(s => s.value === v)!).filter(Boolean);
                             return (
                               <select value={order.status} onChange={e => updateStatus(order.id, e.target.value, order)}
                                 disabled={loading}
-                                className="text-xs border border-white/20 rounded-lg px-3 py-2 outline-none cursor-pointer disabled:opacity-50"
+                                className="text-sm border border-white/20 rounded-lg px-3 py-2 outline-none cursor-pointer disabled:opacity-50"
                                 style={{ background: '#1A2A14', color: '#E8DEB0', minWidth: 120 }}>
                                 {opts.map(s => <option key={s.value} value={s.value} style={{ background: '#1A2A14', color: '#E8DEB0' }}>{s.label}</option>)}
                               </select>
@@ -1001,9 +1021,9 @@ export default function AdminDashboard() {
           <div className="mb-6 flex items-center justify-between gap-4 flex-wrap">
             <div>
               <h2 className="font-display text-xl font-bold text-white">Customer Reviews</h2>
-              <p className="text-xs text-white/30 mt-0.5">Approve reviews to show them on the website. Delete spam.</p>
+              <p className="text-sm text-white/30 mt-0.5">Approve reviews to show them on the website. Delete spam.</p>
             </div>
-            <div className="flex gap-2 text-[.65rem] font-semibold">
+            <div className="flex gap-2 text-[.88rem] font-semibold">
               <span className="px-2.5 py-1 rounded-full" style={{ background: 'rgba(200,180,74,0.12)', color: 'rgba(200,180,74,0.8)' }}>
                 {reviews.filter(r => !r.approved).length} pending
               </span>
@@ -1025,13 +1045,13 @@ export default function AdminDashboard() {
                   {/* Header row */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-smflex-shrink-0"
                         style={{ background: 'linear-gradient(135deg,rgba(90,122,58,0.4),rgba(200,180,74,0.2))', color: 'rgba(200,180,74,0.9)' }}>
                         {r.name.charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <p className="font-semibold text-[.82rem] text-white/80">{r.name}</p>
-                        <p className="text-[.6rem] text-white/35">📍 {r.place} · {new Date(r.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                        <p className="font-semibold text-[.88rem] text-white/80">{r.name}</p>
+                        <p className="text-sm text-white/35">📍 {r.place} · {new Date(r.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
@@ -1041,7 +1061,7 @@ export default function AdminDashboard() {
                           <span key={s} className="text-sm" style={{ color: s <= r.rating ? '#D4942A' : 'rgba(255,255,255,0.1)' }}>★</span>
                         ))}
                       </div>
-                      <span className={`text-[.55rem] font-bold px-2 py-0.5 rounded-full ${r.approved ? 'text-emerald-400' : 'text-amber-400'}`}
+                      <span className={`text-sm font-bold px-2 py-0.5 rounded-full ${r.approved ? 'text-emerald-400' : 'text-amber-400'}`}
                         style={{ background: r.approved ? 'rgba(16,185,129,0.12)' : 'rgba(212,148,42,0.12)' }}>
                         {r.approved ? '✓ Live' : '⏳ Pending'}
                       </span>
@@ -1049,7 +1069,7 @@ export default function AdminDashboard() {
                   </div>
 
                   {/* Review text */}
-                  <p className="text-[.8rem] leading-relaxed text-white/50 italic">&ldquo;{r.text}&rdquo;</p>
+                  <p className="text-[.85rem] leading-relaxed text-white/50 italic">&ldquo;{r.text}&rdquo;</p>
 
                   {/* Actions */}
                   <div className="flex gap-2 pt-1">
@@ -1097,7 +1117,7 @@ export default function AdminDashboard() {
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="p-4 md:p-6 max-w-2xl">
           <div className="mb-6">
             <h2 className="font-display text-xl font-bold text-white">Offer Banners</h2>
-            <p className="text-xs text-white/30 mt-0.5">Control the scrolling offers shown at the top of your site.</p>
+            <p className="text-sm text-white/30 mt-0.5">Control the scrolling offers shown at the top of your site.</p>
           </div>
 
           <div className="rounded-2xl p-5 border border-white/[.07] mb-5"
@@ -1111,12 +1131,12 @@ export default function AdminDashboard() {
                   maxLength={4} />
                 <input value={newOfferText} onChange={e => setNewOfferText(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && addOffer()}
-                  className="flex-1 px-3 py-2.5 border-[1.5px] border-white/[.08] rounded-xl text-sm outline-none transition-all placeholder:text-white/20"
+                  className="flex-1 px-3 py-2.5 border-[1.5px] border-white/[.08] rounded-xl text-smoutline-none transition-all placeholder:text-white/20"
                   style={{ background: 'rgba(255,255,255,0.06)', color: 'white' }}
                   placeholder="e.g. Free delivery on orders above ₹350" />
               </div>
               <button onClick={addOffer} disabled={offersLoading || !newOfferText.trim()}
-                className="w-full py-2.5 rounded-xl text-sm font-semibold disabled:opacity-40 transition-all"
+                className="w-full py-2.5 rounded-xl text-smfont-semibold disabled:opacity-40 transition-all"
                 style={{ background: 'linear-gradient(135deg,#C8B44A,#D4942A)', color: '#0D1A09', fontWeight: 700 }}>
                 Add Offer
               </button>
@@ -1125,7 +1145,7 @@ export default function AdminDashboard() {
 
           <div className="space-y-2">
             {offers.length === 0 && (
-              <div className="text-center py-12 text-white/20 text-sm rounded-2xl border border-white/[.06]" style={{ background: 'rgba(255,255,255,0.03)' }}>
+              <div className="text-center py-12 text-white/20 text-smrounded-2xl border border-white/[.06]" style={{ background: 'rgba(255,255,255,0.03)' }}>
                 No offers yet. Add your first one above.
               </div>
             )}
@@ -1136,15 +1156,15 @@ export default function AdminDashboard() {
                     ${offer.active ? 'border-brass/20' : 'border-white/[.06] opacity-50'}`}
                   style={{ background: offer.active ? 'rgba(200,180,74,0.06)' : 'rgba(255,255,255,0.03)' }}>
                   <span className="text-xl flex-shrink-0">{offer.icon}</span>
-                  <span className="flex-1 text-sm text-white/80">{offer.text}</span>
+                  <span className="flex-1 text-smtext-white/80">{offer.text}</span>
                   <button onClick={() => toggleOffer(offer.id, !offer.active)}
-                    className={`px-3 py-1 rounded-full text-xs font-semibold transition-all
+                    className={`px-3 py-1 rounded-full text-smfont-semibold transition-all
                       ${offer.active ? 'text-emerald-400' : 'text-white/30'}`}
                     style={{ background: offer.active ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.06)' }}>
                     {offer.active ? 'Live' : 'Hidden'}
                   </button>
                   <button onClick={() => deleteOffer(offer.id)}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center text-xs text-red-400/40 hover:text-red-400 transition-all"
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-smtext-red-400/40 hover:text-red-400 transition-all"
                     style={{ background: 'rgba(239,68,68,0.06)' }}>
                     ✕
                   </button>
@@ -1160,7 +1180,7 @@ export default function AdminDashboard() {
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="p-4 md:p-6 max-w-lg">
           <div className="mb-6">
             <h2 className="font-display text-xl font-bold text-white">Delivery Settings</h2>
-            <p className="text-xs text-white/30 mt-0.5">Control shipping charges shown during checkout.</p>
+            <p className="text-sm text-white/30 mt-0.5">Control shipping charges shown during checkout.</p>
           </div>
 
           <div className="rounded-2xl p-6 border border-white/[.07] space-y-5"
@@ -1170,20 +1190,20 @@ export default function AdminDashboard() {
               { label: 'Free Delivery Above (₹)', key: 'freeAboveAmt', hint: 'Orders above this amount qualify for free delivery' },
             ].map(field => (
               <div key={field.key}>
-                <label className="block text-[.58rem] font-bold uppercase tracking-[2px] mb-1.5" style={{ color: 'rgba(200,180,74,0.5)' }}>{field.label}</label>
+                <label className="block text-smfont-bold uppercase tracking-[2px] mb-1.5" style={{ color: 'rgba(200,180,74,0.5)' }}>{field.label}</label>
                 <input type="number" min={0}
                   value={delivery[field.key as keyof DeliverySettings] as number}
                   onChange={e => setDelivery({ ...delivery, [field.key]: parseFloat(e.target.value) || 0 })}
-                  className="w-full px-4 py-3 border-[1.5px] border-white/[.08] rounded-xl text-sm outline-none transition-all"
+                  className="w-full px-4 py-3 border-[1.5px] border-white/[.08] rounded-xl text-smoutline-none transition-all"
                   style={{ background: 'rgba(255,255,255,0.06)', color: 'white' }} />
-                <p className="text-[.6rem] text-white/25 mt-1">{field.hint}</p>
+                <p className="text-sm text-white/25 mt-1">{field.hint}</p>
               </div>
             ))}
 
             <div className="flex items-center justify-between p-4 rounded-xl border-[1.5px]" style={{ borderColor: 'rgba(200,180,74,0.15)', background: 'rgba(200,180,74,0.04)' }}>
               <div>
                 <p className="text-sm font-semibold text-white/80">Free delivery in Karnataka</p>
-                <p className="text-[.62rem] text-white/30 mt-0.5">When order meets the free delivery threshold</p>
+                <p className="text-[.85rem] text-white/30 mt-0.5">When order meets the free delivery threshold</p>
               </div>
               <button type="button" onClick={() => setDelivery({ ...delivery, karnatakFree: !delivery.karnatakFree })}
                 className={`w-12 h-6 rounded-full transition-all relative flex-shrink-0`}
@@ -1193,24 +1213,24 @@ export default function AdminDashboard() {
             </div>
 
             <div>
-              <label className="block text-[.58rem] font-bold uppercase tracking-[2px] mb-1.5" style={{ color: 'rgba(200,180,74,0.5)' }}>Customer-facing Note</label>
+              <label className="block text-smfont-bold uppercase tracking-[2px] mb-1.5" style={{ color: 'rgba(200,180,74,0.5)' }}>Customer-facing Note</label>
               <input value={delivery.note} onChange={e => setDelivery({ ...delivery, note: e.target.value })}
-                className="w-full px-4 py-3 border-[1.5px] border-white/[.08] rounded-xl text-sm outline-none transition-all placeholder:text-white/20"
+                className="w-full px-4 py-3 border-[1.5px] border-white/[.08] rounded-xl text-smoutline-none transition-all placeholder:text-white/20"
                 style={{ background: 'rgba(255,255,255,0.06)', color: 'white' }}
                 placeholder="e.g. Free delivery in Karnataka for orders ₹350+" />
             </div>
 
             <button onClick={saveDelivery} disabled={deliverySaving}
-              className="w-full py-3.5 rounded-xl font-semibold text-sm tracking-[0.5px] disabled:opacity-40 transition-all"
+              className="w-full py-3.5 rounded-xl font-semibold text-smtracking-[0.5px] disabled:opacity-40 transition-all"
               style={{ background: 'linear-gradient(135deg,#C8B44A,#D4942A)', color: '#0D1A09', boxShadow: '0 6px 20px rgba(200,180,74,0.2)' }}>
               {deliverySaving ? 'Saving…' : 'Save Settings'}
             </button>
           </div>
 
           <div className="mt-4 p-4 rounded-xl border border-white/[.06]" style={{ background: 'rgba(255,255,255,0.03)' }}>
-            <p className="text-[.55rem] font-bold uppercase tracking-[2px] mb-2" style={{ color: 'rgba(200,180,74,0.4)' }}>Live Preview</p>
+            <p className="text-sm font-bold uppercase tracking-[2px] mb-2" style={{ color: 'rgba(200,180,74,0.4)' }}>Live Preview</p>
             <p className="text-sm text-white/70">Delivery: <strong style={{ color: '#C8B44A' }}>₹{delivery.baseCharge}</strong></p>
-            {delivery.karnatakFree && <p className="text-[.65rem] text-emerald-400/60 mt-1">{delivery.note}</p>}
+            {delivery.karnatakFree && <p className="text-[.88rem] text-emerald-400/60 mt-1">{delivery.note}</p>}
           </div>
         </motion.div>
       )}
@@ -1221,7 +1241,7 @@ export default function AdminDashboard() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="font-display text-xl font-bold text-white">Products</h2>
-              <p className="text-xs text-white/30 mt-0.5">Edit product details, prices, and images.</p>
+              <p className="text-sm text-white/30 mt-0.5">Edit product details, prices, and images.</p>
             </div>
           </div>
 
@@ -1235,7 +1255,7 @@ export default function AdminDashboard() {
             <div className="py-20 text-center rounded-2xl border border-white/[.06]" style={{ background: 'rgba(255,255,255,0.03)' }}>
               <div className="text-4xl mb-3 opacity-20">📦</div>
               <p className="text-sm text-white/40 font-medium">No products found</p>
-              <p className="text-xs text-white/20 mt-1">Products seeded in the database will appear here.</p>
+              <p className="text-sm text-white/20 mt-1">Products seeded in the database will appear here.</p>
             </div>
           )}
 
@@ -1253,7 +1273,7 @@ export default function AdminDashboard() {
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center gap-2">
                       <span className="text-5xl opacity-15">🫙</span>
-                      <span className="text-[.6rem] font-semibold text-forest/20 tracking-widest uppercase">No image</span>
+                      <span className="text-sm font-semibold text-forest/20 tracking-widest uppercase">No image</span>
                     </div>
                   )}
                   {/* Bottom gradient overlay */}
@@ -1261,18 +1281,18 @@ export default function AdminDashboard() {
                     style={{ background: 'linear-gradient(to top, rgba(15,26,10,0.55), transparent)' }} />
                   {/* Image count badge */}
                   {(product.images ?? []).length > 1 && (
-                    <span className="absolute bottom-2.5 left-3 text-[.55rem] font-bold text-white/70 tracking-wide">
+                    <span className="absolute bottom-2.5 left-3 text-smfont-bold text-white/70 tracking-wide">
                       +{product.images.length - 1} more
                     </span>
                   )}
                   {/* Status badge */}
-                  <span className={`absolute top-2.5 right-2.5 text-[.55rem] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm
+                  <span className={`absolute top-2.5 right-2.5 text-smfont-bold px-2 py-0.5 rounded-full backdrop-blur-sm
                     ${product.active ? 'bg-sage/80 text-white' : 'bg-black/40 text-white/60'}`}>
                     {product.active ? '● Live' : '○ Hidden'}
                   </span>
                   {/* Badge label */}
                   {product.badge && (
-                    <span className="absolute top-2.5 left-2.5 text-[.52rem] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm"
+                    <span className="absolute top-2.5 left-2.5 text-smfont-bold px-2 py-0.5 rounded-full backdrop-blur-sm"
                       style={{ background: 'rgba(212,148,42,0.75)', color: '#fff' }}>
                       {product.badge}
                     </span>
@@ -1280,20 +1300,20 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="p-4">
-                  <h3 className="font-display text-sm font-bold text-white/90 leading-snug mb-1">{product.name}</h3>
-                  <p className="text-[.62rem] text-white/30 line-clamp-2 mb-3">{product.description}</p>
+                  <h3 className="font-display text-smfont-bold text-white/90 leading-snug mb-1">{product.name}</h3>
+                  <p className="text-[.85rem] text-white/30 line-clamp-2 mb-3">{product.description}</p>
 
                   {/* Price pills */}
                   <div className="flex gap-1.5 flex-wrap mb-4">
                     {Object.entries(product.prices).map(([size, price]) => (
-                      <span key={size} className="text-[.6rem] font-semibold px-2.5 py-1 rounded-full border border-white/[.08]" style={{ color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.04)' }}>
+                      <span key={size} className="text-sm font-semibold px-2.5 py-1 rounded-full border border-white/[.08]" style={{ color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.04)' }}>
                         {size} · <span style={{ color: '#C8B44A' }} className="font-bold">₹{price}</span>
                       </span>
                     ))}
                   </div>
 
                   <button onClick={() => setEditingProduct({ ...product })}
-                    className="w-full py-2.5 rounded-xl text-xs font-bold transition-all hover:opacity-90 active:scale-[.98]"
+                    className="w-full py-2.5 rounded-xl text-smfont-bold transition-all hover:opacity-90 active:scale-[.98]"
                     style={{ background: 'linear-gradient(135deg,#C8B44A,#D4942A)', color: '#0D1A09' }}>
                     Edit Product →
                   </button>
@@ -1310,7 +1330,7 @@ export default function AdminDashboard() {
           {analyticsLoading ? (
             <div className="flex flex-col items-center justify-center py-24 gap-3">
               <div className="w-8 h-8 rounded-full border-2 border-white/10 border-t-brass animate-spin" />
-              <span className="text-xs text-white/20 tracking-[2px] uppercase">Loading analytics…</span>
+              <span className="text-sm text-white/20 tracking-[2px] uppercase">Loading analytics…</span>
             </div>
           ) : analyticsStats ? (
             <div className="p-4 md:p-6 space-y-5">
@@ -1336,10 +1356,10 @@ export default function AdminDashboard() {
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60" style={{ background: '#34D399' }} />
                           <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
                         </span>
-                        <span className="text-[.55rem] font-bold tracking-[2px] uppercase text-white/30">Live · {new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                        <span className="text-sm font-bold tracking-[2px] uppercase text-white/30">Live · {new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</span>
                       </div>
                       <button onClick={fetchAnalytics}
-                        className="text-[.58rem] font-semibold px-2.5 py-1 rounded-lg border border-white/[.07] text-white/25 hover:text-white/50 hover:border-white/15 transition-all"
+                        className="text-sm font-semibold px-2.5 py-1 rounded-lg border border-white/[.07] text-white/25 hover:text-white/50 hover:border-white/15 transition-all"
                         style={{ background: 'rgba(255,255,255,0.03)' }}>
                         ↻ Refresh
                       </button>
@@ -1355,10 +1375,10 @@ export default function AdminDashboard() {
                         <div key={label} className="px-4 py-4 md:py-5">
                           <div className="flex items-center gap-1.5 mb-2">
                             <span className="text-sm opacity-60">{icon}</span>
-                            <span className="text-[.48rem] font-bold tracking-[1.5px] uppercase text-white/30">{label}</span>
+                            <span className="text-[.85rem] font-bold tracking-[1.5px] uppercase text-white/30">{label}</span>
                           </div>
                           <div className="font-display text-xl md:text-2xl font-bold leading-none truncate" style={{ color }}>{val}</div>
-                          <div className="text-[.5rem] text-white/20 mt-1.5 leading-tight truncate">{sub}</div>
+                          <div className="text-[.88rem] text-white/20 mt-1.5 leading-tight truncate">{sub}</div>
                         </div>
                       ))}
                     </div>
@@ -1370,7 +1390,7 @@ export default function AdminDashboard() {
               <div className="rounded-2xl overflow-hidden border border-white/[.07]"
                 style={{ background: 'rgba(12,20,8,0.9)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
                 <div className="px-5 py-3.5 border-b border-white/[.05]" style={{ background: 'rgba(200,180,74,0.04)' }}>
-                  <p className="text-[.58rem] font-bold tracking-[2.5px] uppercase" style={{ color: 'rgba(200,180,74,0.45)' }}>Conversion Funnel</p>
+                  <p className="text-sm font-bold tracking-[2.5px] uppercase" style={{ color: 'rgba(200,180,74,0.45)' }}>Conversion Funnel</p>
                 </div>
                 <div className="p-4 md:p-5">
                   {/* Funnel stages with arrows */}
@@ -1394,14 +1414,14 @@ export default function AdminDashboard() {
                               <div key={stage.label} className="flex items-center gap-2 flex-1">
                                 {i > 0 && (
                                   <div className="flex flex-col items-center flex-shrink-0">
-                                    <span className="text-[.55rem] font-bold" style={{ color: dropPct && dropPct >= 50 ? '#34D399' : '#EF4444' }}>{dropPct}%</span>
+                                    <span className="text-sm font-bold" style={{ color: dropPct && dropPct >= 50 ? '#34D399' : '#EF4444' }}>{dropPct}%</span>
                                     <span className="text-white/20 text-base">→</span>
                                   </div>
                                 )}
                                 <div className="flex-1 rounded-xl p-3 text-center border border-white/[.06]" style={{ background: stage.bg }}>
                                   <div className="text-lg mb-1">{stage.icon}</div>
                                   <div className="font-display text-xl font-bold" style={{ color: stage.color }}>{stage.val.toLocaleString()}</div>
-                                  <div className="text-[.5rem] text-white/35 uppercase tracking-[1px] mt-0.5">{stage.label}</div>
+                                  <div className="text-[.88rem] text-white/35 uppercase tracking-[1px] mt-0.5">{stage.label}</div>
                                   {/* Width bar showing relative volume */}
                                   <div className="mt-2 h-1 rounded-full mx-auto" style={{ background: 'rgba(255,255,255,0.06)', width: '80%' }}>
                                     <div className="h-full rounded-full" style={{ width: `${Math.max(4, (stage.val / maxVal) * 100)}%`, background: stage.color }} />
@@ -1422,7 +1442,7 @@ export default function AdminDashboard() {
                                 {i > 0 && (
                                   <div className="flex items-center gap-2 px-3 py-1">
                                     <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
-                                    <span className="text-[.55rem] font-bold px-1.5 py-0.5 rounded-full" style={{ color: dropPct && dropPct >= 50 ? '#34D399' : '#EF4444', background: dropPct && dropPct >= 50 ? 'rgba(52,211,153,0.1)' : 'rgba(239,68,68,0.1)' }}>↓ {dropPct}% continued</span>
+                                    <span className="text-sm font-bold px-1.5 py-0.5 rounded-full" style={{ color: dropPct && dropPct >= 50 ? '#34D399' : '#EF4444', background: dropPct && dropPct >= 50 ? 'rgba(52,211,153,0.1)' : 'rgba(239,68,68,0.1)' }}>↓ {dropPct}% continued</span>
                                     <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
                                   </div>
                                 )}
@@ -1443,11 +1463,11 @@ export default function AdminDashboard() {
                         {/* Overall conversion badge */}
                         {analyticsStats.funnel.visitors > 0 && (
                           <div className="mt-4 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-white/[.06]" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                            <span className="text-[.58rem] text-white/30">Overall visitor-to-order:</span>
+                            <span className="text-sm text-white/30">Overall visitor-to-order:</span>
                             <span className="text-sm font-bold" style={{ color: '#34D399' }}>
                               {((analyticsStats.funnel.orders / analyticsStats.funnel.visitors) * 100).toFixed(1)}%
                             </span>
-                            <span className="text-[.52rem] text-white/20">conversion rate</span>
+                            <span className="text-sm text-white/20">conversion rate</span>
                           </div>
                         )}
                       </>
@@ -1468,12 +1488,12 @@ export default function AdminDashboard() {
                 return (
                   <div className="rounded-2xl border border-white/[.07]" style={{ background: 'rgba(12,20,8,0.9)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
                     <div className="px-5 py-3.5 border-b border-white/[.05] flex items-center justify-between" style={{ background: 'rgba(200,180,74,0.04)' }}>
-                      <p className="text-[.58rem] font-bold tracking-[2.5px] uppercase" style={{ color: 'rgba(200,180,74,0.45)' }}>Revenue · Last 30 Days</p>
+                      <p className="text-sm font-bold tracking-[2.5px] uppercase" style={{ color: 'rgba(200,180,74,0.45)' }}>Revenue · Last 30 Days</p>
                       <div className="flex items-center gap-2">
-                        <span className="text-[.55rem] font-bold" style={{ color: trend >= 0 ? '#34D399' : '#EF4444' }}>
+                        <span className="text-sm font-bold" style={{ color: trend >= 0 ? '#34D399' : '#EF4444' }}>
                           {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}% vs prior period
                         </span>
-                        <span className="text-[.55rem] font-bold px-2 py-0.5 rounded-full" style={{ color: '#C8B44A', background: 'rgba(200,180,74,0.1)' }}>
+                        <span className="text-sm font-bold px-2 py-0.5 rounded-full" style={{ color: '#C8B44A', background: 'rgba(200,180,74,0.1)' }}>
                           ₹{total30d.toLocaleString()}
                         </span>
                       </div>
@@ -1485,7 +1505,7 @@ export default function AdminDashboard() {
                           const isWeekend = [0, 6].includes(new Date(date).getDay());
                           return (
                             <div key={date} className="flex-1 flex flex-col justify-end items-center group relative" style={{ minWidth: 0 }}>
-                              <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-[.48rem] px-1.5 py-0.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none"
+                              <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-[.85rem] px-1.5 py-0.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none"
                                 style={{ background: 'rgba(200,180,74,0.95)', color: '#0D1A09', fontWeight: 700 }}>
                                 ₹{amount.toLocaleString()} · {date.slice(5)}
                               </div>
@@ -1501,9 +1521,9 @@ export default function AdminDashboard() {
                         })}
                       </div>
                       <div className="flex justify-between mt-2 px-0.5">
-                        <span className="text-[.48rem] text-white/20">{data[0]?.date.slice(5)}</span>
-                        <span className="text-[.48rem] text-white/15">· Hover bars for details ·</span>
-                        <span className="text-[.48rem] text-white/20">{data[data.length - 1]?.date.slice(5)}</span>
+                        <span className="text-[.85rem] text-white/20">{data[0]?.date.slice(5)}</span>
+                        <span className="text-[.85rem] text-white/15">· Hover bars for details ·</span>
+                        <span className="text-[.85rem] text-white/20">{data[data.length - 1]?.date.slice(5)}</span>
                       </div>
                     </div>
                   </div>
@@ -1515,8 +1535,8 @@ export default function AdminDashboard() {
                 {/* Orders by status - donut-style */}
                 <div className="rounded-2xl p-5 border border-white/[.07]" style={{ background: 'rgba(12,20,8,0.9)', boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
                   <div className="flex items-center justify-between mb-4">
-                    <p className="text-[.58rem] font-bold tracking-[2.5px] uppercase" style={{ color: 'rgba(200,180,74,0.45)' }}>Orders by Status</p>
-                    <span className="text-[.55rem] text-white/25">{analyticsStats.orders.byStatus.reduce((s, b) => s + b.count, 0)} total</span>
+                    <p className="text-sm font-bold tracking-[2.5px] uppercase" style={{ color: 'rgba(200,180,74,0.45)' }}>Orders by Status</p>
+                    <span className="text-sm text-white/25">{analyticsStats.orders.byStatus.reduce((s, b) => s + b.count, 0)} total</span>
                   </div>
                   <div className="space-y-2.5">
                     {analyticsStats.orders.byStatus.map(({ status, count }) => {
@@ -1534,12 +1554,12 @@ export default function AdminDashboard() {
                       return (
                         <div key={status} className="flex items-center gap-2.5">
                           <span className="text-sm w-5 flex-shrink-0">{icon}</span>
-                          <span className="text-[.62rem] text-white/45 w-16 flex-shrink-0 capitalize">{label}</span>
+                          <span className="text-[.85rem] text-white/45 w-16 flex-shrink-0 capitalize">{label}</span>
                           <div className="flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
                             <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: `linear-gradient(90deg,${color}99,${color})` }} />
                           </div>
-                          <span className="text-[.6rem] text-white/25 w-7 text-right flex-shrink-0">{pct}%</span>
-                          <span className="text-xs font-bold w-5 text-right flex-shrink-0" style={{ color }}>{count}</span>
+                          <span className="text-sm text-white/25 w-7 text-right flex-shrink-0">{pct}%</span>
+                          <span className="text-sm font-bold w-5 text-right flex-shrink-0" style={{ color }}>{count}</span>
                         </div>
                       );
                     })}
@@ -1549,10 +1569,10 @@ export default function AdminDashboard() {
                 {/* Top cities with rank */}
                 <div className="rounded-2xl p-5 border border-white/[.07]" style={{ background: 'rgba(12,20,8,0.9)', boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
                   <div className="flex items-center justify-between mb-4">
-                    <p className="text-[.58rem] font-bold tracking-[2.5px] uppercase" style={{ color: 'rgba(200,180,74,0.45)' }}>Top Cities</p>
-                    <span className="text-[.55rem] text-white/25">{analyticsStats.topCities.length} cities</span>
+                    <p className="text-sm font-bold tracking-[2.5px] uppercase" style={{ color: 'rgba(200,180,74,0.45)' }}>Top Cities</p>
+                    <span className="text-sm text-white/25">{analyticsStats.topCities.length} cities</span>
                   </div>
-                  {analyticsStats.topCities.length === 0 && <p className="text-xs text-white/20">No order data yet</p>}
+                  {analyticsStats.topCities.length === 0 && <p className="text-sm text-white/20">No order data yet</p>}
                   <div className="space-y-2.5">
                     {analyticsStats.topCities.slice(0, 6).map(({ city, count }, i) => {
                       const max = analyticsStats.topCities[0]?.count ?? 1;
@@ -1560,12 +1580,12 @@ export default function AdminDashboard() {
                       const rankIcon = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null;
                       return (
                         <div key={city} className="flex items-center gap-2.5">
-                          <span className="text-sm w-5 flex-shrink-0 text-center">{rankIcon ?? <span className="text-[.6rem] text-white/20">{i + 1}</span>}</span>
-                          <span className="text-[.65rem] text-white/50 w-20 truncate capitalize flex-shrink-0">{city}</span>
+                          <span className="text-sm w-5 flex-shrink-0 text-center">{rankIcon ?? <span className="text-sm text-white/20">{i + 1}</span>}</span>
+                          <span className="text-[.88rem] text-white/50 w-20 truncate capitalize flex-shrink-0">{city}</span>
                           <div className="flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
                             <div className="h-full rounded-full" style={{ width: `${(count / max) * 100}%`, background: i < 3 ? `linear-gradient(90deg,rgba(90,122,58,0.6),${rankColors[i] ?? '#C8B44A'})` : 'rgba(255,255,255,0.15)' }} />
                           </div>
-                          <span className="text-xs font-bold w-5 text-right flex-shrink-0" style={{ color: i < 3 ? (rankColors[i] ?? '#C8B44A') : 'rgba(255,255,255,0.3)' }}>{count}</span>
+                          <span className="text-sm font-bold w-5 text-right flex-shrink-0" style={{ color: i < 3 ? (rankColors[i] ?? '#C8B44A') : 'rgba(255,255,255,0.3)' }}>{count}</span>
                         </div>
                       );
                     })}
@@ -1587,26 +1607,26 @@ export default function AdminDashboard() {
                         <div className="absolute top-0 right-0 w-40 h-40 rounded-full blur-3xl opacity-10" style={{ background: '#C8B44A' }} />
                         <div className="flex items-center gap-2 mb-3">
                           <span className="text-base">🏆</span>
-                          <span className="text-[.55rem] font-bold tracking-[2px] uppercase" style={{ color: 'rgba(200,180,74,0.6)' }}>Top Performer</span>
+                          <span className="text-sm font-bold tracking-[2px] uppercase" style={{ color: 'rgba(200,180,74,0.6)' }}>Top Performer</span>
                         </div>
                         <div className="flex items-end justify-between flex-wrap gap-3">
                           <div>
                             <h3 className="font-display text-lg md:text-xl font-bold text-white/90 leading-tight">{top.name}</h3>
                             <div className="flex items-center gap-3 mt-2 flex-wrap">
-                              <span className="text-[.6rem] font-semibold px-2 py-1 rounded-lg" style={{ background: 'rgba(200,180,74,0.15)', color: '#C8B44A' }}>
+                              <span className="text-sm font-semibold px-2 py-1 rounded-lg" style={{ background: 'rgba(200,180,74,0.15)', color: '#C8B44A' }}>
                                 {top.units} units sold
                               </span>
-                              <span className="text-[.6rem] font-semibold px-2 py-1 rounded-lg" style={{ background: 'rgba(52,211,153,0.12)', color: '#34D399' }}>
+                              <span className="text-sm font-semibold px-2 py-1 rounded-lg" style={{ background: 'rgba(52,211,153,0.12)', color: '#34D399' }}>
                                 ₹{top.revenue.toLocaleString()} revenue
                               </span>
-                              <span className="text-[.6rem] font-semibold px-2 py-1 rounded-lg" style={{ background: 'rgba(96,165,250,0.12)', color: '#60A5FA' }}>
+                              <span className="text-sm font-semibold px-2 py-1 rounded-lg" style={{ background: 'rgba(96,165,250,0.12)', color: '#60A5FA' }}>
                                 {analyticsStats.addToCartByProduct[top.id] ?? 0} add-to-carts
                               </span>
                             </div>
                           </div>
                           <div className="text-right">
                             <div className="font-display text-2xl md:text-3xl font-bold" style={{ color: '#C8B44A' }}>₹{top.revenue.toLocaleString()}</div>
-                            <div className="text-[.5rem] text-white/25 uppercase tracking-widest mt-0.5">Est. Revenue</div>
+                            <div className="text-[.88rem] text-white/25 uppercase tracking-widest mt-0.5">Est. Revenue</div>
                           </div>
                         </div>
                         {/* Volume bar */}
@@ -1623,26 +1643,26 @@ export default function AdminDashboard() {
                           <table className="w-full">
                             <thead>
                               <tr className="border-b border-white/[.06]" style={{ background: 'rgba(200,180,74,0.03)' }}>
-                                <th className="px-4 py-2.5 text-left text-[.52rem] font-bold tracking-[1.5px] uppercase" style={{ color: 'rgba(200,180,74,0.35)' }}>Product</th>
-                                <th className="px-4 py-2.5 text-left text-[.52rem] font-bold tracking-[1.5px] uppercase" style={{ color: 'rgba(200,180,74,0.35)' }}>Units</th>
-                                <th className="hidden md:table-cell px-4 py-2.5 text-left text-[.52rem] font-bold tracking-[1.5px] uppercase" style={{ color: 'rgba(200,180,74,0.35)' }}>Carts</th>
-                                <th className="px-4 py-2.5 text-left text-[.52rem] font-bold tracking-[1.5px] uppercase" style={{ color: 'rgba(200,180,74,0.35)' }}>Revenue</th>
-                                <th className="hidden md:table-cell px-4 py-2.5 text-left text-[.52rem] font-bold tracking-[1.5px] uppercase" style={{ color: 'rgba(200,180,74,0.35)' }}>Orders</th>
+                                <th className="px-4 py-2.5 text-left text-smfont-bold tracking-[1.5px] uppercase" style={{ color: 'rgba(200,180,74,0.35)' }}>Product</th>
+                                <th className="px-4 py-2.5 text-left text-smfont-bold tracking-[1.5px] uppercase" style={{ color: 'rgba(200,180,74,0.35)' }}>Units</th>
+                                <th className="hidden md:table-cell px-4 py-2.5 text-left text-smfont-bold tracking-[1.5px] uppercase" style={{ color: 'rgba(200,180,74,0.35)' }}>Carts</th>
+                                <th className="px-4 py-2.5 text-left text-smfont-bold tracking-[1.5px] uppercase" style={{ color: 'rgba(200,180,74,0.35)' }}>Revenue</th>
+                                <th className="hidden md:table-cell px-4 py-2.5 text-left text-smfont-bold tracking-[1.5px] uppercase" style={{ color: 'rgba(200,180,74,0.35)' }}>Orders</th>
                               </tr>
                             </thead>
                             <tbody>
                               {rest.map((p, i) => (
                                 <tr key={p.id} className={i < rest.length - 1 ? 'border-b border-white/[.04]' : ''}>
                                   <td className="px-4 py-3">
-                                    <div className="font-semibold text-sm text-white/70 leading-tight">{p.name}</div>
+                                    <div className="font-semibold text-smtext-white/70 leading-tight">{p.name}</div>
                                     <div className="mt-1 h-1 w-16 md:w-28 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }}>
                                       <div className="h-full rounded-full" style={{ width: `${(p.units / maxUnits) * 100}%`, background: 'rgba(200,180,74,0.4)' }} />
                                     </div>
                                   </td>
-                                  <td className="px-4 py-3 text-sm font-bold text-white/50">{p.units}</td>
-                                  <td className="hidden md:table-cell px-4 py-3 text-sm font-bold text-blue-400/70">{analyticsStats.addToCartByProduct[p.id] ?? 0}</td>
-                                  <td className="px-4 py-3 text-sm font-bold text-emerald-400/80">₹{p.revenue.toLocaleString()}</td>
-                                  <td className="hidden md:table-cell px-4 py-3 text-sm font-bold text-white/30">{p.orders}</td>
+                                  <td className="px-4 py-3 text-smfont-bold text-white/50">{p.units}</td>
+                                  <td className="hidden md:table-cell px-4 py-3 text-smfont-bold text-blue-400/70">{analyticsStats.addToCartByProduct[p.id] ?? 0}</td>
+                                  <td className="px-4 py-3 text-smfont-bold text-emerald-400/80">₹{p.revenue.toLocaleString()}</td>
+                                  <td className="hidden md:table-cell px-4 py-3 text-smfont-bold text-white/30">{p.orders}</td>
                                 </tr>
                               ))}
                             </tbody>
@@ -1652,7 +1672,7 @@ export default function AdminDashboard() {
                     )}
 
                     {analyticsStats.productPerformance.length === 0 && (
-                      <div className="py-12 text-center text-xs text-white/20 rounded-2xl border border-white/[.06]" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                      <div className="py-12 text-center text-smtext-white/20 rounded-2xl border border-white/[.06]" style={{ background: 'rgba(255,255,255,0.02)' }}>
                         No product sales yet
                       </div>
                     )}
@@ -1663,8 +1683,8 @@ export default function AdminDashboard() {
               {/* ── Customer Details ── */}
               <div className="rounded-2xl overflow-hidden border border-white/[.07]" style={{ background: 'rgba(15,24,10,0.8)', boxShadow: '0 8px 30px rgba(0,0,0,0.3)' }}>
                 <div className="px-5 py-4 border-b border-white/[.06] flex items-center justify-between" style={{ background: 'rgba(200,180,74,0.04)' }}>
-                  <p className="text-[.6rem] font-bold tracking-[2.5px] uppercase" style={{ color: 'rgba(200,180,74,0.4)' }}>Customer Details</p>
-                  <div className="flex gap-4 text-[.6rem] text-white/30">
+                  <p className="text-sm font-bold tracking-[2.5px] uppercase" style={{ color: 'rgba(200,180,74,0.4)' }}>Customer Details</p>
+                  <div className="flex gap-4 text-smtext-white/30">
                     <span>Total: <span style={{ color: '#C8B44A' }} className="font-bold">{analyticsStats.customers.total}</span></span>
                     <span>Repeat buyers: <span className="font-bold text-emerald-400">{analyticsStats.customers.repeat}</span></span>
                   </div>
@@ -1672,25 +1692,25 @@ export default function AdminDashboard() {
                 {/* Mobile customer cards */}
                 <div className="md:hidden divide-y divide-white/[.04]">
                   {analyticsStats.customers.list.length === 0 && (
-                    <div className="px-5 py-10 text-center text-xs text-white/20">No customers yet</div>
+                    <div className="px-5 py-10 text-center text-smtext-white/20">No customers yet</div>
                   )}
                   {analyticsStats.customers.list.map(c => (
                     <div key={c.phone} onClick={() => openCustomer(c)}
                       className="px-4 py-3.5 flex items-center gap-3 cursor-pointer hover:bg-white/[.03] transition-colors active:bg-white/[.05]">
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0"
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-smflex-shrink-0"
                         style={{ background: 'linear-gradient(135deg,rgba(200,180,74,0.2),rgba(200,180,74,0.08))', color: '#C8B44A' }}>
                         {c.name.charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 mb-0.5">
-                          <span className="font-semibold text-sm text-white/80 truncate">{c.name}</span>
-                          {c.orders > 1 && <span className="text-[.48rem] px-1 py-0.5 rounded-full font-bold flex-shrink-0" style={{ background: 'rgba(16,185,129,0.15)', color: '#34D399' }}>★</span>}
+                          <span className="font-semibold text-smtext-white/80 truncate">{c.name}</span>
+                          {c.orders > 1 && <span className="text-[.85rem] px-1 py-0.5 rounded-full font-bold flex-shrink-0" style={{ background: 'rgba(16,185,129,0.15)', color: '#34D399' }}>★</span>}
                         </div>
-                        <div className="text-[.6rem] text-white/30 truncate">{c.phone} · {c.city}</div>
+                        <div className="text-sm text-white/30 truncate">{c.phone} · {c.city}</div>
                       </div>
                       <div className="text-right flex-shrink-0">
                         <div className="text-sm font-bold" style={{ color: '#C8B44A' }}>₹{Math.round(c.spent).toLocaleString()}</div>
-                        <div className="text-[.58rem] text-white/30">{c.orders} order{c.orders !== 1 ? 's' : ''}</div>
+                        <div className="text-sm text-white/30">{c.orders} order{c.orders !== 1 ? 's' : ''}</div>
                       </div>
                     </div>
                   ))}
@@ -1701,7 +1721,7 @@ export default function AdminDashboard() {
                     <thead>
                       <tr className="border-b border-white/[.06]">
                         {['Customer', 'Phone', 'City', 'Orders', 'Total Spent', 'Last Order'].map(h => (
-                          <th key={h} className="px-4 py-2.5 text-left text-[.52rem] font-bold tracking-[1.5px] uppercase" style={{ color: 'rgba(200,180,74,0.35)' }}>{h}</th>
+                          <th key={h} className="px-4 py-2.5 text-left text-smfont-bold tracking-[1.5px] uppercase" style={{ color: 'rgba(200,180,74,0.35)' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -1710,27 +1730,27 @@ export default function AdminDashboard() {
                         <tr key={c.phone} onClick={() => openCustomer(c)}
                           className={`cursor-pointer transition-colors hover:bg-white/[.03] ${i < analyticsStats.customers.list.length - 1 ? 'border-b border-white/[.04]' : ''}`}>
                           <td className="px-4 py-3">
-                            <div className="font-semibold text-sm text-white/80">{c.name}</div>
+                            <div className="font-semibold text-smtext-white/80">{c.name}</div>
                             {c.orders > 1 && (
-                              <span className="text-[.5rem] px-1.5 py-0.5 rounded-full font-bold"
+                              <span className="text-[.88rem] px-1.5 py-0.5 rounded-full font-bold"
                                 style={{ background: 'rgba(16,185,129,0.15)', color: '#34D399' }}>
                                 ★ Repeat
                               </span>
                             )}
                           </td>
                           <td className="px-4 py-3">
-                            <a href={`tel:${c.phone}`} className="text-xs text-blue-400 no-underline hover:underline">{c.phone}</a>
+                            <a href={`tel:${c.phone}`} className="text-sm text-blue-400 no-underline hover:underline">{c.phone}</a>
                             <a href={`https://wa.me/91${c.phone.replace(/[^0-9]/g, '').slice(-10)}`} target="_blank"
-                              className="ml-2 text-[.55rem] text-green-400 no-underline hover:underline">WA</a>
+                              className="ml-2 text-smtext-green-400 no-underline hover:underline">WA</a>
                           </td>
-                          <td className="px-4 py-3 text-xs text-white/40 capitalize">{c.city}</td>
-                          <td className="px-4 py-3 text-sm font-bold text-white/50">{c.orders}</td>
-                          <td className="px-4 py-3 text-sm font-bold" style={{ color: '#C8B44A' }}>₹{Math.round(c.spent).toLocaleString()}</td>
-                          <td className="px-4 py-3 text-xs text-white/30">{new Date(c.lastOrder).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</td>
+                          <td className="px-4 py-3 text-smtext-white/40 capitalize">{c.city}</td>
+                          <td className="px-4 py-3 text-smfont-bold text-white/50">{c.orders}</td>
+                          <td className="px-4 py-3 text-smfont-bold" style={{ color: '#C8B44A' }}>₹{Math.round(c.spent).toLocaleString()}</td>
+                          <td className="px-4 py-3 text-smtext-white/30">{new Date(c.lastOrder).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</td>
                         </tr>
                       ))}
                       {analyticsStats.customers.list.length === 0 && (
-                        <tr><td colSpan={6} className="px-4 py-10 text-center text-xs text-white/20">No customers yet</td></tr>
+                        <tr><td colSpan={6} className="px-4 py-10 text-center text-smtext-white/20">No customers yet</td></tr>
                       )}
                     </tbody>
                   </table>
@@ -1739,7 +1759,7 @@ export default function AdminDashboard() {
 
             </div>
           ) : (
-            <div className="text-center py-16 text-sm text-white/20">Failed to load analytics.</div>
+            <div className="text-center py-16 text-smtext-white/20">Failed to load analytics.</div>
           )}
         </motion.div>
       )}
@@ -1775,14 +1795,14 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <a href={`tel:${selectedCustomer.phone}`} className="text-sm text-brass no-underline hover:underline">{selectedCustomer.phone}</a>
                   <a href={`https://wa.me/91${selectedCustomer.phone.replace(/[^0-9]/g, '').slice(-10)}`} target="_blank"
-                    className="text-[.6rem] font-bold px-2 py-0.5 rounded-full no-underline"
+                    className="text-sm font-bold px-2 py-0.5 rounded-full no-underline"
                     style={{ background: 'rgba(37,211,102,0.2)', color: '#25D366' }}>WhatsApp</a>
                   {selectedCustomer.orders > 1 && (
-                    <span className="text-[.6rem] font-bold px-2 py-0.5 rounded-full"
+                    <span className="text-sm font-bold px-2 py-0.5 rounded-full"
                       style={{ background: 'rgba(52,211,153,0.2)', color: '#34D399' }}>★ Repeat Buyer</span>
                   )}
                 </div>
-                <p className="text-[.65rem] text-white/40 mt-1">📍 {selectedCustomer.city}</p>
+                <p className="text-[.88rem] text-white/40 mt-1">📍 {selectedCustomer.city}</p>
 
                 {/* Mini stats */}
                 <div className="grid grid-cols-3 gap-2 mt-4">
@@ -1793,7 +1813,7 @@ export default function AdminDashboard() {
                   ].map(({ label, val, color }) => (
                     <div key={label} className="rounded-xl p-2.5 text-center" style={{ background: 'rgba(255,255,255,0.06)' }}>
                       <div className="text-base font-bold" style={{ color }}>{val}</div>
-                      <div className="text-[.48rem] text-white/30 uppercase tracking-[1px] mt-0.5">{label}</div>
+                      <div className="text-[.85rem] text-white/30 uppercase tracking-[1px] mt-0.5">{label}</div>
                     </div>
                   ))}
                 </div>
@@ -1801,13 +1821,13 @@ export default function AdminDashboard() {
 
               {/* Order list */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                <p className="text-[.58rem] font-bold tracking-[2px] uppercase px-1" style={{ color: 'rgba(200,180,74,0.4)' }}>Order History</p>
+                <p className="text-sm font-bold tracking-[2px] uppercase px-1" style={{ color: 'rgba(200,180,74,0.4)' }}>Order History</p>
                 {customerOrdersLoading ? (
                   <div className="flex justify-center py-10">
                     <div className="w-6 h-6 rounded-full border-2 border-white/10 border-t-brass animate-spin" />
                   </div>
                 ) : customerOrders.length === 0 ? (
-                  <div className="text-center py-10 text-sm text-white/20">No orders found</div>
+                  <div className="text-center py-10 text-smtext-white/20">No orders found</div>
                 ) : (
                   customerOrders.map(order => {
                     const meta = STATUS_META[order.status] ?? { label: order.status, color: '#999', bg: 'rgba(136,136,136,0.1)', icon: '•' };
@@ -1819,15 +1839,15 @@ export default function AdminDashboard() {
                         <div className="px-4 py-3 flex items-center justify-between border-b border-white/[.06]"
                           style={{ background: 'rgba(200,180,74,0.04)' }}>
                           <div>
-                            <span className="text-[.55rem] font-mono" style={{ color: 'rgba(200,180,74,0.4)' }}>#{order.id.slice(-8).toUpperCase()}</span>
-                            <p className="text-[.65rem] text-white/30 mt-0.5">
+                            <span className="text-sm font-mono" style={{ color: 'rgba(200,180,74,0.4)' }}>#{order.id.slice(-8).toUpperCase()}</span>
+                            <p className="text-[.88rem] text-white/30 mt-0.5">
                               {new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                               {' · '}{new Date(order.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-bold" style={{ color: '#C8B44A' }}>₹{order.totalAmount?.toLocaleString() ?? '—'}</span>
-                            <span className="text-[.55rem] font-bold px-2 py-0.5 rounded-full" style={{ color: meta.color, background: meta.bg }}>
+                            <span className="text-sm font-bold px-2 py-0.5 rounded-full" style={{ color: meta.color, background: meta.bg }}>
                               {meta.icon} {meta.label}
                             </span>
                           </div>
@@ -1835,18 +1855,18 @@ export default function AdminDashboard() {
                         {/* Items */}
                         <div className="px-4 py-3 space-y-1">
                           {items.map((item, idx) => (
-                            <div key={idx} className="flex justify-between items-center text-xs">
+                            <div key={idx} className="flex justify-between items-center text-sm">
                               <span className="text-white/40">{item.productId} · {item.packSize}</span>
                               <span className="font-semibold text-white/30">×{item.count}</span>
                             </div>
                           ))}
-                          {items.length === 0 && <p className="text-xs text-white/20 italic">No item details</p>}
+                          {items.length === 0 && <p className="text-sm text-white/20 italic">No item details</p>}
                         </div>
                         {/* Footer */}
                         <div className="px-4 pb-3 flex items-center gap-3">
-                          <span className="text-[.6rem] text-white/25">📍 {order.city}</span>
-                          {order.paymentMethod && <span className="text-[.6rem] text-white/25">💳 {order.paymentMethod}</span>}
-                          {order.notes && <span className="text-[.6rem] text-white/25 truncate">📝 {order.notes}</span>}
+                          <span className="text-sm text-white/25">📍 {order.city}</span>
+                          {order.paymentMethod && <span className="text-sm text-white/25">💳 {order.paymentMethod}</span>}
+                          {order.notes && <span className="text-sm text-white/25 truncate">📝 {order.notes}</span>}
                         </div>
                       </div>
                     );
@@ -1858,7 +1878,7 @@ export default function AdminDashboard() {
               <div className="p-4 flex-shrink-0 border-t border-white/[.06]">
                 <a href={`https://wa.me/91${selectedCustomer.phone.replace(/[^0-9]/g, '').slice(-10)}?text=${encodeURIComponent(`Hi ${selectedCustomer.name}! Thank you for ordering from Crafted by Amma 🌾`)}`}
                   target="_blank"
-                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold text-white no-underline transition-all hover:shadow-lg"
+                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-smfont-semibold text-white no-underline transition-all hover:shadow-lg"
                   style={{ background: 'linear-gradient(135deg,#25D366,#1da851)', boxShadow: '0 4px 16px rgba(37,211,102,0.2)' }}>
                   💬 Message on WhatsApp
                 </a>
@@ -1886,12 +1906,12 @@ export default function AdminDashboard() {
               <div className="px-5 pt-5 pb-4 border-b border-white/[.06] flex items-center justify-between sticky top-0 z-10" style={{ background: 'rgba(8,15,6,0.97)', backdropFilter: 'blur(10px)' }}>
                 <div>
                   <h2 className="font-display text-lg font-bold text-white">Edit Product</h2>
-                  <p className="text-[.6rem] text-white/25 font-mono">{editingProduct.id}</p>
+                  <p className="text-sm text-white/25 font-mono">{editingProduct.id}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   {/* Active toggle */}
                   <button onClick={() => setEditingProduct(p => p ? { ...p, active: !p.active } : p)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all`}
+                    className={`px-3 py-1.5 rounded-full text-smfont-bold transition-all`}
                     style={editingProduct.active ? { background: 'rgba(16,185,129,0.15)', color: '#34D399' } : { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.3)' }}>
                     {editingProduct.active ? 'Live' : 'Hidden'}
                   </button>
@@ -1909,7 +1929,7 @@ export default function AdminDashboard() {
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-[.57rem] font-bold uppercase tracking-[2.5px]" style={{ color: 'rgba(200,180,74,0.45)' }}>Product Images</p>
                     <button onClick={() => imageInputRef.current?.click()} disabled={imageUploading}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[.6rem] font-bold transition-all disabled:opacity-40"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-smfont-bold transition-all disabled:opacity-40"
                       style={{ background: 'linear-gradient(135deg,#5A7A3A,#4a6830)', color: '#fff' }}>
                       {imageUploading
                         ? <><span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Uploading…</>
@@ -1926,7 +1946,7 @@ export default function AdminDashboard() {
                         className="w-full h-full object-cover" />
                       <div className="absolute inset-x-0 bottom-0 h-12 pointer-events-none"
                         style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.4), transparent)' }} />
-                      <span className="absolute bottom-2 left-3 text-[.5rem] font-bold text-white/60 uppercase tracking-widest">Main image</span>
+                      <span className="absolute bottom-2 left-3 text-[.88rem] font-bold text-white/60 uppercase tracking-widest">Main image</span>
                     </div>
                   )}
 
@@ -1938,7 +1958,7 @@ export default function AdminDashboard() {
                           className={`w-16 h-16 object-cover rounded-xl border-2 transition-all
                             ${i === 0 ? 'border-brass/40' : 'border-white/[.08]'}`} />
                         <button onClick={() => removeProductImage(img)}
-                          className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-[.6rem] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-md">
+                          className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-smflex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-md">
                           ✕
                         </button>
                       </div>
@@ -1946,7 +1966,7 @@ export default function AdminDashboard() {
                     {(editingProduct.images ?? []).length === 0 && (
                       <div className="w-full py-8 rounded-xl border-2 border-dashed border-white/[.08] flex flex-col items-center gap-2 text-white/20">
                         <span className="text-3xl">🖼</span>
-                        <span className="text-xs">No images yet — upload to S3</span>
+                        <span className="text-sm">No images yet — upload to S3</span>
                       </div>
                     )}
                   </div>
@@ -1965,13 +1985,13 @@ export default function AdminDashboard() {
                     {field.multiline ? (
                       <textarea value={editingProduct[field.key as keyof DbProduct] as string}
                         onChange={e => setEditingProduct(p => p ? { ...p, [field.key]: e.target.value } : p)}
-                        className="w-full px-3 py-2.5 border-[1.5px] border-white/[.08] rounded-xl text-sm outline-none transition-all resize-y min-h-[70px] text-white/80"
+                        className="w-full px-3 py-2.5 border-[1.5px] border-white/[.08] rounded-xl text-smoutline-none transition-all resize-y min-h-[70px] text-white/80"
                         style={{ background: 'rgba(255,255,255,0.05)' }}
                       />
                     ) : (
                       <input value={editingProduct[field.key as keyof DbProduct] as string}
                         onChange={e => setEditingProduct(p => p ? { ...p, [field.key]: e.target.value } : p)}
-                        className="w-full px-3 py-2.5 border-[1.5px] border-white/[.08] rounded-xl text-sm outline-none transition-all text-white/80"
+                        className="w-full px-3 py-2.5 border-[1.5px] border-white/[.08] rounded-xl text-smoutline-none transition-all text-white/80"
                         style={{ background: 'rgba(255,255,255,0.05)' }}
                       />
                     )}
@@ -1982,20 +2002,20 @@ export default function AdminDashboard() {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="text-[.57rem] font-bold uppercase tracking-[2.5px]" style={{ color: 'rgba(200,180,74,0.45)' }}>Prices</label>
-                    <button onClick={addPackSize} className="text-[.6rem] font-bold text-brass hover:underline">+ Add size</button>
+                    <button onClick={addPackSize} className="text-sm font-bold text-brass hover:underline">+ Add size</button>
                   </div>
                   <div className="space-y-2">
                     {Object.entries(editingProduct.prices).map(([size, price]) => (
                       <div key={size} className="flex items-center gap-2">
                         <span className="text-sm font-bold text-white/60 w-12 flex-shrink-0">{size}</span>
                         <div className="flex-1 relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-white/30">₹</span>
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-smtext-white/30">₹</span>
                           <input type="number" value={price} onChange={e => updatePrice(size, e.target.value)}
-                            className="w-full pl-7 pr-3 py-2 border-[1.5px] border-white/[.08] rounded-xl text-sm outline-none transition-all text-white/80"
+                            className="w-full pl-7 pr-3 py-2 border-[1.5px] border-white/[.08] rounded-xl text-smoutline-none transition-all text-white/80"
                             style={{ background: 'rgba(255,255,255,0.05)' }} />
                         </div>
                         <button onClick={() => removePackSize(size)}
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-xs text-red-400/40 hover:text-red-400 transition-all flex-shrink-0"
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-smtext-red-400/40 hover:text-red-400 transition-all flex-shrink-0"
                           style={{ background: 'rgba(239,68,68,0.06)' }}>
                           ✕
                         </button>
@@ -2016,7 +2036,7 @@ export default function AdminDashboard() {
                             updated[i] = { ...updated[i], type: e.target.value };
                             setEditingProduct(p => p ? { ...p, usage: updated } : p);
                           }}
-                          className="w-full px-2.5 py-1.5 border border-white/[.07] rounded-lg text-xs outline-none text-white/70 placeholder:text-white/20"
+                          className="w-full px-2.5 py-1.5 border border-white/[.07] rounded-lg text-smoutline-none text-white/70 placeholder:text-white/20"
                           style={{ background: 'rgba(255,255,255,0.04)' }} />
                         <textarea value={step.instructions} placeholder="Instructions"
                           onChange={e => {
@@ -2024,7 +2044,7 @@ export default function AdminDashboard() {
                             updated[i] = { ...updated[i], instructions: e.target.value };
                             setEditingProduct(p => p ? { ...p, usage: updated } : p);
                           }}
-                          className="w-full px-2.5 py-1.5 border border-white/[.07] rounded-lg text-xs outline-none resize-none min-h-[52px] text-white/70 placeholder:text-white/20"
+                          className="w-full px-2.5 py-1.5 border border-white/[.07] rounded-lg text-smoutline-none resize-none min-h-[52px] text-white/70 placeholder:text-white/20"
                           style={{ background: 'rgba(255,255,255,0.04)' }} />
                       </div>
                     ))}
@@ -2032,7 +2052,7 @@ export default function AdminDashboard() {
                 </div>
 
                 <button onClick={saveProduct} disabled={productSaving}
-                  className="w-full py-3.5 rounded-2xl font-bold text-sm disabled:opacity-40 transition-all hover:opacity-90"
+                  className="w-full py-3.5 rounded-2xl font-bold text-smdisabled:opacity-40 transition-all hover:opacity-90"
                   style={{ background: 'linear-gradient(135deg,#C8B44A,#D4942A)', color: '#0D1A09', boxShadow: '0 6px 20px rgba(200,180,74,0.2)' }}>
                   {productSaving ? 'Saving…' : 'Save Product'}
                 </button>
@@ -2067,11 +2087,11 @@ export default function AdminDashboard() {
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <h2 className="font-display text-lg font-bold text-white">Order Details</h2>
-                    <span className="font-mono text-[.68rem] px-2 py-0.5 rounded-md" style={{ color: 'rgba(200,180,74,0.5)', background: 'rgba(200,180,74,0.08)' }}>
+                    <span className="font-mono text-smpx-2 py-0.5 rounded-md" style={{ color: 'rgba(200,180,74,0.5)', background: 'rgba(200,180,74,0.08)' }}>
                       #{selected.id.slice(-8).toUpperCase()}
                     </span>
                   </div>
-                  <p className="text-[.62rem] text-white/30">
+                  <p className="text-[.85rem] text-white/30">
                     {new Date(selected.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
@@ -2090,15 +2110,15 @@ export default function AdminDashboard() {
                   <div className="rounded-xl overflow-hidden border border-white/[.08]">
                     <div className="px-3 py-2 flex items-center gap-2 border-b border-white/[.06]"
                       style={{ background: 'rgba(16,185,129,0.08)' }}>
-                      <span className="text-xs">✅</span>
-                      <p className="text-[.58rem] font-bold uppercase tracking-[2px] text-emerald-400/60">Payment Screenshot</p>
+                      <span className="text-sm">✅</span>
+                      <p className="text-sm font-bold uppercase tracking-[2px] text-emerald-400/60">Payment Screenshot</p>
                     </div>
                     <img src={selected.paymentScreenshot} alt="Payment" className="w-full max-h-64 object-contain" style={{ background: 'rgba(255,255,255,0.04)' }} />
                   </div>
                 ) : (
                   <div className="p-3.5 rounded-xl border-2 border-dashed border-red-500/20 flex items-center gap-2" style={{ background: 'rgba(239,68,68,0.06)' }}>
                     <span>⚠️</span>
-                    <p className="text-xs text-red-400 font-semibold">No payment screenshot uploaded</p>
+                    <p className="text-sm text-red-400 font-semibold">No payment screenshot uploaded</p>
                   </div>
                 )}
 
@@ -2111,7 +2131,7 @@ export default function AdminDashboard() {
                     { label: 'Address', value: selected.address },
                   ].map(f => (
                     <div key={f.label} className={`p-3 rounded-xl border border-white/[.07] ${f.label === 'Address' ? 'col-span-2' : ''}`} style={{ background: 'rgba(255,255,255,0.04)' }}>
-                      <p className="text-[.52rem] font-bold uppercase tracking-[2px] mb-0.5" style={{ color: 'rgba(200,180,74,0.4)' }}>{f.label}</p>
+                      <p className="text-sm font-bold uppercase tracking-[2px] mb-0.5" style={{ color: 'rgba(200,180,74,0.4)' }}>{f.label}</p>
                       {f.link
                         ? <a href={f.link} className="text-sm font-semibold no-underline" style={{ color: '#C8B44A' }}>{f.value}</a>
                         : <p className="text-sm text-white/70 font-medium">{f.value}</p>}
@@ -2119,7 +2139,7 @@ export default function AdminDashboard() {
                   ))}
                   {selected.notes && (
                     <div className="col-span-2 p-3 rounded-xl border border-brass/15" style={{ background: 'rgba(200,180,74,0.05)' }}>
-                      <p className="text-[.52rem] font-bold uppercase tracking-[2px] mb-0.5" style={{ color: 'rgba(200,180,74,0.5)' }}>Notes</p>
+                      <p className="text-sm font-bold uppercase tracking-[2px] mb-0.5" style={{ color: 'rgba(200,180,74,0.5)' }}>Notes</p>
                       <p className="text-sm text-white/60">{selected.notes}</p>
                     </div>
                   )}
@@ -2128,7 +2148,7 @@ export default function AdminDashboard() {
                 {/* Order items */}
                 <div className="rounded-xl border border-white/[.07] overflow-hidden">
                   <div className="px-4 py-2.5 border-b border-white/[.06]" style={{ background: 'rgba(200,180,74,0.04)' }}>
-                    <p className="text-[.58rem] font-bold uppercase tracking-[2px]" style={{ color: 'rgba(200,180,74,0.4)' }}>Order Items</p>
+                    <p className="text-sm font-bold uppercase tracking-[2px]" style={{ color: 'rgba(200,180,74,0.4)' }}>Order Items</p>
                   </div>
                   <div className="p-4 space-y-1.5">
                     {(() => {
@@ -2136,7 +2156,7 @@ export default function AdminDashboard() {
                       if (items.length > 0) return items.map((item, i) => (
                         <div key={i} className="flex justify-between text-sm">
                           <span className="text-white/60">{PRODUCTS[item.productId as keyof typeof PRODUCTS]?.shortName || item.productId}
-                            <span className="text-white/30 text-xs"> · {item.packSize} × {item.count}</span>
+                            <span className="text-white/30 text-sm"> · {item.packSize} × {item.count}</span>
                           </span>
                         </div>
                       ));
@@ -2145,15 +2165,15 @@ export default function AdminDashboard() {
 
                     {selected.totalAmount != null && (
                       <div className="border-t border-white/[.06] pt-3 mt-3 space-y-1">
-                        <div className="flex justify-between text-xs text-white/35">
+                        <div className="flex justify-between text-smtext-white/35">
                           <span>Products</span>
                           <span>₹{((selected.totalAmount ?? 0) - (selected.deliveryCharge ?? 0)).toFixed(0)}</span>
                         </div>
-                        <div className="flex justify-between text-xs text-white/35">
+                        <div className="flex justify-between text-smtext-white/35">
                           <span>Delivery</span>
                           <span>{selected.deliveryCharge === 0 ? 'Free' : `₹${selected.deliveryCharge ?? 0}`}</span>
                         </div>
-                        <div className="flex justify-between text-sm font-bold text-white pt-1 border-t border-white/[.06]">
+                        <div className="flex justify-between text-smfont-bold text-white pt-1 border-t border-white/[.06]">
                           <span>Total Paid</span>
                           <span style={{ color: '#C8B44A' }}>₹{selected.totalAmount}</span>
                         </div>
@@ -2171,12 +2191,12 @@ export default function AdminDashboard() {
                   const opts = [...forward, 'cancelled'].map(v => ORDER_STATUSES.find(s => s.value === v)!).filter(Boolean);
                   return (
                     <div className="p-4 rounded-xl border border-white/[.07]" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                      <p className="text-[.58rem] font-bold uppercase tracking-[2px] mb-2" style={{ color: 'rgba(200,180,74,0.4)' }}>Update Status</p>
+                      <p className="text-sm font-bold uppercase tracking-[2px] mb-2" style={{ color: 'rgba(200,180,74,0.4)' }}>Update Status</p>
                       <div className="flex gap-2 flex-wrap">
                         {opts.slice(1).map(s => (
                           <button key={s.value} onClick={() => { updateStatus(selected.id, s.value, selected); setSelected({ ...selected, status: s.value }); }}
                             disabled={loading}
-                            className="px-4 py-2 rounded-xl text-xs font-semibold border-2 transition-all disabled:opacity-40"
+                            className="px-4 py-2 rounded-xl text-smfont-semibold border-2 transition-all disabled:opacity-40"
                             style={s.value === 'cancelled'
                               ? { borderColor: 'rgba(239,68,68,0.3)', color: '#EF4444', background: 'rgba(239,68,68,0.08)' }
                               : { borderColor: 'rgba(90,122,58,0.3)', color: '#5A7A3A', background: 'rgba(90,122,58,0.08)' }}>
@@ -2191,7 +2211,7 @@ export default function AdminDashboard() {
                 {/* WhatsApp */}
                 <a href={`https://wa.me/${selected.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi ${selected.name}! Your order from Crafted by Amma has been confirmed. Thank you! 🌾`)}`}
                   target="_blank"
-                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold text-white no-underline transition-all hover:shadow-lg"
+                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-smfont-semibold text-white no-underline transition-all hover:shadow-lg"
                   style={{ background: 'linear-gradient(135deg, #25D366, #1da851)', boxShadow: '0 4px 16px rgba(37,211,102,0.25)' }}>
                   <span>💬</span> Message on WhatsApp
                 </a>
