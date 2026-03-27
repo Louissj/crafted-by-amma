@@ -7,7 +7,7 @@ type OrderNotifyPayload = {
   total: number;
   deliveryCharge: number;
   isKarnataka: boolean;
-};
+}; 
 
 export async function notifyNewOrder(order: OrderNotifyPayload) {
   const token = process.env.TELEGRAM_BOT_TOKEN || '8617040819:AAGbw1-7RVG1G_zV9O3vBoF1Iiz3TjwGpeg';
