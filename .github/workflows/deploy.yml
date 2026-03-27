@@ -18,8 +18,22 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ${{ secrets.APP_DIR }}
+
+            # Check if package.json changed before pulling
+            git fetch origin main
+            CHANGED=$(git diff HEAD origin/main --name-only)
+
             git pull origin main
-            npm install --production=false
+
+            # Install deps only if package.json or package-lock.json changed
+            if echo "$CHANGED" | grep -qE "package(-lock)?\.json"; then
+              echo "📦 package.json changed — running npm install"
+              npm install --production=false
+            else
+              echo "⚡ No dependency changes — skipping npm install"
+            fi
+
             npm run build
             pm2 restart ${{ secrets.PM2_APP_NAME }} --update-env
             pm2 save
+            echo "✅ Deploy complete"
