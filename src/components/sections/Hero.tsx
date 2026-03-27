@@ -76,8 +76,8 @@ export default function Hero() {
         </p>
 
         {/* Main heading */}
-        <h1 className="font-display font-bold leading-[1.05] mb-4 opacity-0 animate-fade-up
-          text-[clamp(2.8rem,9vw,5.5rem)]"
+        <h1 className="font-display font-bold leading-[1.05] mb-4 opacity-0 animate-fade-up whitespace-nowrap
+          text-[clamp(1.6rem,7.5vw,5.5rem)]"
           style={{
             animationDelay: '.3s',
             animationFillMode: 'forwards',
