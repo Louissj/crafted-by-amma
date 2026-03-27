@@ -13,22 +13,29 @@ type DeliverySettings = { baseCharge: number; outstationCharge: number; freeAbov
 
 const STEPS = ['Details', 'Payment'];
 
-function InputField({ label, children }: { label: string; children: React.ReactNode }) {
+function InputField({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
   return (
     <div>
       <label className="block text-[.57rem] font-bold tracking-[2.5px] uppercase text-forest/40 mb-1.5">{label}</label>
       {children}
+      {error && (
+        <p className="text-[.62rem] text-red-500 mt-1 flex items-center gap-1">
+          <span>⚠</span>{error}
+        </p>
+      )}
     </div>
   );
 }
 
 const inputCls = "w-full px-4 py-3 border-[1.5px] border-forest/[.07] rounded-xl text-sm bg-white outline-none focus:border-sage/60 focus:ring-3 focus:ring-sage/[.06] transition-all placeholder:text-forest/25 text-forest";
+const inputErrCls = "w-full px-4 py-3 border-[1.5px] border-red-400/60 rounded-xl text-sm bg-red-50/30 outline-none focus:border-red-400 focus:ring-3 focus:ring-red-100 transition-all placeholder:text-forest/25 text-forest";
 
 export default function CheckoutPage() {
   const { priceMap } = useProducts();
   const { cart, cartTotal, totalPacks, clearCart, mounted } = useCart(priceMap);
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ name: '', phone: '', city: '', address: '', notes: '' });
+  const [fieldErrors, setFieldErrors] = useState({ name: '', phone: '', city: '', address: '' });
   const [pincode, setPincode] = useState('');
   const [pincodeLoading, setPincodeLoading] = useState(false);
   const [pincodeState, setPincodeState] = useState('');
@@ -112,13 +119,27 @@ export default function CheckoutPage() {
     if (fileRef.current) fileRef.current.value = '';
   };
 
+  function validateField(field: keyof typeof fieldErrors, value: string): string {
+    if (field === 'name') return value.trim().length < 2 ? 'Enter your full name' : '';
+    if (field === 'phone') return !/^(\+91|91)?[6-9]\d{9}$/.test(value.replace(/[\s\-\(\)]/g, '')) ? 'Enter a valid Indian WhatsApp number' : '';
+    if (field === 'city') return value.trim().length < 2 ? 'Enter your city' : '';
+    if (field === 'address') return value.trim().length < 5 ? 'Enter your full address' : '';
+    return '';
+  }
+
+  function blurField(field: keyof typeof fieldErrors, value: string) {
+    setFieldErrors(prev => ({ ...prev, [field]: validateField(field, value) }));
+  }
+
   const validateStep1 = () => {
-    if (!form.name.trim() || form.name.trim().length < 2) { setError('Enter your full name'); return false; }
-    const cleaned = form.phone.replace(/[\s\-\(\)]/g, '');
-    if (!/^(\+91|91)?[6-9]\d{9}$/.test(cleaned)) { setError('Enter a valid Indian WhatsApp number'); return false; }
-    if (!form.city.trim() || form.city.trim().length < 2) { setError('Enter your city'); return false; }
-    if (!form.address.trim() || form.address.trim().length < 5) { setError('Enter your full address'); return false; }
-    return true;
+    const errors = {
+      name: validateField('name', form.name),
+      phone: validateField('phone', form.phone),
+      city: validateField('city', form.city),
+      address: validateField('address', form.address),
+    };
+    setFieldErrors(errors);
+    return !Object.values(errors).some(Boolean);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -305,13 +326,17 @@ export default function CheckoutPage() {
 
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <InputField label="Full Name *">
-                    <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-                      className={inputCls} placeholder="Your full name" />
+                  <InputField label="Full Name *" error={fieldErrors.name}>
+                    <input value={form.name}
+                      onChange={e => { setForm({ ...form, name: e.target.value }); if (fieldErrors.name) setFieldErrors(p => ({ ...p, name: validateField('name', e.target.value) })); }}
+                      onBlur={e => blurField('name', e.target.value)}
+                      className={fieldErrors.name ? inputErrCls : inputCls} placeholder="Your full name" />
                   </InputField>
-                  <InputField label="WhatsApp Number *">
-                    <input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })}
-                      className={inputCls} placeholder="+91 XXXXX XXXXX" type="tel" />
+                  <InputField label="WhatsApp Number *" error={fieldErrors.phone}>
+                    <input value={form.phone}
+                      onChange={e => { setForm({ ...form, phone: e.target.value }); if (fieldErrors.phone) setFieldErrors(p => ({ ...p, phone: validateField('phone', e.target.value) })); }}
+                      onBlur={e => blurField('phone', e.target.value)}
+                      className={fieldErrors.phone ? inputErrCls : inputCls} placeholder="+91 XXXXX XXXXX" type="tel" />
                   </InputField>
                 </div>
 
@@ -340,9 +365,11 @@ export default function CheckoutPage() {
                     )}
                     {pincodeError && <p className="text-[.6rem] mt-1 text-red-400">{pincodeError}</p>}
                   </InputField>
-                  <InputField label="City *">
-                    <input value={form.city} onChange={e => setForm({ ...form, city: e.target.value })}
-                      className={inputCls} placeholder="Mysuru, Bengaluru…" />
+                  <InputField label="City *" error={fieldErrors.city}>
+                    <input value={form.city}
+                      onChange={e => { setForm({ ...form, city: e.target.value }); if (fieldErrors.city) setFieldErrors(p => ({ ...p, city: validateField('city', e.target.value) })); }}
+                      onBlur={e => blurField('city', e.target.value)}
+                      className={fieldErrors.city ? inputErrCls : inputCls} placeholder="Mysuru, Bengaluru…" />
                   </InputField>
                 </div>
 
@@ -378,9 +405,11 @@ export default function CheckoutPage() {
                   </span>
                 </label>
 
-                <InputField label="Full Address *">
-                  <textarea value={form.address} onChange={e => setForm({ ...form, address: e.target.value })}
-                    className={`${inputCls} resize-y min-h-[80px]`}
+                <InputField label="Full Address *" error={fieldErrors.address}>
+                  <textarea value={form.address}
+                    onChange={e => { setForm({ ...form, address: e.target.value }); if (fieldErrors.address) setFieldErrors(p => ({ ...p, address: validateField('address', e.target.value) })); }}
+                    onBlur={e => blurField('address', e.target.value)}
+                    className={`${fieldErrors.address ? inputErrCls : inputCls} resize-y min-h-[80px]`}
                     placeholder="House/Flat no., Street, Landmark, Pincode" />
                 </InputField>
 
@@ -410,16 +439,7 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              <AnimatePresence>
-                {error && (
-                  <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                    className="text-xs text-red-500 mt-3 flex items-center gap-1.5">
-                    <span>⚠</span>{error}
-                  </motion.p>
-                )}
-              </AnimatePresence>
-
-              <button onClick={() => { setError(''); if (validateStep1()) setStep(2); }}
+              <button onClick={() => { if (validateStep1()) setStep(2); }}
                 className="w-full mt-6 py-4 rounded-2xl font-bold text-sm tracking-[1px] text-forest transition-all hover:shadow-xl active:scale-[.99]"
                 style={{ background: 'linear-gradient(135deg,#1A2A14,#243318)', color: '#D4942A', boxShadow: '0 8px 24px rgba(26,42,20,0.2)' }}>
                 Continue to Payment →
