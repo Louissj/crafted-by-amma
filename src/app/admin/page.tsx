@@ -429,7 +429,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen flex" style={{ background: '#080F06' }}>
+    <div className="min-h-screen flex overflow-x-hidden w-full" style={{ background: '#080F06' }}>
 
       {/* ── SIDEBAR (desktop) ── */}
       <aside className="hidden md:flex flex-col w-[220px] flex-shrink-0 fixed top-0 left-0 h-full z-40"
@@ -498,7 +498,7 @@ export default function AdminDashboard() {
       </aside>
 
       {/* ── MAIN CONTENT ── */}
-      <div className="flex-1 flex flex-col md:ml-[220px] min-h-screen">
+      <div className="flex-1 min-w-0 flex flex-col md:ml-[220px] min-h-screen overflow-x-hidden">
 
         {/* Top bar */}
         <header className="sticky top-0 z-30 flex-shrink-0"
@@ -613,36 +613,41 @@ export default function AdminDashboard() {
                 className="rounded-2xl border border-white/[.07] overflow-hidden cursor-pointer transition-all hover:border-brass/20"
                 style={{ background: 'linear-gradient(135deg,rgba(26,42,20,0.6),rgba(13,20,9,0.8))', boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}
                 onClick={() => setSelected(order)}>
-                <div className="px-4 py-3.5 flex items-center gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                      <span className="font-mono text-[.65rem] font-bold text-brass/50">#{order.id.slice(-6).toUpperCase()}</span>
-                      <StatusBadge status={order.status} size="xs" />
+                <div className="px-4 py-3.5">
+                  {/* Top row: info + amount */}
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                        <span className="font-mono text-[.65rem] font-bold text-brass/50">#{order.id.slice(-6).toUpperCase()}</span>
+                        <StatusBadge status={order.status} size="xs" />
+                      </div>
+                      <div className="font-semibold text-sm text-white/90 truncate">{order.name}</div>
+                      <div className="text-[.62rem] text-white/30 truncate">{order.city} · {order.phone}</div>
                     </div>
-                    <div className="font-semibold text-sm text-white/90 truncate">{order.name}</div>
-                    <div className="text-[.62rem] text-white/30">{order.city} · {order.phone}</div>
+                    <div className="font-display text-base font-bold flex-shrink-0" style={{ color: '#C8B44A' }}>
+                      ₹{order.totalAmount ?? '—'}
+                    </div>
                   </div>
-                  <div className="text-right flex-shrink-0" onClick={e => e.stopPropagation()}>
-                    <div className="font-display text-base font-bold mb-1.5" style={{ color: '#C8B44A' }}>₹{order.totalAmount ?? '—'}</div>
-                    {(() => {
-                      const flow = ['pending', 'verified', 'confirmed', 'shipped', 'delivered'];
-                      const currentIdx = flow.indexOf(order.status);
-                      if (order.status === 'cancelled' || order.status === 'delivered') return null;
-                      const forward = flow.slice(currentIdx);
-                      const opts = [...forward, 'cancelled'].map(v => ORDER_STATUSES.find(s => s.value === v)!).filter(Boolean);
-                      return (
+                  {/* Products */}
+                  <div className="text-[.6rem] text-white/25 mt-2 truncate">{getProductNames(order.products)}</div>
+                  {/* Status select — full width below, easy to tap */}
+                  {(() => {
+                    const flow = ['pending', 'verified', 'confirmed', 'shipped', 'delivered'];
+                    const currentIdx = flow.indexOf(order.status);
+                    if (order.status === 'cancelled' || order.status === 'delivered') return null;
+                    const forward = flow.slice(currentIdx);
+                    const opts = [...forward, 'cancelled'].map(v => ORDER_STATUSES.find(s => s.value === v)!).filter(Boolean);
+                    return (
+                      <div className="mt-2.5" onClick={e => e.stopPropagation()}>
                         <select value={order.status} onChange={e => { e.stopPropagation(); updateStatus(order.id, e.target.value); }}
                           disabled={loading}
-                          className="text-xs border border-white/20 rounded-lg px-2 py-1.5 outline-none cursor-pointer min-w-[90px]"
-                          style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.85)' }}>
+                          className="w-full text-xs border border-white/20 rounded-lg px-3 py-2 outline-none cursor-pointer"
+                          style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.85)' }}>
                           {opts.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                         </select>
-                      );
-                    })()}
-                  </div>
-                </div>
-                <div className="px-4 pb-3 text-[.6rem] text-white/25 border-t border-white/[.05] pt-2">
-                  {getProductNames(order.products)}
+                      </div>
+                    );
+                  })()}
                 </div>
               </motion.div>
             ))}
