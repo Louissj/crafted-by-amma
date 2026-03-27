@@ -379,10 +379,67 @@ export default function CheckoutPage() {
               {(() => {
                 const upiUrl = `upi://pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&am=${grandTotal}&cu=INR&tn=CraftedByAmma%20Order`;
                 const upiApps = [
-                  { name: 'GPay', icon: '🟢', url: `tez://upi/pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&am=${grandTotal}&cu=INR&tn=CraftedByAmma%20Order` },
-                  { name: 'PhonePe', icon: '🟣', url: `phonepe://pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&am=${grandTotal}&cu=INR&tn=CraftedByAmma%20Order` },
-                  { name: 'Paytm', icon: '🔵', url: `paytmmp://pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&am=${grandTotal}&cu=INR&tn=CraftedByAmma%20Order` },
-                  { name: 'Any UPI', icon: '💳', url: upiUrl },
+                  {
+                    name: 'GPay',
+                    url: `tez://upi/pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&am=${grandTotal}&cu=INR&tn=CraftedByAmma%20Order`,
+                    logo: (
+                      <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
+                        <rect width="48" height="48" rx="12" fill="white"/>
+                        <text x="24" y="20" textAnchor="middle" fontSize="11" fontWeight="700" fontFamily="Arial" fill="#4285F4">G</text>
+                        <text x="8" y="34" fontSize="9" fontWeight="700" fontFamily="Arial">
+                          <tspan fill="#4285F4">P</tspan><tspan fill="#EA4335">a</tspan><tspan fill="#FBBC05">y</tspan>
+                        </text>
+                        <circle cx="24" cy="17" r="7" fill="none" stroke="#4285F4" strokeWidth="2.5"/>
+                        <path d="M24 10 A7 7 0 0 1 31 17" stroke="#EA4335" strokeWidth="2.5" fill="none"/>
+                        <path d="M31 17 A7 7 0 0 1 24 24" stroke="#FBBC05" strokeWidth="2.5" fill="none"/>
+                        <path d="M24 24 A7 7 0 0 1 17 17" stroke="#34A853" strokeWidth="2.5" fill="none"/>
+                        <rect x="20" y="15" width="8" height="4" rx="1" fill="white"/>
+                        <rect x="21" y="16" width="4" height="2" rx="0.5" fill="#4285F4"/>
+                      </svg>
+                    ),
+                    bg: '#f8f9ff',
+                    border: '#4285F422',
+                  },
+                  {
+                    name: 'PhonePe',
+                    url: `phonepe://pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&am=${grandTotal}&cu=INR&tn=CraftedByAmma%20Order`,
+                    logo: (
+                      <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
+                        <rect width="48" height="48" rx="12" fill="#5F259F"/>
+                        <text x="24" y="32" textAnchor="middle" fontSize="20" fontWeight="900" fontFamily="Arial" fill="white">P</text>
+                        <circle cx="32" cy="18" r="4" fill="#CBB3F0"/>
+                      </svg>
+                    ),
+                    bg: '#f9f5ff',
+                    border: '#5F259F22',
+                  },
+                  {
+                    name: 'Paytm',
+                    url: `paytmmp://pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&am=${grandTotal}&cu=INR&tn=CraftedByAmma%20Order`,
+                    logo: (
+                      <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
+                        <rect width="48" height="48" rx="12" fill="#00B9F1"/>
+                        <rect x="8" y="14" width="32" height="20" rx="3" fill="white"/>
+                        <text x="24" y="29" textAnchor="middle" fontSize="10" fontWeight="800" fontFamily="Arial" fill="#00B9F1">Paytm</text>
+                      </svg>
+                    ),
+                    bg: '#f0fbff',
+                    border: '#00B9F122',
+                  },
+                  {
+                    name: 'Any UPI',
+                    url: upiUrl,
+                    logo: (
+                      <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
+                        <rect width="48" height="48" rx="12" fill="white"/>
+                        <text x="24" y="22" textAnchor="middle" fontSize="10" fontWeight="900" fontFamily="Arial" fill="#6C3D9E">UPI</text>
+                        <rect x="8" y="26" width="15" height="3" rx="1.5" fill="#F47920"/>
+                        <rect x="25" y="26" width="15" height="3" rx="1.5" fill="#6C3D9E"/>
+                      </svg>
+                    ),
+                    bg: '#fdf8ff',
+                    border: '#6C3D9E22',
+                  },
                 ];
                 return (
                   <div className="mb-5 rounded-2xl overflow-hidden border border-brass/15"
@@ -404,9 +461,9 @@ export default function CheckoutPage() {
                         <div className="grid grid-cols-2 gap-2.5 mb-4">
                           {upiApps.map(app => (
                             <a key={app.name} href={app.url}
-                              className="flex items-center gap-2.5 px-4 py-3 rounded-xl border border-forest/[.08] bg-white active:scale-95 transition-transform"
-                              style={{ boxShadow: '0 2px 8px rgba(26,42,20,0.06)' }}>
-                              <span className="text-lg">{app.icon}</span>
+                              className="flex items-center gap-2.5 px-4 py-3 rounded-xl active:scale-95 transition-transform"
+                              style={{ background: app.bg, border: `1.5px solid ${app.border}`, boxShadow: '0 2px 8px rgba(26,42,20,0.06)' }}>
+                              {app.logo}
                               <span className="text-xs font-semibold text-forest">{app.name}</span>
                             </a>
                           ))}
