@@ -18,7 +18,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ${{ secrets.APP_DIR }}
-
+ 
             # Check if package.json changed before pulling
             git fetch origin main
             CHANGED=$(git diff HEAD origin/main --name-only)
@@ -34,6 +34,6 @@ jobs:
             fi
 
             npm run build
-            pm2 restart ${{ secrets.PM2_APP_NAME }} --update-env
+            pm2 reload ${{ secrets.PM2_APP_NAME }} --update-env
             pm2 save
             echo "✅ Deploy complete"
