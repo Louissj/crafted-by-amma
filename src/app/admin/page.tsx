@@ -56,6 +56,7 @@ export default function AdminDashboard() {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [loggingIn, setLoggingIn] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Restore session on refresh
   useEffect(() => {
@@ -214,7 +215,23 @@ export default function AdminDashboard() {
     setLoggedIn(false);
   };
 
-  const updateStatus = async (id: string, status: string) => {
+  const getWhatsAppMessage = (name: string, status: string): string => {
+    const firstName = name.trim().split(' ')[0];
+    const messages: Record<string, string> = {
+      verified: `🌾 *Crafted by Amma* 🌾\n\nHello ${firstName}! 🙏\n\n✅ *Payment Confirmed!*\n\nThank you so much for trusting us! Your payment has been received & verified successfully. Amma is now rolling up her sleeves to start crafting your order with pure love & fresh ingredients. 💛\n\n_No preservatives. No shortcuts. Just pure goodness — the way it's always been made at home._\n\nWe'll ping you again the moment your order is on its way! 🚀`,
+
+      confirmed: `🌾 *Crafted by Amma* 🌾\n\nHello ${firstName}! 🙏\n\n📦 *Order Confirmed & Being Prepared!*\n\nYour order is officially in Amma's hands now! 🤲 She's carefully measuring, roasting & blending every ingredient — just like she would for her own family. 💛\n\n_21+ wholesome ingredients · Zero preservatives · Made with love_\n\nSit tight — we'll let you know as soon as it's packed & shipped! 🌿`,
+
+      shipped: `🌾 *Crafted by Amma* 🌾\n\nHello ${firstName}! 🙏\n\n🚚 *Your Order is On Its Way!*\n\nGreat news — your package has left our kitchen and is now heading straight to your doorstep! 📬\n\nInside your parcel:\n✨ Pure homemade goodness\n✨ Zero chemicals or preservatives\n✨ Packed with care & love 💛\n\nPlease keep your phone handy for the delivery. Can't wait for you to experience Amma's flavours! 🌾`,
+
+      delivered: `🌾 *Crafted by Amma* 🌾\n\nHello ${firstName}! 🙏\n\n🎉 *Order Delivered Successfully!*\n\nYour Crafted by Amma order has reached you! We truly hope every sip and every bite fills your home with warmth, health & happiness. 💛\n\n_This was made with the same love a mother puts into every meal for her child._\n\n⭐ *Loved it?* A little feedback from you means the world to Amma!\n\nThank you for being part of our family. See you again soon! 🌿🙏`,
+
+      cancelled: `🌾 *Crafted by Amma* 🌾\n\nHello ${firstName},\n\nWe're truly sorry to share that your order has been *cancelled*. 😔\n\nWe understand this can be disappointing, and we sincerely apologize for any inconvenience caused.\n\nIf you have any questions or would like to place a fresh order, please don't hesitate to reach out — we're always here for you! 🙏\n\n_Crafted by Amma — Made with Love, Always._`,
+    };
+    return messages[status] || `🌾 *Crafted by Amma*\n\nHello ${firstName}! Your order status has been updated to *${status}*. Thank you for your patience! 🙏`;
+  };
+
+  const updateStatus = async (id: string, status: string, order?: Order) => {
     setLoading(true);
     await fetch(`/api/orders/${id}`, {
       method: 'PATCH',
@@ -224,6 +241,12 @@ export default function AdminDashboard() {
     await fetchOrders();
     if (selected?.id === id) setSelected(prev => prev ? { ...prev, status } : null);
     setLoading(false);
+    const target = order ?? (selected?.id === id ? selected : null);
+    if (target) {
+      const phone = target.phone.replace(/[^0-9]/g, '').slice(-10);
+      const msg = getWhatsAppMessage(target.name, status);
+      window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
   };
 
   const resolveProducts = (raw: unknown): unknown[] => {
@@ -355,119 +378,246 @@ export default function AdminDashboard() {
 
   if (!loggedIn) {
     return (
-      <div className="min-h-screen flex relative overflow-hidden" style={{ background: '#060D04' }}>
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden"
+        style={{ background: 'linear-gradient(145deg,#050D03 0%,#0A1608 40%,#060E04 100%)' }}>
 
-        {/* ── Left brand panel (desktop only) ── */}
-        <div className="hidden lg:flex flex-col justify-between w-[420px] flex-shrink-0 relative overflow-hidden px-12 py-14"
-          style={{ background: 'linear-gradient(160deg,#1A2A14 0%,#0E1A0A 50%,#0A1208 100%)' }}>
-          {/* Dot grid */}
-          <div className="absolute inset-0 opacity-[.07]"
-            style={{ backgroundImage: 'radial-gradient(circle, #C8B44A 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
-          {/* Glow */}
-          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-72 h-72 rounded-full blur-[100px] opacity-20"
-            style={{ background: 'radial-gradient(circle,#5A7A3A,transparent)' }} />
-          <div className="absolute bottom-1/4 right-0 w-48 h-48 rounded-full blur-[80px] opacity-15"
-            style={{ background: 'radial-gradient(circle,#D4942A,transparent)' }} />
+        {/* ── Animated background orbs (pointer-events-none so inputs stay clickable) ── */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {/* Large slow orbs */}
+          <div className="absolute w-[600px] h-[600px] rounded-full blur-[140px] opacity-[.12]"
+            style={{ background: 'radial-gradient(circle,#5A7A3A,transparent)', top: '-10%', left: '-15%', animation: 'loginOrb1 18s ease-in-out infinite' }} />
+          <div className="absolute w-[500px] h-[500px] rounded-full blur-[120px] opacity-[.10]"
+            style={{ background: 'radial-gradient(circle,#C8B44A,transparent)', bottom: '-10%', right: '-10%', animation: 'loginOrb2 22s ease-in-out infinite' }} />
+          <div className="absolute w-[300px] h-[300px] rounded-full blur-[90px] opacity-[.08]"
+            style={{ background: 'radial-gradient(circle,#D4942A,transparent)', top: '40%', right: '20%', animation: 'loginOrb1 14s ease-in-out infinite reverse' }} />
 
-          {/* Logo + name */}
-          <div className="relative z-10">
-            <div className="w-14 h-14 rounded-2xl border border-brass/30 overflow-hidden mb-5"
-              style={{ boxShadow: '0 0 32px rgba(200,180,74,0.2)' }}>
-              <Image src="/images/logo.png" alt="Logo" width={56} height={56} className="w-full h-full object-cover" />
-            </div>
-            <h1 className="font-display text-3xl font-bold text-white leading-tight mb-2">Crafted<br />by Amma</h1>
-            <p className="text-[.6rem] font-bold tracking-[3px] uppercase" style={{ color: 'rgba(200,180,74,0.5)' }}>Admin Console</p>
-          </div>
+          {/* Fine dot grid */}
+          <div className="absolute inset-0 opacity-[.04]"
+            style={{ backgroundImage: 'radial-gradient(circle,#C8B44A 1px,transparent 1px)', backgroundSize: '32px 32px' }} />
 
-          {/* Stats preview */}
-          <div className="relative z-10 space-y-3">
-            {[
-              { label: 'Total Orders', val: stats.total || '—', color: '#5A7A3A' },
-              { label: 'Pending Review', val: stats.pending || '—', color: '#D4942A' },
-              { label: 'Revenue', val: stats.revenue ? `₹${stats.revenue.toLocaleString('en-IN')}` : '—', color: '#C8B44A' },
-            ].map(s => (
-              <div key={s.label} className="flex items-center justify-between px-4 py-3 rounded-2xl border border-white/[.06]"
-                style={{ background: 'rgba(255,255,255,0.03)' }}>
-                <span className="text-xs text-white/40">{s.label}</span>
-                <span className="text-sm font-bold" style={{ color: s.color }}>{s.val}</span>
-              </div>
-            ))}
-            <div className="flex items-center gap-2 pt-1">
-              <span className="relative flex h-1.5 w-1.5 flex-shrink-0">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
-              </span>
-              <span className="text-[.52rem] text-white/20 tracking-[1px]">Live Dashboard</span>
-            </div>
-          </div>
+          {/* Floating grain particles */}
+          {[
+            { top: '12%', left: '8%', delay: '0s', dur: '8s', size: 3 },
+            { top: '25%', left: '88%', delay: '1.5s', dur: '10s', size: 2 },
+            { top: '60%', left: '5%', delay: '3s', dur: '9s', size: 2 },
+            { top: '75%', left: '92%', delay: '0.8s', dur: '11s', size: 3 },
+            { top: '45%', left: '95%', delay: '2s', dur: '7s', size: 1.5 },
+            { top: '85%', left: '18%', delay: '4s', dur: '12s', size: 2 },
+            { top: '8%', left: '55%', delay: '1s', dur: '9s', size: 1.5 },
+            { top: '90%', left: '70%', delay: '3.5s', dur: '8s', size: 2.5 },
+          ].map((p, i) => (
+            <div key={i} className="absolute rounded-full"
+              style={{
+                top: p.top, left: p.left, width: p.size * 3, height: p.size * 3,
+                background: i % 2 === 0 ? 'rgba(200,180,74,0.35)' : 'rgba(90,122,58,0.4)',
+                animation: `loginFloat ${p.dur} ease-in-out infinite`, animationDelay: p.delay,
+                boxShadow: `0 0 ${p.size * 4}px rgba(200,180,74,0.2)`,
+              }} />
+          ))}
+
+          {/* Diagonal shimmer lines */}
+          <div className="absolute inset-0 opacity-[.03]"
+            style={{ backgroundImage: 'repeating-linear-gradient(60deg,transparent,transparent 40px,rgba(200,180,74,1) 40px,rgba(200,180,74,1) 41px)' }} />
         </div>
 
-        {/* ── Right login form ── */}
-        <div className="flex-1 flex items-center justify-center p-6 relative">
-          {/* Background texture */}
-          <div className="absolute inset-0 opacity-[.025]"
-            style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
-          <div className="absolute top-0 right-0 w-96 h-96 rounded-full blur-[120px] opacity-10"
-            style={{ background: 'radial-gradient(circle,#D4942A,transparent)' }} />
+        {/* ── Card ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 32, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+          className="relative z-10 w-full mx-4"
+          style={{ maxWidth: 420 }}>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="w-full max-w-[400px]">
+          {/* Card glow ring */}
+          <div className="absolute -inset-px rounded-[28px] pointer-events-none"
+            style={{ background: 'linear-gradient(135deg,rgba(200,180,74,0.2),rgba(90,122,58,0.15),rgba(200,180,74,0.05))', borderRadius: 28 }} />
 
-            {/* Mobile logo */}
-            <div className="lg:hidden flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 rounded-xl border border-brass/30 overflow-hidden">
-                <Image src="/images/logo.png" alt="Logo" width={40} height={40} className="w-full h-full object-cover" />
-              </div>
-              <div>
-                <p className="font-display text-base font-bold text-white">Crafted by Amma</p>
-                <p className="text-[.52rem] tracking-[2px] uppercase" style={{ color: 'rgba(200,180,74,0.5)' }}>Admin Console</p>
-              </div>
+          <div className="relative rounded-[26px] overflow-hidden px-8 py-9"
+            style={{
+              background: 'linear-gradient(160deg,rgba(20,34,15,0.95) 0%,rgba(12,22,10,0.98) 100%)',
+              border: '1px solid rgba(200,180,74,0.12)',
+              boxShadow: '0 32px 80px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.04),inset 0 1px 0 rgba(255,255,255,0.06)',
+              backdropFilter: 'blur(20px)',
+            }}>
+
+            {/* Top accent line */}
+            <div className="absolute top-0 left-[15%] right-[15%] h-px"
+              style={{ background: 'linear-gradient(90deg,transparent,rgba(200,180,74,0.5),transparent)' }} />
+
+            {/* Logo section */}
+            <div className="flex flex-col items-center mb-8">
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.2, duration: 0.5, ease: [0.22,1,0.36,1] }}
+                className="relative mb-5">
+                {/* Glow ring behind logo */}
+                <div className="absolute inset-0 rounded-full blur-xl opacity-40"
+                  style={{ background: 'radial-gradient(circle,#C8B44A,transparent)', transform: 'scale(1.4)' }} />
+                <div className="relative w-[72px] h-[72px] rounded-full overflow-hidden"
+                  style={{ border: '2px solid rgba(200,180,74,0.35)', boxShadow: '0 0 32px rgba(200,180,74,0.2),0 8px 24px rgba(0,0,0,0.4)' }}>
+                  <Image src="/images/logo.png" alt="Crafted by Amma" width={72} height={72} className="w-full h-full object-cover" />
+                </div>
+                {/* Live indicator */}
+                <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center"
+                  style={{ background: '#0A1208', border: '1.5px solid rgba(200,180,74,0.2)' }}>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse block" />
+                </div>
+              </motion.div>
+
+              <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.4 }}
+                className="text-center">
+                <h1 className="font-display text-xl font-bold mb-0.5" style={{ color: '#F5EED8' }}>Crafted by Amma</h1>
+                <p className="text-[.55rem] font-bold tracking-[3.5px] uppercase" style={{ color: 'rgba(200,180,74,0.45)' }}>Admin Console</p>
+              </motion.div>
             </div>
 
-            <div className="mb-8">
-              <h2 className="font-display text-2xl font-bold text-white mb-1.5">Welcome back</h2>
-              <p className="text-sm text-white/35">Sign in to manage your orders & store</p>
+            {/* Divider */}
+            <div className="flex items-center gap-3 mb-7">
+              <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.08))' }} />
+              <span className="text-[.5rem] tracking-[3px] uppercase font-bold" style={{ color: 'rgba(200,180,74,0.3)' }}>Secure Sign In</span>
+              <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg,rgba(255,255,255,0.08),transparent)' }} />
             </div>
 
+            {/* Form */}
             <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <label className="block text-[.58rem] font-bold tracking-[2.5px] uppercase mb-2" style={{ color: 'rgba(200,180,74,0.5)' }}>Username</label>
-                <input value={username} onChange={e => setUsername(e.target.value)} placeholder="Enter username" autoComplete="username"
-                  className="w-full px-4 py-3.5 rounded-2xl text-sm text-white placeholder-white/20 outline-none transition-all"
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '1.5px solid rgba(255,255,255,0.08)' }}
-                  onFocus={e => e.target.style.borderColor = 'rgba(200,180,74,0.45)'}
-                  onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'} />
-              </div>
-              <div>
-                <label className="block text-[.58rem] font-bold tracking-[2.5px] uppercase mb-2" style={{ color: 'rgba(200,180,74,0.5)' }}>Password</label>
-                <input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="••••••••" autoComplete="current-password"
-                  className="w-full px-4 py-3.5 rounded-2xl text-sm text-white placeholder-white/20 outline-none transition-all"
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '1.5px solid rgba(255,255,255,0.08)' }}
-                  onFocus={e => e.target.style.borderColor = 'rgba(200,180,74,0.45)'}
-                  onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'} />
-              </div>
 
+              {/* Username field */}
+              <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.35, duration: 0.4 }}>
+                <label className="block text-[.56rem] font-bold tracking-[2.5px] uppercase mb-2.5" style={{ color: 'rgba(200,180,74,0.5)' }}>
+                  Username
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm pointer-events-none" style={{ color: 'rgba(200,180,74,0.35)' }}>
+                    👤
+                  </span>
+                  <input
+                    value={username} onChange={e => setUsername(e.target.value)}
+                    placeholder="Enter your username"
+                    autoComplete="username"
+                    className="w-full pl-10 pr-4 py-3.5 rounded-2xl text-sm outline-none transition-all duration-200"
+                    style={{
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1.5px solid rgba(255,255,255,0.09)',
+                      color: '#F0E8D0',
+                      caretColor: '#C8B44A',
+                    }}
+                    onFocus={e => {
+                      e.currentTarget.style.borderColor = 'rgba(200,180,74,0.5)';
+                      e.currentTarget.style.background = 'rgba(200,180,74,0.06)';
+                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(200,180,74,0.08)';
+                    }}
+                    onBlur={e => {
+                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)';
+                      e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  />
+                </div>
+              </motion.div>
+
+              {/* Password field */}
+              <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.42, duration: 0.4 }}>
+                <label className="block text-[.56rem] font-bold tracking-[2.5px] uppercase mb-2.5" style={{ color: 'rgba(200,180,74,0.5)' }}>
+                  Password
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm pointer-events-none" style={{ color: 'rgba(200,180,74,0.35)' }}>
+                    🔑
+                  </span>
+                  <input
+                    value={password} onChange={e => setPassword(e.target.value)}
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                    className="w-full pl-10 pr-12 py-3.5 rounded-2xl text-sm outline-none transition-all duration-200"
+                    style={{
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1.5px solid rgba(255,255,255,0.09)',
+                      color: '#F0E8D0',
+                      caretColor: '#C8B44A',
+                    }}
+                    onFocus={e => {
+                      e.currentTarget.style.borderColor = 'rgba(200,180,74,0.5)';
+                      e.currentTarget.style.background = 'rgba(200,180,74,0.06)';
+                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(200,180,74,0.08)';
+                    }}
+                    onBlur={e => {
+                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)';
+                      e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  />
+                  <button type="button" onClick={() => setShowPassword(p => !p)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs transition-opacity hover:opacity-80"
+                    style={{ color: 'rgba(200,180,74,0.4)', lineHeight: 1 }}>
+                    {showPassword ? '🙈' : '👁️'}
+                  </button>
+                </div>
+              </motion.div>
+
+              {/* Error */}
               <AnimatePresence>
                 {loginError && (
-                  <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl text-xs text-red-400"
-                    style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)' }}>
-                    <span>⚠</span>{loginError}
+                  <motion.div initial={{ opacity: 0, y: -6, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }}
+                    className="flex items-center gap-2.5 px-4 py-3 rounded-2xl text-xs"
+                    style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#FCA5A5' }}>
+                    <span className="flex-shrink-0">⚠️</span>
+                    <span>{loginError}</span>
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              <button type="submit" disabled={loggingIn || !username || !password}
-                className="w-full py-4 rounded-2xl font-bold text-sm tracking-[1px] transition-all disabled:opacity-40 relative overflow-hidden group mt-2"
-                style={{ background: 'linear-gradient(135deg,#C8B44A,#D4942A)', color: '#0A1208', boxShadow: '0 8px 32px rgba(200,180,74,0.25)' }}>
-                <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                  style={{ background: 'linear-gradient(135deg,#D4942A,#C8B44A)' }} />
-                <span className="relative">{loggingIn ? 'Signing in…' : 'Sign In →'}</span>
-              </button>
+              {/* Submit */}
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.4 }}>
+                <button type="submit" disabled={loggingIn || !username || !password}
+                  className="w-full py-4 rounded-2xl font-bold text-sm tracking-[0.5px] transition-all duration-200 mt-1 relative overflow-hidden group"
+                  style={{
+                    background: loggingIn ? 'rgba(200,180,74,0.4)' : 'linear-gradient(135deg,#C8B44A 0%,#B09838 50%,#D4942A 100%)',
+                    color: '#0A1208',
+                    boxShadow: (!loggingIn && username && password) ? '0 8px 28px rgba(200,180,74,0.3),0 2px 8px rgba(0,0,0,0.3)' : 'none',
+                    opacity: (!username || !password) ? 0.45 : 1,
+                  }}>
+                  {/* Shimmer sweep on hover */}
+                  <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                    style={{ background: 'linear-gradient(105deg,transparent 30%,rgba(255,255,255,0.25) 50%,transparent 70%)', transform: 'skewX(-20deg)' }} />
+                  <span className="relative flex items-center justify-center gap-2">
+                    {loggingIn
+                      ? <><span className="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin inline-block" />Signing in…</>
+                      : <>Enter Dashboard →</>
+                    }
+                  </span>
+                </button>
+              </motion.div>
             </form>
-          </motion.div>
-        </div>
+
+            {/* Bottom badge */}
+            <div className="flex items-center justify-center gap-2 mt-7 pt-5"
+              style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/60 animate-pulse" />
+              <span className="text-[.52rem] tracking-[2px] uppercase font-medium" style={{ color: 'rgba(255,255,255,0.18)' }}>
+                Encrypted · Secure Access
+              </span>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* ── CSS for bg animations ── */}
+        <style>{`
+          @keyframes loginOrb1 {
+            0%, 100% { transform: translate(0,0) scale(1); }
+            33% { transform: translate(30px,-20px) scale(1.05); }
+            66% { transform: translate(-20px,15px) scale(0.97); }
+          }
+          @keyframes loginOrb2 {
+            0%, 100% { transform: translate(0,0) scale(1); }
+            40% { transform: translate(-25px,20px) scale(1.04); }
+            70% { transform: translate(15px,-10px) scale(0.98); }
+          }
+          @keyframes loginFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
+            50% { transform: translateY(-18px) rotate(180deg); opacity: 1; }
+          }
+        `}</style>
       </div>
     );
   }
@@ -728,7 +878,7 @@ export default function AdminDashboard() {
                       const opts = [...forward, 'cancelled'].map(v => ORDER_STATUSES.find(s => s.value === v)!).filter(Boolean);
                       return (
                         <div className="mt-2.5 pl-12" onClick={e => e.stopPropagation()}>
-                          <select value={order.status} onChange={e => { e.stopPropagation(); updateStatus(order.id, e.target.value); }}
+                          <select value={order.status} onChange={e => { e.stopPropagation(); updateStatus(order.id, e.target.value, order); }}
                             disabled={loading}
                             className="w-full text-xs border border-white/20 rounded-lg px-3 py-2 outline-none cursor-pointer"
                             style={{ background: '#1A2A14', color: '#E8DEB0' }}>
@@ -794,7 +944,7 @@ export default function AdminDashboard() {
                             const forward = flow.slice(currentIdx);
                             const opts = [...forward, 'cancelled'].map(v => ORDER_STATUSES.find(s => s.value === v)!).filter(Boolean);
                             return (
-                              <select value={order.status} onChange={e => updateStatus(order.id, e.target.value)}
+                              <select value={order.status} onChange={e => updateStatus(order.id, e.target.value, order)}
                                 disabled={loading}
                                 className="text-xs border border-white/10 rounded-lg px-2 py-1.5 outline-none transition-colors cursor-pointer disabled:opacity-50"
                                 style={{ background: '#1A2A14', color: '#E8DEB0' }}>
@@ -1995,7 +2145,7 @@ export default function AdminDashboard() {
                       <p className="text-[.58rem] font-bold uppercase tracking-[2px] mb-2" style={{ color: 'rgba(200,180,74,0.4)' }}>Update Status</p>
                       <div className="flex gap-2 flex-wrap">
                         {opts.slice(1).map(s => (
-                          <button key={s.value} onClick={() => { updateStatus(selected.id, s.value); setSelected({ ...selected, status: s.value }); }}
+                          <button key={s.value} onClick={() => { updateStatus(selected.id, s.value, selected); setSelected({ ...selected, status: s.value }); }}
                             disabled={loading}
                             className="px-4 py-2 rounded-xl text-xs font-semibold border-2 transition-all disabled:opacity-40"
                             style={s.value === 'cancelled'
