@@ -36,10 +36,12 @@ export default function CheckoutPage() {
   const [error, setError] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
   const [delivery, setDelivery] = useState<DeliverySettings | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     fetch('/api/settings/delivery').then(r => r.json()).then(setDelivery).catch(() => {});
     trackEvent('checkout_start');
+    setIsMobile(/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent));
   }, []);
 
   const deliveryCharge = useMemo(() => {
@@ -340,7 +342,7 @@ export default function CheckoutPage() {
               style={{ boxShadow: '0 8px 32px rgba(26,42,20,0.08)' }}>
 
               <h2 className="font-display text-xl font-bold text-forest mb-0.5">Review &amp; Pay</h2>
-              <p className="text-xs text-forest/35 mb-6">Scan the QR, pay, upload screenshot, done.</p>
+              <p className="text-xs text-forest/35 mb-6">Tap your UPI app, pay, upload screenshot, done.</p>
 
               {/* Order summary */}
               <div className="mb-5 rounded-2xl border border-forest/[.06] overflow-hidden">
@@ -373,15 +375,21 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* UPI QR */}
+              {/* UPI Payment */}
               {(() => {
                 const upiUrl = `upi://pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&am=${grandTotal}&cu=INR&tn=CraftedByAmma%20Order`;
+                const upiApps = [
+                  { name: 'GPay', icon: '🟢', url: `tez://upi/pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&am=${grandTotal}&cu=INR&tn=CraftedByAmma%20Order` },
+                  { name: 'PhonePe', icon: '🟣', url: `phonepe://pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&am=${grandTotal}&cu=INR&tn=CraftedByAmma%20Order` },
+                  { name: 'Paytm', icon: '🔵', url: `paytmmp://pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&am=${grandTotal}&cu=INR&tn=CraftedByAmma%20Order` },
+                  { name: 'Any UPI', icon: '💳', url: upiUrl },
+                ];
                 return (
                   <div className="mb-5 rounded-2xl overflow-hidden border border-brass/15"
                     style={{ background: 'linear-gradient(135deg,rgba(212,148,42,0.04),rgba(255,255,255,1))' }}>
                     <div className="px-5 py-3 border-b border-brass/[.08] flex items-center justify-between">
                       <div>
-                        <p className="text-xs font-bold text-forest">Scan &amp; Pay</p>
+                        <p className="text-xs font-bold text-forest">{isMobile ? 'Pay via UPI App' : 'Scan & Pay'}</p>
                         <p className="text-[.58rem] text-forest/35 mt-0.5">GPay · PhonePe · Paytm · Any UPI App</p>
                       </div>
                       <div className="text-right">
@@ -389,16 +397,38 @@ export default function CheckoutPage() {
                         <p className="text-[.55rem] text-forest/30">pre-filled</p>
                       </div>
                     </div>
-                    <div className="px-5 py-5 flex flex-col items-center">
-                      <div className="p-3 bg-white rounded-2xl border border-forest/[.06] mb-3"
-                        style={{ boxShadow: '0 4px 20px rgba(26,42,20,0.08)' }}>
-                        <QRCodeSVG value={upiUrl} size={160} level="M" fgColor="#1A2A14"
-                          imageSettings={{ src: '/images/logo.png', width: 28, height: 28, excavate: true }} />
+
+                    {isMobile ? (
+                      /* Mobile: direct app deep-links */
+                      <div className="px-5 py-4">
+                        <div className="grid grid-cols-2 gap-2.5 mb-4">
+                          {upiApps.map(app => (
+                            <a key={app.name} href={app.url}
+                              className="flex items-center gap-2.5 px-4 py-3 rounded-xl border border-forest/[.08] bg-white active:scale-95 transition-transform"
+                              style={{ boxShadow: '0 2px 8px rgba(26,42,20,0.06)' }}>
+                              <span className="text-lg">{app.icon}</span>
+                              <span className="text-xs font-semibold text-forest">{app.name}</span>
+                            </a>
+                          ))}
+                        </div>
+                        <p className="text-[.58rem] text-center text-forest/35">
+                          MANJULA H M · <span className="font-mono">manjulabasavaraj.urs-1@okicici</span>
+                        </p>
+                        <p className="text-[.54rem] text-center text-forest/25 mt-0.5">Verify name &amp; amount before confirming</p>
                       </div>
-                      <p className="text-sm font-semibold text-forest mb-0.5">MANJULA H M</p>
-                      <p className="text-[.6rem] font-mono text-forest/40 tracking-wide">manjulabasavaraj.urs-1@okicici</p>
-                      <p className="text-[.54rem] text-forest/25 mt-0.5">Verify name &amp; amount before confirming</p>
-                    </div>
+                    ) : (
+                      /* Desktop: QR code */
+                      <div className="px-5 py-5 flex flex-col items-center">
+                        <div className="p-3 bg-white rounded-2xl border border-forest/[.06] mb-3"
+                          style={{ boxShadow: '0 4px 20px rgba(26,42,20,0.08)' }}>
+                          <QRCodeSVG value={upiUrl} size={160} level="M" fgColor="#1A2A14"
+                            imageSettings={{ src: '/images/logo.png', width: 28, height: 28, excavate: true }} />
+                        </div>
+                        <p className="text-sm font-semibold text-forest mb-0.5">MANJULA H M</p>
+                        <p className="text-[.6rem] font-mono text-forest/40 tracking-wide">manjulabasavaraj.urs-1@okicici</p>
+                        <p className="text-[.54rem] text-forest/25 mt-0.5">Verify name &amp; amount before confirming</p>
+                      </div>
+                    )}
                   </div>
                 );
               })()}

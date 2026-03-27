@@ -622,25 +622,23 @@ export default function AdminDashboard() {
                     <div className="font-semibold text-sm text-white/90 truncate">{order.name}</div>
                     <div className="text-[.62rem] text-white/30">{order.city} · {order.phone}</div>
                   </div>
-                  <div className="text-right flex-shrink-0">
-                    <div className="font-display text-base font-bold" style={{ color: '#C8B44A' }}>₹{order.totalAmount ?? '—'}</div>
-                    <div className="text-[.6rem] text-white/25 mt-0.5" onClick={e => e.stopPropagation()}>
-                      {(() => {
-                        const flow = ['pending', 'verified', 'confirmed', 'shipped', 'delivered'];
-                        const currentIdx = flow.indexOf(order.status);
-                        if (order.status === 'cancelled' || order.status === 'delivered') return null;
-                        const forward = flow.slice(currentIdx);
-                        const opts = [...forward, 'cancelled'].map(v => ORDER_STATUSES.find(s => s.value === v)!).filter(Boolean);
-                        return (
-                          <select value={order.status} onChange={e => { e.stopPropagation(); updateStatus(order.id, e.target.value); }}
-                            disabled={loading}
-                            className="text-[.6rem] border border-white/10 rounded-lg px-1.5 py-1 outline-none cursor-pointer"
-                            style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)' }}>
-                            {opts.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-                          </select>
-                        );
-                      })()}
-                    </div>
+                  <div className="text-right flex-shrink-0" onClick={e => e.stopPropagation()}>
+                    <div className="font-display text-base font-bold mb-1.5" style={{ color: '#C8B44A' }}>₹{order.totalAmount ?? '—'}</div>
+                    {(() => {
+                      const flow = ['pending', 'verified', 'confirmed', 'shipped', 'delivered'];
+                      const currentIdx = flow.indexOf(order.status);
+                      if (order.status === 'cancelled' || order.status === 'delivered') return null;
+                      const forward = flow.slice(currentIdx);
+                      const opts = [...forward, 'cancelled'].map(v => ORDER_STATUSES.find(s => s.value === v)!).filter(Boolean);
+                      return (
+                        <select value={order.status} onChange={e => { e.stopPropagation(); updateStatus(order.id, e.target.value); }}
+                          disabled={loading}
+                          className="text-xs border border-white/20 rounded-lg px-2 py-1.5 outline-none cursor-pointer min-w-[90px]"
+                          style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.85)' }}>
+                          {opts.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                        </select>
+                      );
+                    })()}
                   </div>
                 </div>
                 <div className="px-4 pb-3 text-[.6rem] text-white/25 border-t border-white/[.05] pt-2">
@@ -1774,15 +1772,20 @@ export default function AdminDashboard() {
       <AnimatePresence>
         {selected && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 flex items-end md:items-center justify-center md:p-4"
             style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)' }}
             onClick={() => setSelected(null)}>
 
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 16 }} transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-              className="rounded-[20px] md:rounded-[24px] max-w-lg w-full max-h-[92vh] overflow-y-auto"
-              style={{ background: '#080F06', boxShadow: '0 32px 80px rgba(0,0,0,0.6)', border: '1px solid rgba(200,180,74,0.1)' }}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 40 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="rounded-t-[24px] md:rounded-[24px] w-full md:max-w-lg max-h-[90vh] overflow-y-auto"
+              style={{ background: '#080F06', boxShadow: '0 -8px 40px rgba(0,0,0,0.5), 0 32px 80px rgba(0,0,0,0.6)', border: '1px solid rgba(200,180,74,0.1)' }}
               onClick={e => e.stopPropagation()}>
+              {/* drag handle on mobile */}
+              <div className="md:hidden flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }} />
+              </div>
 
               {/* Modal header */}
               <div className="px-4 md:px-6 pt-5 md:pt-6 pb-4 flex items-start justify-between border-b border-white/[.06]"
