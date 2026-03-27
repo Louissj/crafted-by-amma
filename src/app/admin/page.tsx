@@ -642,8 +642,8 @@ export default function AdminDashboard() {
                         <select value={order.status} onChange={e => { e.stopPropagation(); updateStatus(order.id, e.target.value); }}
                           disabled={loading}
                           className="w-full text-xs border border-white/20 rounded-lg px-3 py-2 outline-none cursor-pointer"
-                          style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.85)' }}>
-                          {opts.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                          style={{ background: '#1A2A14', color: '#E8DEB0' }}>
+                          {opts.map(s => <option key={s.value} value={s.value} style={{ background: '#1A2A14', color: '#E8DEB0' }}>{s.label}</option>)}
                         </select>
                       </div>
                     );
@@ -707,8 +707,8 @@ export default function AdminDashboard() {
                               <select value={order.status} onChange={e => updateStatus(order.id, e.target.value)}
                                 disabled={loading}
                                 className="text-xs border border-white/10 rounded-lg px-2 py-1.5 outline-none transition-colors cursor-pointer disabled:opacity-50"
-                                style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.7)' }}>
-                                {opts.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                                style={{ background: '#1A2A14', color: '#E8DEB0' }}>
+                                {opts.map(s => <option key={s.value} value={s.value} style={{ background: '#1A2A14', color: '#E8DEB0' }}>{s.label}</option>)}
                               </select>
                             );
                           })()}
