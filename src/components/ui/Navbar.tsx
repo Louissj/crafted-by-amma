@@ -51,17 +51,17 @@ export default function Navbar() {
   return (
     <>
       <nav className={`fixed top-0 w-full z-[9000] px-4 py-2.5 flex items-center justify-between transition-all duration-400
-        ${scrolled ? 'bg-cream/97 backdrop-blur-lg shadow-[0_1px_0_rgba(26,42,20,.04)]' : 'bg-gradient-to-b from-black/40 to-transparent'}`}>
+        ${scrolled ? 'bg-cream/97 backdrop-blur-lg shadow-[0_1px_0_rgba(26,42,20,.04)]' : 'bg-gradient-to-b from-black/50 to-transparent'}`}>
         <Link href="/" className="flex items-center gap-2.5 no-underline">
           <Image src="/images/logo.png" alt="Logo" width={40} height={40}
             className="rounded-full border-[1.5px] border-brass/20 flex-shrink-0" />
           <div>
             <span className={`font-display text-[1.12rem] font-semibold leading-tight block transition-colors
-              ${scrolled ? 'text-forest' : 'text-cream-light [text-shadow:0_1px_6px_rgba(0,0,0,.25)]'}`}>
+              ${scrolled ? 'text-forest' : 'text-white [text-shadow:0_1px_8px_rgba(0,0,0,.4)]'}`}>
               Crafted by Amma
             </span>
             <span className={`font-kannada text-[0.48rem] block mt-px transition-colors
-              ${scrolled ? 'text-clay' : 'text-sand/55'}`}>
+              ${scrolled ? 'text-clay' : 'text-white/70'}`}>
               ಅಮ್ಮನಿಂದ ಕರಕುಶಲ
             </span>
           </div>
@@ -72,7 +72,7 @@ export default function Navbar() {
           {links.map(l => (
             <li key={l.href}>
               <a href={l.href} className={`no-underline text-[0.68rem] font-medium tracking-[2.5px] uppercase transition-colors
-                ${scrolled ? 'text-forest' : 'text-cream-light/65'} hover:text-sage`}>
+                ${scrolled ? 'text-forest' : 'text-white/90'} hover:text-sage`}>
                 {l.label}
               </a>
             </li>
@@ -82,7 +82,7 @@ export default function Navbar() {
           <li>
             <Link href="/cart" className="relative inline-flex items-center no-underline p-1.5 rounded-full transition-colors hover:bg-forest/5">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                stroke={scrolled ? '#1A2A14' : 'rgba(255,255,255,0.65)'}
+                stroke={scrolled ? '#1A2A14' : 'rgba(255,255,255,0.95)'}
                 strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
                 <line x1="3" y1="6" x2="21" y2="6" />
@@ -94,7 +94,7 @@ export default function Navbar() {
 
           <li>
             <Link href="/track" className={`no-underline text-[0.68rem] font-medium tracking-[2.5px] uppercase transition-colors
-              ${scrolled ? 'text-forest' : 'text-cream-light/65'} hover:text-sage`}>
+              ${scrolled ? 'text-forest' : 'text-white/90'} hover:text-sage`}>
               Track
             </Link>
           </li>
@@ -109,7 +109,7 @@ export default function Navbar() {
         <div className="flex md:hidden items-center gap-3">
           <Link href="/cart" className="relative p-1.5 rounded-full no-underline">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-              stroke={scrolled ? '#1A2A14' : 'rgba(255,255,255,0.70)'}
+              stroke={scrolled ? '#1A2A14' : 'rgba(255,255,255,0.95)'}
               strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
               <line x1="3" y1="6" x2="21" y2="6" />
