@@ -8,7 +8,7 @@ import { Ingredients, BenefitsSection, WhyUs, Testimonials, Shipping, CTA, Foote
 
 export default function Home() {
   return (
-    <>
+    <div className="overflow-x-hidden w-full">
       <Navbar />
       <Hero />
       <BioCard />
@@ -23,6 +23,6 @@ export default function Home() {
       <Shipping />
       <CTA />
       <Footer />
-    </>
+    </div>
   );
 }

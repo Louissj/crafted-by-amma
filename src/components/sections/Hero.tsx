@@ -79,16 +79,16 @@ export default function Hero() {
         </h1>
 
         {/* Kannada */}
-        <p className="font-kannada text-[.85rem] text-sand/[.3] mb-3.5 opacity-0 animate-fade-up"
+        <p className="font-kannada text-[.85rem] text-sand/[.55] mb-3.5 opacity-0 animate-fade-up"
           style={{ animationDelay: '.4s', animationFillMode: 'forwards' }}>
           ಶುದ್ಧ · ಮನೆಯಲ್ಲಿ ತಯಾರಿಸಿದ · ಪೌಷ್ಟಿಕ
         </p>
 
         {/* Subtitle */}
-        <p className="text-[.85rem] md:text-[.9rem] leading-[1.9] text-sand/[.35] max-w-[430px] mx-auto md:mx-0 mb-8 opacity-0 animate-fade-up"
+        <p className="text-[.85rem] md:text-[.9rem] leading-[1.9] text-sand/[.60] max-w-[430px] mx-auto md:mx-0 mb-8 opacity-0 animate-fade-up"
           style={{ animationDelay: '.5s', animationFillMode: 'forwards' }}>
           From Amma&apos;s kitchen in Mysuru — Millet Malt Powder & Instant Multigrain Dosa Powder.
-          <span className="block mt-1 text-brass/40 text-[.75rem] tracking-[1px]">Zero preservatives · Zero added sugar · 21+ ingredients</span>
+          <span className="block mt-1 text-brass/65 text-[.75rem] tracking-[1px]">Zero preservatives · Zero added sugar · 21+ ingredients</span>
         </p>
 
         {/* CTAs */}
@@ -100,7 +100,7 @@ export default function Hero() {
             🛒 Order Now
           </a>
           <a href="#prods"
-            className="px-7 py-3.5 rounded-full text-[.74rem] font-bold tracking-[1.5px] uppercase no-underline inline-flex items-center gap-2 transition-all hover:border-brass/50 hover:text-brass active:scale-95 text-sand/60 border-[1.5px] border-sand/[.12]">
+            className="px-7 py-3.5 rounded-full text-[.74rem] font-bold tracking-[1.5px] uppercase no-underline inline-flex items-center gap-2 transition-all hover:border-brass/50 hover:text-brass active:scale-95 text-sand/80 border-[1.5px] border-sand/[.25]">
             Explore Products →
           </a>
         </div>
@@ -110,7 +110,7 @@ export default function Hero() {
           style={{ animationDelay: '.75s', animationFillMode: 'forwards' }}>
           {['🌿 100% Natural', '🚫 No Chemicals', '✈️ Ships Worldwide'].map(t => (
             <span key={t} className="text-[.58rem] font-semibold px-3 py-1 rounded-full"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(235,225,200,0.4)' }}>
+              style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(235,225,200,0.65)' }}>
               {t}
             </span>
           ))}

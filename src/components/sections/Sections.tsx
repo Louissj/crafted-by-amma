@@ -504,7 +504,7 @@ export function CTA() {
           💬 WhatsApp
         </a>
       </RevealSection>
-      <p className="text-[.72rem] text-brass/35">
+      <p className="text-[.72rem] text-brass/65">
         📱 {CONTACT.phone1} · {CONTACT.phone2}
       </p>
     </section>
@@ -527,7 +527,7 @@ export function CheckoutCTA() {
           <h2 className="font-display font-bold text-[clamp(1.6rem,4vw,2.2rem)] text-forest leading-tight mb-3">
             From Amma&apos;s Kitchen<br />to Your Doorstep
           </h2>
-          <p className="text-[.8rem] text-forest/40 mb-8 leading-relaxed">
+          <p className="text-[.8rem] text-forest/60 mb-8 leading-relaxed">
             Order in 3 simple steps — payment via UPI, delivery straight to your door.
           </p>
 
@@ -540,11 +540,11 @@ export function CheckoutCTA() {
                   </div>
                   <div className="text-center">
                     <span className="text-[.6rem] font-bold text-forest block leading-snug">{s.label}</span>
-                    <span className="text-[.54rem] text-forest/30 hidden md:block">{s.desc}</span>
+                    <span className="text-[.54rem] text-forest/55 hidden md:block">{s.desc}</span>
                   </div>
                 </div>
                 {i < 2 && (
-                  <span className="text-forest/20 text-lg mb-6 flex-shrink-0">→</span>
+                  <span className="text-forest/40 text-lg mb-6 flex-shrink-0">→</span>
                 )}
               </div>
             ))}

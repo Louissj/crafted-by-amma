@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
-import { verifyPassword, createToken, hashPassword } from '@/lib/auth';
+import { verifyPassword, createToken, hashPassword, getAuthUser } from '@/lib/auth';
 import { getClientIP } from '@/lib/security';
 import { rateLimitLogin } from '@/lib/rateLimit';
+
+// Verify existing session
+export async function GET() {
+  const user = await getAuthUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  return NextResponse.json({ ok: true });
+}
 
 export async function POST(req: NextRequest) {
   try {

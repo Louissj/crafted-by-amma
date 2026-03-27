@@ -51,10 +51,18 @@ function StatusBadge({ status, size = 'sm' }: { status: string; size?: 'xs' | 's
 
 export default function AdminDashboard() {
   const [loggedIn, setLoggedIn] = useState(false);
+  const [authChecking, setAuthChecking] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [loggingIn, setLoggingIn] = useState(false);
+
+  // Restore session on refresh
+  useEffect(() => {
+    fetch('/api/auth').then(r => {
+      if (r.ok) setLoggedIn(true);
+    }).finally(() => setAuthChecking(false));
+  }, []);
   const [tab, setTab] = useState<Tab>('orders');
 
   const [orders, setOrders] = useState<Order[]>([]);
@@ -337,6 +345,14 @@ export default function AdminDashboard() {
   };
 
   /* ─── LOGIN ─────────────────────────────────────────────── */
+  if (authChecking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#080F06' }}>
+        <div className="w-8 h-8 border-2 border-brass/20 border-t-brass rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   if (!loggedIn) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
