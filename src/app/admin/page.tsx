@@ -217,18 +217,39 @@ export default function AdminDashboard() {
 
   const getWhatsAppMessage = (name: string, status: string): string => {
     const firstName = name.trim().split(' ')[0];
-    const messages: Record<string, string> = {
-      verified: `🌾 *Crafted by Amma* 🌾\n\nHello ${firstName}! 🙏\n\n✅ *Payment Confirmed!*\n\nThank you so much for trusting us! Your payment has been received & verified successfully. Amma is now rolling up her sleeves to start crafting your order with pure love & fresh ingredients. 💛\n\n_No preservatives. No shortcuts. Just pure goodness — the way it's always been made at home._\n\nWe'll ping you again the moment your order is on its way! 🚀`,
-
-      confirmed: `🌾 *Crafted by Amma* 🌾\n\nHello ${firstName}! 🙏\n\n📦 *Order Confirmed & Being Prepared!*\n\nYour order is officially in Amma's hands now! 🤲 She's carefully measuring, roasting & blending every ingredient — just like she would for her own family. 💛\n\n_21+ wholesome ingredients · Zero preservatives · Made with love_\n\nSit tight — we'll let you know as soon as it's packed & shipped! 🌿`,
-
-      shipped: `🌾 *Crafted by Amma* 🌾\n\nHello ${firstName}! 🙏\n\n🚚 *Your Order is On Its Way!*\n\nGreat news — your package has left our kitchen and is now heading straight to your doorstep! 📬\n\nInside your parcel:\n✨ Pure homemade goodness\n✨ Zero chemicals or preservatives\n✨ Packed with care & love 💛\n\nPlease keep your phone handy for the delivery. Can't wait for you to experience Amma's flavours! 🌾`,
-
-      delivered: `🌾 *Crafted by Amma* 🌾\n\nHello ${firstName}! 🙏\n\n🎉 *Order Delivered Successfully!*\n\nYour Crafted by Amma order has reached you! We truly hope every sip and every bite fills your home with warmth, health & happiness. 💛\n\n_This was made with the same love a mother puts into every meal for her child._\n\n⭐ *Loved it?* A little feedback from you means the world to Amma!\n\nThank you for being part of our family. See you again soon! 🌿🙏`,
-
-      cancelled: `🌾 *Crafted by Amma* 🌾\n\nHello ${firstName},\n\nWe're truly sorry to share that your order has been *cancelled*. 😔\n\nWe understand this can be disappointing, and we sincerely apologize for any inconvenience caused.\n\nIf you have any questions or would like to place a fresh order, please don't hesitate to reach out — we're always here for you! 🙏\n\n_Crafted by Amma — Made with Love, Always._`,
+    const e = {
+      grain:   '\u{1F33E}', // 🌾
+      pray:    '\u{1F64F}', // 🙏
+      check:   '\u2705',    // ✅
+      spark:   '\u2728',    // ✨
+      heart:   '\u{1F49B}', // 💛
+      box:     '\u{1F4E6}', // 📦
+      hands:   '\u{1F932}', // 🤲
+      leaf:    '\u{1F33F}', // 🌿
+      truck:   '\u{1F69A}', // 🚚
+      mailbox: '\u{1F4EC}', // 📬
+      party:   '\u{1F389}', // 🎉
+      star:    '\u2B50',    // ⭐
+      sad:     '\u{1F614}', // 😔
+      rocket:  '\u{1F680}', // 🚀
     };
-    return messages[status] || `🌾 *Crafted by Amma*\n\nHello ${firstName}! Your order status has been updated to *${status}*. Thank you for your patience! 🙏`;
+    const messages: Record<string, string> = {
+      verified:
+        `${e.grain} *Crafted by Amma* ${e.grain}\n\nHello ${firstName}! ${e.pray}\n\n${e.check} *Payment Confirmed!*\n\nThank you so much for trusting us! Your payment has been received & verified successfully. Amma is now rolling up her sleeves to start crafting your order with pure love & fresh ingredients. ${e.heart}\n\n_No preservatives. No shortcuts. Just pure goodness — the way it's always been made at home._\n\nWe'll ping you again the moment your order is on its way! ${e.rocket}`,
+
+      confirmed:
+        `${e.grain} *Crafted by Amma* ${e.grain}\n\nHello ${firstName}! ${e.pray}\n\n${e.box} *Order Confirmed & Being Prepared!*\n\nYour order is officially in Amma's hands now! ${e.hands} She's carefully measuring, roasting & blending every ingredient — just like she would for her own family. ${e.heart}\n\n_21+ wholesome ingredients · Zero preservatives · Made with love_\n\nSit tight — we'll let you know as soon as it's packed & shipped! ${e.leaf}`,
+
+      shipped:
+        `${e.grain} *Crafted by Amma* ${e.grain}\n\nHello ${firstName}! ${e.pray}\n\n${e.truck} *Your Order is On Its Way!*\n\nGreat news — your package has left our kitchen and is now heading straight to your doorstep! ${e.mailbox}\n\nInside your parcel:\n${e.spark} Pure homemade goodness\n${e.spark} Zero chemicals or preservatives\n${e.spark} Packed with care & love ${e.heart}\n\nPlease keep your phone handy for the delivery. Can't wait for you to experience Amma's flavours! ${e.grain}`,
+
+      delivered:
+        `${e.grain} *Crafted by Amma* ${e.grain}\n\nHello ${firstName}! ${e.pray}\n\n${e.party} *Order Delivered Successfully!*\n\nYour Crafted by Amma order has reached you! We truly hope every sip and every bite fills your home with warmth, health & happiness. ${e.heart}\n\n_This was made with the same love a mother puts into every meal for her child._\n\n${e.star} *Loved it?* A little feedback from you means the world to Amma!\n\nThank you for being part of our family. See you again soon! ${e.leaf} ${e.pray}`,
+
+      cancelled:
+        `${e.grain} *Crafted by Amma* ${e.grain}\n\nHello ${firstName},\n\nWe're truly sorry to share that your order has been *cancelled*. ${e.sad}\n\nWe understand this can be disappointing, and we sincerely apologize for any inconvenience caused.\n\nIf you have any questions or would like to place a fresh order, please don't hesitate to reach out — we're always here for you! ${e.pray}\n\n_Crafted by Amma — Made with Love, Always._`,
+    };
+    return messages[status] || `${e.grain} *Crafted by Amma*\n\nHello ${firstName}! Your order status has been updated to *${status}*. Thank you for your patience! ${e.pray}`;
   };
 
   const updateStatus = async (id: string, status: string, order?: Order) => {
