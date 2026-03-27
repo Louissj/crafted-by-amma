@@ -45,9 +45,14 @@ export default function OrderForm() {
     fetch('/api/settings/delivery').then(r => r.json()).then(d => setDelivery(d)).catch(() => {});
   }, []);
 
-  // Auto-detect state when 6-digit pincode entered
+  // Auto-detect zone from pincode — empty = international
   useEffect(() => {
-    if (deliveryZone === 'international') return;
+    if (pincode.length === 0) {
+      setDeliveryZone('international');
+      setPincodeState('');
+      setPincodeError('');
+      return;
+    }
     if (pincode.length !== 6 || !/^\d{6}$/.test(pincode)) {
       setPincodeState('');
       setPincodeError('');
@@ -277,49 +282,31 @@ export default function OrderForm() {
                       </div>
                     </div>
 
-                    {/* Pincode + auto-detect */}
+                    {/* Pincode — fully auto-detects zone */}
                     <div className="mb-3">
-                      <label className="block text-xs font-semibold tracking-[2px] uppercase text-forest mb-1">
-                        Pincode {deliveryZone !== 'international' && <span className="text-forest/40 normal-case tracking-normal font-normal">(auto-detects delivery charge)</span>}
-                      </label>
-                      {deliveryZone === 'international' ? (
-                        <div className="px-3 py-2.5 border-[1.5px] border-forest/[.06] rounded-xl text-sm bg-forest/[.03] text-forest/40 italic">
-                          International order — no pincode needed
+                      <label className="block text-xs font-semibold tracking-[2px] uppercase text-forest mb-1">Pincode</label>
+                      <div className="relative">
+                        <input
+                          value={pincode}
+                          onChange={e => { setPincode(e.target.value.replace(/\D/g, '').slice(0, 6)); setPincodeState(''); }}
+                          className="w-full px-3 py-2.5 border-[1.5px] border-forest/[.06] rounded-xl text-sm bg-white outline-none focus:border-sage focus:ring-2 focus:ring-sage/[.06] transition-all pr-32"
+                          placeholder="6-digit pincode"
+                          maxLength={6}
+                        />
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs">
+                          {pincodeLoading && <span className="text-forest/40 animate-pulse">Detecting…</span>}
+                          {!pincodeLoading && pincodeState && (
+                            <span className={`font-semibold ${deliveryZone === 'karnataka' ? 'text-sage' : 'text-amber-600'}`}>
+                              {deliveryZone === 'karnataka' ? '🏠' : '📦'} {pincodeState}
+                            </span>
+                          )}
+                          {!pincodeLoading && !pincodeState && !pincode && (
+                            <span className="text-forest/30">✈️ International</span>
+                          )}
                         </div>
-                      ) : (
-                        <div className="relative">
-                          <input
-                            value={pincode}
-                            onChange={e => { setPincode(e.target.value.replace(/\D/g, '').slice(0, 6)); setPincodeState(''); }}
-                            className="w-full px-3 py-2.5 border-[1.5px] border-forest/[.06] rounded-xl text-sm bg-white outline-none focus:border-sage focus:ring-2 focus:ring-sage/[.06] transition-all pr-28"
-                            placeholder="e.g. 570001"
-                            maxLength={6}
-                          />
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs">
-                            {pincodeLoading && <span className="text-forest/40 animate-pulse">Detecting…</span>}
-                            {!pincodeLoading && pincodeState && (
-                              <span className={`font-semibold ${deliveryZone === 'karnataka' ? 'text-sage' : 'text-amber-600'}`}>
-                                {deliveryZone === 'karnataka' ? '🏠' : '📦'} {pincodeState}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      )}
+                      </div>
                       {pincodeError && <p className="text-xs text-amber-600 mt-1">{pincodeError}</p>}
-                    </div>
-
-                    {/* International toggle */}
-                    <div className="mb-3">
-                      <button type="button"
-                        onClick={() => {
-                          setDeliveryZone(z => z === 'international' ? 'india' : 'international');
-                          setPincode('');
-                          setPincodeState('');
-                        }}
-                        className={`flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all
-                          ${deliveryZone === 'international' ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-forest/10 text-forest/40 hover:border-forest/20'}`}>
-                        ✈️ {deliveryZone === 'international' ? 'International order (no upfront delivery charge)' : 'Ordering from outside India?'}
-                      </button>
+                      <p className="text-xs text-forest/30 mt-1">Leave empty if ordering from outside India — delivery confirmed via WhatsApp</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
@@ -330,7 +317,6 @@ export default function OrderForm() {
                           placeholder="Mysuru, Bengaluru…" />
                       </div>
                       <div className="flex flex-col justify-end">
-                        {/* Delivery charge preview */}
                         <div className={`px-3 py-2.5 rounded-xl border text-xs font-medium ${
                           deliveryZone === 'international'
                             ? 'bg-blue-50 border-blue-200 text-blue-700'
@@ -339,7 +325,7 @@ export default function OrderForm() {
                               : 'bg-amber-50 border-amber-200 text-amber-700'
                         }`}>
                           🚚 {deliveryZone === 'international'
-                            ? 'Delivery charge confirmed via WhatsApp'
+                            ? 'Delivery confirmed via WhatsApp'
                             : deliveryCharge === 0
                               ? 'Free delivery!'
                               : `Delivery: ₹${deliveryCharge}`}
