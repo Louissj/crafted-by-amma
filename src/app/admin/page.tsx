@@ -217,21 +217,22 @@ export default function AdminDashboard() {
 
   const getWhatsAppMessage = (name: string, status: string): string => {
     const firstName = name.trim().split(' ')[0];
+    const cp = String.fromCodePoint;
     const e = {
-      grain:   '\u{1F33E}', // 🌾
-      pray:    '\u{1F64F}', // 🙏
-      check:   '\u2705',    // ✅
-      spark:   '\u2728',    // ✨
-      heart:   '\u{1F49B}', // 💛
-      box:     '\u{1F4E6}', // 📦
-      hands:   '\u{1F932}', // 🤲
-      leaf:    '\u{1F33F}', // 🌿
-      truck:   '\u{1F69A}', // 🚚
-      mailbox: '\u{1F4EC}', // 📬
-      party:   '\u{1F389}', // 🎉
-      star:    '\u2B50',    // ⭐
-      sad:     '\u{1F614}', // 😔
-      rocket:  '\u{1F680}', // 🚀
+      grain:   cp(0x1F33E), // 🌾
+      pray:    cp(0x1F64F), // 🙏
+      check:   cp(0x2705),  // ✅
+      spark:   cp(0x2728),  // ✨
+      heart:   cp(0x1F49B), // 💛
+      box:     cp(0x1F4E6), // 📦
+      hands:   cp(0x1F932), // 🤲
+      leaf:    cp(0x1F33F), // 🌿
+      truck:   cp(0x1F69A), // 🚚
+      mailbox: cp(0x1F4EC), // 📬
+      party:   cp(0x1F389), // 🎉
+      star:    cp(0x2B50),  // ⭐
+      sad:     cp(0x1F614), // 😔
+      rocket:  cp(0x1F680), // 🚀
     };
     const messages: Record<string, string> = {
       verified:
@@ -266,7 +267,14 @@ export default function AdminDashboard() {
     if (target) {
       const phone = target.phone.replace(/[^0-9]/g, '').slice(-10);
       const msg = getWhatsAppMessage(target.name, status);
-      window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+      const waUrl = 'https://wa.me/91' + phone + '?text=' + encodeURIComponent(msg);
+      const a = document.createElement('a');
+      a.href = waUrl;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
   };
 
@@ -901,8 +909,8 @@ export default function AdminDashboard() {
                         <div className="mt-2.5 pl-12" onClick={e => e.stopPropagation()}>
                           <select value={order.status} onChange={e => { e.stopPropagation(); updateStatus(order.id, e.target.value, order); }}
                             disabled={loading}
-                            className="w-full text-xs border border-white/20 rounded-lg px-3 py-2 outline-none cursor-pointer"
-                            style={{ background: '#1A2A14', color: '#E8DEB0' }}>
+                            className="w-full text-xs border border-white/20 rounded-lg px-3 py-2 outline-none cursor-pointer disabled:opacity-50"
+                            style={{ background: '#1A2A14', color: '#E8DEB0', minWidth: 120 }}>
                             {opts.map(s => <option key={s.value} value={s.value} style={{ background: '#1A2A14', color: '#E8DEB0' }}>{s.label}</option>)}
                           </select>
                         </div>
@@ -967,8 +975,8 @@ export default function AdminDashboard() {
                             return (
                               <select value={order.status} onChange={e => updateStatus(order.id, e.target.value, order)}
                                 disabled={loading}
-                                className="text-xs border border-white/10 rounded-lg px-2 py-1.5 outline-none transition-colors cursor-pointer disabled:opacity-50"
-                                style={{ background: '#1A2A14', color: '#E8DEB0' }}>
+                                className="text-xs border border-white/20 rounded-lg px-3 py-2 outline-none cursor-pointer disabled:opacity-50"
+                                style={{ background: '#1A2A14', color: '#E8DEB0', minWidth: 120 }}>
                                 {opts.map(s => <option key={s.value} value={s.value} style={{ background: '#1A2A14', color: '#E8DEB0' }}>{s.label}</option>)}
                               </select>
                             );
