@@ -19,9 +19,9 @@ export default function BioCard() {
 
   const highlights = [
     { icon: '⭐', label: 'Testimonials', href: '#testi' },
-    { icon: '📦', label: 'Orders', href: '#order' },
-    { icon: '🌍', label: 'Worldwide', href: '#prods' },
-    { icon: '🛒', label: 'Order Now', href: '#order' },
+    { icon: '📦', label: 'Orders', href: '#prods' },
+    { icon: '🌍', label: 'Worldwide', href: null },
+    { icon: '🛒', label: 'Order Now', href: '#prods' },
   ];
 
   return (
@@ -80,14 +80,19 @@ export default function BioCard() {
 
           {/* Highlights */}
           <div className="flex justify-around">
-            {highlights.map((h, i) => (
-              <a key={i} href={h.href} className="flex flex-col items-center gap-1.5 no-underline">
-                <div className="w-14 h-14 rounded-full border-2 border-sage/[.1] flex items-center justify-center text-xl bg-gradient-to-br from-cream-light to-sage/[.03] shadow-[0_4px_14px_rgba(26,42,20,.03),inset_0_2px_4px_rgba(255,255,255,.5),0_0_0_3px_rgba(90,122,58,.02)] transition-all active:scale-90">
-                  {h.icon}
-                </div>
-                <span className="text-[.5rem] text-sage tracking-[.8px] font-semibold uppercase">{h.label}</span>
-              </a>
-            ))}
+            {highlights.map((h, i) => {
+              const inner = (
+                <>
+                  <div className="w-14 h-14 rounded-full border-2 border-sage/[.1] flex items-center justify-center text-xl bg-gradient-to-br from-cream-light to-sage/[.03] shadow-[0_4px_14px_rgba(26,42,20,.03),inset_0_2px_4px_rgba(255,255,255,.5),0_0_0_3px_rgba(90,122,58,.02)] transition-all active:scale-90">
+                    {h.icon}
+                  </div>
+                  <span className="text-[.5rem] text-sage tracking-[.8px] font-semibold uppercase">{h.label}</span>
+                </>
+              );
+              return h.href
+                ? <a key={i} href={h.href} className="flex flex-col items-center gap-1.5 no-underline">{inner}</a>
+                : <div key={i} className="flex flex-col items-center gap-1.5 opacity-50 cursor-default">{inner}</div>;
+            })}
           </div>
         </div>
       </div>
