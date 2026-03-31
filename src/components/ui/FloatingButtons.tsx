@@ -10,8 +10,6 @@ export default function FloatingButtons() {
   const [cartCount, setCartCount] = useState(0);
   const whatsappUrl = `https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent('Hi! I want to order from Crafted by Amma 🌾')}`;
 
-  if (pathname !== '/') return null;
-
   useEffect(() => {
     const read = () => {
       try {
@@ -27,6 +25,8 @@ export default function FloatingButtons() {
 
   // On mobile: sit above the cart band if cart has items, otherwise use normal bottom spacing
   const mobileBottom = cartCount > 0 ? 'bottom-[100px]' : 'bottom-8';
+
+  if (pathname !== '/') return null;
 
   return (
     <div className={`fixed ${mobileBottom} md:bottom-8 right-4 z-[8000] flex flex-col items-end gap-2.5`}>
