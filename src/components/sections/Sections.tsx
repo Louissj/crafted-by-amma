@@ -139,10 +139,23 @@ function ReviewModal({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     requestAnimationFrame(() => setVisible(true));
+    const scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
     document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') handleClose(); };
     window.addEventListener('keydown', onKey);
-    return () => { window.removeEventListener('keydown', onKey); document.body.style.overflow = ''; };
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      window.scrollTo(0, scrollY);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -175,8 +188,9 @@ function ReviewModal({ onClose }: { onClose: () => void }) {
   return (
     <div
       className="fixed inset-0 z-[9999] flex items-end md:items-center justify-center md:p-4"
-      style={{ background: `rgba(2,6,2,${visible ? '0.88' : '0'})`, backdropFilter: 'blur(20px)', transition: 'background 0.28s ease' }}
+      style={{ background: `rgba(2,6,2,${visible ? '0.88' : '0'})`, backdropFilter: 'blur(20px)', transition: 'background 0.28s ease', touchAction: 'none' }}
       onClick={handleClose}
+      onTouchMove={e => e.preventDefault()}
     >
       <div
         className="relative w-full md:max-w-[480px] rounded-t-[28px] md:rounded-[24px] overflow-hidden"
@@ -187,8 +201,10 @@ function ReviewModal({ onClose }: { onClose: () => void }) {
           transform: visible ? 'translateY(0) scale(1)' : 'translateY(48px) scale(0.96)',
           opacity: visible ? 1 : 0,
           transition: 'transform 0.28s cubic-bezier(0.34,1.4,0.64,1), opacity 0.28s ease',
+          touchAction: 'pan-y',
         }}
         onClick={e => e.stopPropagation()}
+        onTouchMove={e => e.stopPropagation()}
       >
         {/* Gold top bar */}
         <div className="h-[2px]" style={{ background: 'linear-gradient(90deg,transparent,rgba(200,180,74,0.6),rgba(212,148,42,0.9),rgba(200,180,74,0.6),transparent)' }} />
@@ -202,7 +218,7 @@ function ReviewModal({ onClose }: { onClose: () => void }) {
           </svg>
         </button>
 
-        <div className="p-6 md:p-8">
+        <div className="p-6 md:p-8 overflow-y-auto max-h-[85dvh]" style={{ overscrollBehavior: 'contain', touchAction: 'pan-y' }}>
           {!submitted ? (
             <>
               {/* Header */}

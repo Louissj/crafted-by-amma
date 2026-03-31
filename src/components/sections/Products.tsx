@@ -116,20 +116,20 @@ function ImageCarousel({ images, productName, badge, onLightbox }: {
   if (images.length === 0) {
     return (
       <div className="w-full h-[260px] md:h-[320px] flex items-center justify-center flex-shrink-0"
-        style={{ background: 'linear-gradient(160deg,#263C1C,#1C3012)' }}>
+        style={{ background: 'linear-gradient(160deg,#2A4020,#1E3418)' }}>
         <span className="text-7xl opacity-10">🫙</span>
       </div>
     );
   }
 
   return (
-    <div className="relative flex-shrink-0 overflow-hidden select-none"
-      style={{ background: '#0a1406' }}>
+    <div className="relative flex-shrink-0 overflow-hidden select-none h-[260px] md:h-[320px]"
+      style={{ background: 'linear-gradient(160deg,#263C1C,#1C3012)' }}>
 
       {/* Slides */}
       <div
         ref={trackRef}
-        className="flex"
+        className="flex h-full"
         style={{ transform: `translateX(-${idx * 100}%)`, transition: 'transform 0.35s cubic-bezier(0.4,0,0.2,1)' }}
         onTouchStart={e => { touchStartX.current = e.touches[0].clientX; }}
         onTouchEnd={e => {
@@ -138,7 +138,7 @@ function ImageCarousel({ images, productName, badge, onLightbox }: {
         }}
       >
         {images.map((src, i) => (
-          <div key={i} className="w-full flex-shrink-0 relative cursor-zoom-in h-[260px] md:h-[320px]"
+          <div key={i} className="w-full flex-shrink-0 relative cursor-zoom-in h-full"
             onClick={() => onLightbox(idx)}>
             <img src={src} alt={productName}
               className="w-full h-full object-cover" />
@@ -234,15 +234,20 @@ function ProductModal({
     requestAnimationFrame(() => setVisible(true));
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && lightboxIdx === null) handleClose(); };
     window.addEventListener('keydown', onKey);
+    // Lock scroll on both html and body to cover all browsers
     const scrollY = window.scrollY;
     document.body.style.position = 'fixed';
     document.body.style.top = `-${scrollY}px`;
     document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
     return () => {
       window.removeEventListener('keydown', onKey);
       document.body.style.position = '';
       document.body.style.top = '';
       document.body.style.width = '';
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
       window.scrollTo(0, scrollY);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -262,8 +267,10 @@ function ProductModal({
           background: `rgba(2,6,2,${visible ? '0.88' : '0'})`,
           backdropFilter: 'blur(20px)',
           transition: 'background 0.26s ease',
+          touchAction: 'none',
         }}
         onClick={handleClose}
+        onTouchMove={e => e.preventDefault()}
       >
         {/* Panel */}
         <div
@@ -275,8 +282,10 @@ function ProductModal({
             transform: visible ? 'translateY(0) scale(1)' : 'translateY(40px) scale(0.97)',
             opacity: visible ? 1 : 0,
             transition: 'transform 0.26s cubic-bezier(0.34,1.56,0.64,1), opacity 0.26s ease',
+            touchAction: 'pan-y',
           }}
           onClick={e => e.stopPropagation()}
+          onTouchMove={e => e.stopPropagation()}
         >
           {/* Gold top bar */}
           <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
@@ -291,7 +300,7 @@ function ProductModal({
           />
 
           {/* Scrollable details */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto" style={{ overscrollBehavior: 'contain', touchAction: 'pan-y' }}>
             <div className="p-5 md:p-6">
               <p className="text-[.78rem] font-bold tracking-[3px] uppercase mb-1" style={{ color: 'rgba(200,180,74,0.55)' }}>
                 Crafted by Amma · Homemade
