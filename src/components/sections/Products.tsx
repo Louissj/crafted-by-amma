@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import SectionHeader from '../ui/SectionHeader';
@@ -9,22 +9,198 @@ import { useCart } from '@/lib/useCart';
 import { useProducts, DbProduct } from '@/lib/useProducts';
 import { trackEvent } from '@/lib/analytics';
 
-/* ─── SVG icons ─── */
-const CloseIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-    <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-  </svg>
-);
-const ChevronLeft = () => (
-  <svg width="9" height="16" viewBox="0 0 9 16" fill="none">
-    <path d="M8 1L1 8l7 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-const ChevronRight = () => (
-  <svg width="9" height="16" viewBox="0 0 9 16" fill="none">
-    <path d="M1 1l7 7-7 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
+/* ─── Image Lightbox ─── */
+function Lightbox({ images, startIdx, onClose }: { images: string[]; startIdx: number; onClose: () => void }) {
+  const [idx, setIdx] = useState(startIdx);
+  const touchStartX = useRef(0);
+
+  const prev = useCallback(() => setIdx(i => (i - 1 + images.length) % images.length), [images.length]);
+  const next = useCallback(() => setIdx(i => (i + 1) % images.length), [images.length]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowRight') next();
+      if (e.key === 'ArrowLeft') prev();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose, next, prev]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[99999] flex items-center justify-center"
+      style={{ background: 'rgba(0,0,0,0.96)', backdropFilter: 'blur(20px)' }}
+      onClick={onClose}
+    >
+      {/* Image */}
+      <div className="relative max-w-[95vw] max-h-[90vh] flex items-center justify-center"
+        onClick={e => e.stopPropagation()}
+        onTouchStart={e => { touchStartX.current = e.touches[0].clientX; }}
+        onTouchEnd={e => {
+          const diff = touchStartX.current - e.changedTouches[0].clientX;
+          if (Math.abs(diff) > 50) diff > 0 ? next() : prev();
+        }}>
+        <img
+          src={images[idx]}
+          alt=""
+          className="max-w-[95vw] max-h-[85vh] object-contain rounded-xl"
+          style={{ boxShadow: '0 20px 80px rgba(0,0,0,0.8)' }}
+        />
+      </div>
+
+      {/* Counter */}
+      {images.length > 1 && (
+        <div className="absolute top-5 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-bold text-white/60"
+          style={{ background: 'rgba(255,255,255,0.08)' }}>
+          {idx + 1} / {images.length}
+        </div>
+      )}
+
+      {/* Arrows */}
+      {images.length > 1 && (
+        <>
+          <button onClick={e => { e.stopPropagation(); prev(); }}
+            className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full flex items-center justify-center transition-all active:scale-90"
+            style={{ background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.15)' }}>
+            <svg width="9" height="16" viewBox="0 0 9 16" fill="none">
+              <path d="M8 1L1 8l7 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          <button onClick={e => { e.stopPropagation(); next(); }}
+            className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full flex items-center justify-center transition-all active:scale-90"
+            style={{ background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.15)' }}>
+            <svg width="9" height="16" viewBox="0 0 9 16" fill="none">
+              <path d="M1 1l7 7-7 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </>
+      )}
+
+      {/* Dot strip */}
+      {images.length > 1 && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+          {images.map((_, i) => (
+            <button key={i} onClick={e => { e.stopPropagation(); setIdx(i); }}
+              className={`rounded-full transition-all ${i === idx ? 'w-5 h-2 bg-white' : 'w-2 h-2 bg-white/30'}`} />
+          ))}
+        </div>
+      )}
+
+      {/* Close */}
+      <button onClick={onClose}
+        className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90"
+        style={{ background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.15)' }}>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M1 1l12 12M13 1L1 13" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+/* ─── Image Carousel (inside modal) ─── */
+function ImageCarousel({ images, productName, badge, onLightbox }: {
+  images: string[];
+  productName: string;
+  badge?: string;
+  onLightbox: (idx: number) => void;
+}) {
+  const [idx, setIdx] = useState(0);
+  const touchStartX = useRef(0);
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  const prev = () => setIdx(i => (i - 1 + images.length) % images.length);
+  const next = () => setIdx(i => (i + 1) % images.length);
+
+  if (images.length === 0) {
+    return (
+      <div className="w-full h-[260px] md:h-[320px] flex items-center justify-center flex-shrink-0"
+        style={{ background: 'linear-gradient(160deg,#263C1C,#1C3012)' }}>
+        <span className="text-7xl opacity-10">🫙</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative flex-shrink-0 overflow-hidden select-none"
+      style={{ background: '#0a1406' }}>
+
+      {/* Slides */}
+      <div
+        ref={trackRef}
+        className="flex"
+        style={{ transform: `translateX(-${idx * 100}%)`, transition: 'transform 0.35s cubic-bezier(0.4,0,0.2,1)' }}
+        onTouchStart={e => { touchStartX.current = e.touches[0].clientX; }}
+        onTouchEnd={e => {
+          const diff = touchStartX.current - e.changedTouches[0].clientX;
+          if (Math.abs(diff) > 45) diff > 0 ? next() : prev();
+        }}
+      >
+        {images.map((src, i) => (
+          <div key={i} className="w-full flex-shrink-0 relative cursor-zoom-in h-[260px] md:h-[320px]"
+            onClick={() => onLightbox(idx)}>
+            <img src={src} alt={productName}
+              className="w-full h-full object-cover" />
+            {/* Tap to zoom hint on first image */}
+            {i === 0 && (
+              <div className="absolute bottom-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full"
+                style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(6px)' }}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round">
+                  <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35M11 8v6M8 11h6"/>
+                </svg>
+                <span className="text-[0.6rem] text-white/60 font-medium">Tap to zoom</span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Gradient overlays */}
+      <div className="absolute inset-0 pointer-events-none"
+        style={{ background: 'linear-gradient(to top,rgba(13,21,9,0.65) 0%,transparent 45%)' }} />
+
+      {/* Badge */}
+      {badge && (
+        <span className="absolute top-4 left-4 z-[3] px-3 py-1 rounded-full text-xs font-bold tracking-[2px] uppercase"
+          style={{ background: 'linear-gradient(135deg,#D4942A,#B87323)', color: '#1A2A14', boxShadow: '0 2px 12px rgba(212,148,42,0.4)' }}>
+          {badge}
+        </span>
+      )}
+
+      {/* Prev / Next */}
+      {images.length > 1 && (
+        <>
+          <button onClick={e => { e.stopPropagation(); prev(); }}
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center z-[3] transition-all active:scale-90"
+            style={{ background: 'rgba(0,0,0,0.45)', border: '1px solid rgba(255,255,255,0.14)' }}>
+            <svg width="9" height="16" viewBox="0 0 9 16" fill="none">
+              <path d="M8 1L1 8l7 7" stroke="rgba(255,255,255,0.8)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          <button onClick={e => { e.stopPropagation(); next(); }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center z-[3] transition-all active:scale-90"
+            style={{ background: 'rgba(0,0,0,0.45)', border: '1px solid rgba(255,255,255,0.14)' }}>
+            <svg width="9" height="16" viewBox="0 0 9 16" fill="none">
+              <path d="M1 1l7 7-7 7" stroke="rgba(255,255,255,0.8)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </>
+      )}
+
+      {/* Dot strip + counter */}
+      {images.length > 1 && (
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-[3] flex items-center gap-1.5">
+          {images.map((_, i) => (
+            <button key={i} onClick={e => { e.stopPropagation(); setIdx(i); }}
+              className={`rounded-full transition-all duration-200 border border-white/20 ${i === idx ? 'w-5 h-1.5 bg-white/90' : 'w-1.5 h-1.5 bg-white/30'}`} />
+          ))}
+        </div>
+      )}
+
+    </div>
+  );
+}
 
 /* ─── Product Modal ─── */
 function ProductModal({
@@ -40,8 +216,8 @@ function ProductModal({
   onCountChange: (packSize: string, count: number) => void;
   onClose: () => void;
 }) {
-  const [imgIdx, setImgIdx] = useState(0);
   const [visible, setVisible] = useState(false);
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
 
   const productPrices = priceMap[product.id] || product.prices || {};
   const sizeEntries = Object.entries(productPrices);
@@ -56,13 +232,8 @@ function ProductModal({
 
   useEffect(() => {
     requestAnimationFrame(() => setVisible(true));
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') handleClose();
-      if (e.key === 'ArrowRight') setImgIdx(i => (i + 1) % Math.max(images.length, 1));
-      if (e.key === 'ArrowLeft') setImgIdx(i => (i - 1 + Math.max(images.length, 1)) % Math.max(images.length, 1));
-    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && lightboxIdx === null) handleClose(); };
     window.addEventListener('keydown', onKey);
-    // iOS-compatible scroll lock
     const scrollY = window.scrollY;
     document.body.style.position = 'fixed';
     document.body.style.top = `-${scrollY}px`;
@@ -75,7 +246,7 @@ function ProductModal({
       window.scrollTo(0, scrollY);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [images.length]);
+  }, [lightboxIdx]);
 
   const handleClose = useCallback(() => {
     setVisible(false);
@@ -83,245 +254,214 @@ function ProductModal({
   }, [onClose]);
 
   return (
-    <div
-      className="fixed inset-0 z-[9999] flex items-end md:items-center justify-center md:p-4"
-      style={{
-        background: `rgba(2,6,2,${visible ? '0.88' : '0'})`,
-        backdropFilter: 'blur(20px)',
-        transition: 'background 0.26s ease',
-      }}
-      onClick={handleClose}
-    >
-      {/* Modal panel */}
+    <>
+      {/* Backdrop */}
       <div
-        className="relative w-full md:max-w-[560px] rounded-t-[28px] md:rounded-[24px] overflow-hidden flex flex-col"
+        className="fixed inset-0 z-[9999] flex items-end md:items-center justify-center md:p-4"
         style={{
-          background: 'linear-gradient(145deg,#1E3014,#192C10)',
-          border: '1px solid rgba(255,255,255,0.07)',
-          boxShadow: '0 40px 120px rgba(0,0,0,0.8)',
-          maxHeight: '92vh',
-          transform: visible ? 'translateY(0) scale(1)' : 'translateY(40px) scale(0.97)',
-          opacity: visible ? 1 : 0,
-          transition: 'transform 0.26s cubic-bezier(0.34,1.56,0.64,1), opacity 0.26s ease',
+          background: `rgba(2,6,2,${visible ? '0.88' : '0'})`,
+          backdropFilter: 'blur(20px)',
+          transition: 'background 0.26s ease',
         }}
-        onClick={e => e.stopPropagation()}
+        onClick={handleClose}
       >
-        {/* Gold top bar */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
-          style={{ background: 'linear-gradient(90deg,transparent,rgba(200,180,74,0.6),rgba(212,148,42,0.9),rgba(200,180,74,0.6),transparent)' }} />
+        {/* Panel */}
+        <div
+          className="relative w-full md:max-w-[580px] rounded-t-[28px] md:rounded-[24px] overflow-hidden flex flex-col h-[94dvh] md:h-auto md:max-h-[92vh]"
+          style={{
+            background: 'linear-gradient(145deg,#1E3014,#192C10)',
+            border: '1px solid rgba(255,255,255,0.07)',
+            boxShadow: '0 40px 120px rgba(0,0,0,0.8)',
+            transform: visible ? 'translateY(0) scale(1)' : 'translateY(40px) scale(0.97)',
+            opacity: visible ? 1 : 0,
+            transition: 'transform 0.26s cubic-bezier(0.34,1.56,0.64,1), opacity 0.26s ease',
+          }}
+          onClick={e => e.stopPropagation()}
+        >
+          {/* Gold top bar */}
+          <div className="absolute top-0 left-0 right-0 h-[2px] z-10"
+            style={{ background: 'linear-gradient(90deg,transparent,rgba(200,180,74,0.6),rgba(212,148,42,0.9),rgba(200,180,74,0.6),transparent)' }} />
 
-        {/* ── Top: Image gallery ── */}
-        <div className="relative w-full flex-shrink-0 flex flex-col"
-          style={{ background: 'linear-gradient(160deg,#263C1C,#1C3012)' }}>
+          {/* Carousel */}
+          <ImageCarousel
+            images={images}
+            productName={product.name}
+            badge={product.badge}
+            onLightbox={setLightboxIdx}
+          />
 
-          {/* Main image */}
-          <div className="relative overflow-hidden" style={{ height: 280 }}>
-            {images.length > 0 ? images.map((src, i) => (
-              <img key={i} src={src} alt={product.name}
-                className="absolute inset-0 w-full h-full object-cover transition-opacity duration-400"
-                style={{ opacity: i === imgIdx ? 1 : 0 }}
-              />
-            )) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <span className="text-7xl opacity-10">🫙</span>
-              </div>
-            )}
-
-            {/* Gradient overlay */}
-            <div className="absolute inset-0 pointer-events-none"
-              style={{ background: 'linear-gradient(to top,rgba(13,21,9,0.7) 0%,transparent 50%)' }} />
-
-            {/* Badge */}
-            {product.badge && (
-              <span className="absolute top-4 left-4 z-[3] px-3 py-1 rounded-full text-xs font-bold tracking-[2px] uppercase"
-                style={{ background: 'linear-gradient(135deg,#D4942A,#B87323)', color: '#1A2A14', boxShadow: '0 2px 12px rgba(212,148,42,0.4)' }}>
-                {product.badge}
-              </span>
-            )}
-
-            {/* Prev/Next on image */}
-            {images.length > 1 && (
-              <>
-                <button onClick={() => setImgIdx(i => (i - 1 + images.length) % images.length)}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center z-[3] transition-all hover:scale-110 active:scale-95"
-                  style={{ background: 'rgba(0,0,0,0.45)', border: '1px solid rgba(255,255,255,0.14)', color: 'rgba(255,255,255,0.8)' }}>
-                  <ChevronLeft />
-                </button>
-                <button onClick={() => setImgIdx(i => (i + 1) % images.length)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center z-[3] transition-all hover:scale-110 active:scale-95"
-                  style={{ background: 'rgba(0,0,0,0.45)', border: '1px solid rgba(255,255,255,0.14)', color: 'rgba(255,255,255,0.8)' }}>
-                  <ChevronRight />
-                </button>
-              </>
-            )}
-          </div>
-
-          {/* Thumbnail strip */}
-          {images.length > 1 && (
-            <div className="flex gap-2 p-3 justify-center" style={{ background: 'rgba(0,0,0,0.25)' }}>
-              {images.map((src, i) => (
-                <button key={i} onClick={() => setImgIdx(i)}
-                  className="rounded-xl overflow-hidden flex-shrink-0 transition-all duration-200"
-                  style={{
-                    width: 48, height: 48,
-                    border: `2px solid ${i === imgIdx ? 'rgba(200,180,74,0.7)' : 'rgba(255,255,255,0.08)'}`,
-                    opacity: i === imgIdx ? 1 : 0.4,
-                    transform: i === imgIdx ? 'scale(1.06)' : 'scale(1)',
-                  }}>
-                  <img src={src} alt="" className="w-full h-full object-cover" />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* ── Bottom: Details + Order ── */}
-        <div className="flex-1 overflow-y-auto flex flex-col">
-          <div className="p-5 md:p-6 flex-1 flex flex-col">
-
-            {/* Header */}
-            <div className="mb-4">
-              <p className="text-[.82rem] font-bold tracking-[3px] uppercase mb-1.5" style={{ color: 'rgba(200,180,74,0.55)' }}>
+          {/* Scrollable details */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-5 md:p-6">
+              <p className="text-[.78rem] font-bold tracking-[3px] uppercase mb-1" style={{ color: 'rgba(200,180,74,0.55)' }}>
                 Crafted by Amma · Homemade
               </p>
-              <h2 className="font-display text-[1.35rem] md:text-[1.6rem] font-bold leading-tight mb-2"
+              <h2 className="font-display text-[1.3rem] md:text-[1.55rem] font-bold leading-tight mb-1.5"
                 style={{ color: 'rgba(235,225,200,0.95)' }}>
                 {product.name}
               </h2>
-              <p className="text-base leading-relaxed" style={{ color: 'rgba(235,225,200,0.78)' }}>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="font-display text-lg font-bold" style={{ color: '#D4942A' }}>{priceRange}</span>
+                <span className="text-xs" style={{ color: 'rgba(235,225,200,0.30)' }}>per pack</span>
+              </div>
+              <p className="text-sm leading-relaxed mb-4" style={{ color: 'rgba(235,225,200,0.75)' }}>
                 {product.description}
               </p>
-            </div>
 
-            {/* Price range */}
-            <div className="flex items-center gap-3 mb-5 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              <span className="font-display text-[1.25rem] font-bold" style={{ color: '#D4942A' }}>{priceRange}</span>
-              <span className="text-xs tracking-[1.5px] uppercase" style={{ color: 'rgba(235,225,200,0.3)' }}>per pack · incl. all sizes</span>
-            </div>
+              <div className="space-y-2.5">
+                <div className="px-4 py-3 rounded-xl" style={{ background: 'rgba(90,122,58,0.07)', border: '1px solid rgba(90,122,58,0.10)' }}>
+                  <span className="text-[0.7rem] font-bold tracking-[2px] uppercase block mb-1.5" style={{ color: 'rgba(212,148,42,0.55)' }}>
+                    🌾 Ingredients
+                  </span>
+                  <p className="text-sm leading-relaxed" style={{ color: 'rgba(235,225,200,0.75)' }}>{product.ingredients}</p>
+                </div>
 
-            {/* Ingredients */}
-            <div className="mb-3 px-3.5 py-3 rounded-xl" style={{ background: 'rgba(90,122,58,0.06)', border: '1px solid rgba(90,122,58,0.09)' }}>
-              <span className="text-xs font-bold tracking-[2.5px] uppercase block mb-1.5" style={{ color: 'rgba(212,148,42,0.55)' }}>
-                🌾 Ingredients
-              </span>
-              <p className="text-base leading-relaxed" style={{ color: 'rgba(235,225,200,0.78)' }}>{product.ingredients}</p>
-            </div>
-
-            {/* Usage */}
-            {(product.usage ?? []).map((u, i) => (
-              <div key={i} className="mb-3 px-3.5 py-3 rounded-xl" style={{ background: 'rgba(90,122,58,0.06)', border: '1px solid rgba(90,122,58,0.09)' }}>
-                <span className="text-xs font-bold tracking-[2.5px] uppercase block mb-1.5" style={{ color: 'rgba(212,148,42,0.55)' }}>
-                  📋 How to Use · {u.type}
-                </span>
-                <p className="text-base leading-relaxed" style={{ color: 'rgba(235,225,200,0.78)' }}>{u.instructions}</p>
-              </div>
-            ))}
-
-            {/* Pack size selector */}
-            <div className="mt-auto pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-              <p className="text-base font-bold tracking-[2.5px] uppercase mb-3" style={{ color: 'rgba(235,225,200,0.28)' }}>
-                Choose Pack Size &amp; Quantity
-              </p>
-              <div className="space-y-2">
-                {sizeEntries.map(([size, price], i) => {
-                  const count = getCount(size);
-                  const isActive = count > 0;
-                  const isBest = i === sizeEntries.length - 1;
-                  return (
-                    <div key={size}
-                      className="flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all duration-200"
-                      style={{
-                        background: isActive ? 'rgba(212,148,42,0.09)' : 'rgba(255,255,255,0.025)',
-                        border: `1.5px solid ${isActive ? 'rgba(212,148,42,0.35)' : 'rgba(255,255,255,0.055)'}`,
-                      }}>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-display text-base font-bold" style={{ color: isActive ? '#D4942A' : 'rgba(235,225,200,0.70)' }}>
-                            {size}
-                          </span>
-                          {isBest && (
-                            <span className="text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
-                              style={{ background: 'linear-gradient(135deg,#D4942A,#B87323)', color: '#1A2A14' }}>
-                              Best Value
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-base" style={{ color: 'rgba(235,225,200,0.35)' }}>₹{price} per pack</span>
-                      </div>
-
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <button type="button"
-                          onClick={() => onCountChange(size, Math.max(0, count - 1))}
-                          disabled={count <= 0}
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-base font-bold transition-all disabled:opacity-20"
-                          style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.10)', color: 'rgba(235,225,200,0.65)' }}>
-                          −
-                        </button>
-                        <span className="font-display text-base font-bold w-5 text-center"
-                          style={{ color: isActive ? '#D4942A' : 'rgba(235,225,200,0.3)' }}>
-                          {count}
-                        </span>
-                        <button type="button"
-                          onClick={() => onCountChange(size, Math.min(10, count + 1))}
-                          disabled={count >= 10}
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-base font-bold transition-all disabled:opacity-20"
-                          style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.10)', color: 'rgba(235,225,200,0.65)' }}>
-                          +
-                        </button>
-                      </div>
-
-                      <div className="w-12 text-right flex-shrink-0">
-                        {isActive
-                          ? <span className="font-display text-sm font-bold" style={{ color: '#D4942A' }}>₹{price * count}</span>
-                          : <span className="text-xs" style={{ color: 'rgba(235,225,200,0.16)' }}>—</span>
-                        }
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* View cart CTA */}
-              {hasSelection ? (
-                <Link href="/cart" onClick={handleClose}
-                  className="mt-4 flex items-center justify-between px-4 py-3.5 rounded-xl no-underline transition-all hover:scale-[1.01] active:scale-[.99]"
-                  style={{ background: 'linear-gradient(135deg,rgba(212,148,42,0.18),rgba(212,148,42,0.09))', border: '1.5px solid rgba(212,148,42,0.35)' }}>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm">🛒</span>
-                    <span className="text-xs font-bold" style={{ color: 'rgba(212,148,42,0.85)' }}>View Cart</span>
+                {(product.usage ?? []).map((u, i) => (
+                  <div key={i} className="px-4 py-3 rounded-xl" style={{ background: 'rgba(90,122,58,0.07)', border: '1px solid rgba(90,122,58,0.10)' }}>
+                    <span className="text-[0.7rem] font-bold tracking-[2px] uppercase block mb-1.5" style={{ color: 'rgba(212,148,42,0.55)' }}>
+                      📋 How to Use · {u.type}
+                    </span>
+                    <p className="text-sm leading-relaxed" style={{ color: 'rgba(235,225,200,0.75)' }}>{u.instructions}</p>
                   </div>
-                  <span className="font-display text-base font-bold" style={{ color: '#D4942A' }}>₹{cardTotal} →</span>
-                </Link>
-              ) : (
-                <p className="mt-3 text-center text-xs tracking-wider" style={{ color: 'rgba(255,255,255,0.2)' }}>
-                  Select a pack size above to add to cart
-                </p>
-              )}
+                ))}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Close button */}
-        <button onClick={handleClose}
-          className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center z-20 transition-all hover:scale-110 active:scale-95"
-          style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.6)' }}>
-          <CloseIcon />
-        </button>
+          {/* Sticky bottom — pack selector */}
+          <div className="flex-shrink-0 px-4 pb-5 pt-3 space-y-2"
+            style={{ background: 'linear-gradient(to top,#0e1c09,#192C10)', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+            <p className="text-[0.65rem] font-bold tracking-[2px] uppercase" style={{ color: 'rgba(235,225,200,0.28)' }}>
+              Choose Size &amp; Qty
+            </p>
+            {sizeEntries.map(([size, price], i) => {
+              const count = getCount(size);
+              const isBest = i === sizeEntries.length - 1 && sizeEntries.length > 1;
+              return (
+                <div key={size}
+                  className="flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200"
+                  style={{
+                    background: count > 0 ? 'rgba(212,148,42,0.08)' : 'rgba(255,255,255,0.03)',
+                    border: `1.5px solid ${count > 0 ? 'rgba(212,148,42,0.30)' : 'rgba(255,255,255,0.07)'}`,
+                  }}>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-display text-sm font-bold" style={{ color: count > 0 ? '#D4942A' : 'rgba(235,225,200,0.75)' }}>
+                        {size}
+                      </span>
+                      {isBest && (
+                        <span className="text-[0.6rem] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
+                          style={{ background: 'linear-gradient(135deg,#D4942A,#B87323)', color: '#1A2A14' }}>
+                          Best
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs" style={{ color: 'rgba(235,225,200,0.35)' }}>₹{price} per pack</span>
+                  </div>
+                  {count === 0 ? (
+                    <button
+                      onClick={() => onCountChange(size, 1)}
+                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold tracking-wide transition-all active:scale-95 flex-shrink-0"
+                      style={{ background: 'linear-gradient(135deg,#5A7A3A,#4a6830)', color: '#F5F0E0', boxShadow: '0 2px 10px rgba(90,122,58,0.30)' }}>
+                      <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                        <path d="M5.5 1v9M1 5.5h9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                      </svg>
+                      Add
+                    </button>
+                  ) : (
+                    <div className="flex items-center rounded-xl overflow-hidden flex-shrink-0"
+                      style={{ border: '1.5px solid rgba(212,148,42,0.40)', background: 'rgba(212,148,42,0.07)' }}>
+                      <button onClick={() => onCountChange(size, Math.max(0, count - 1))}
+                        className="w-9 h-9 flex items-center justify-center text-lg font-bold active:scale-90"
+                        style={{ color: '#D4942A' }}>−</button>
+                      <span className="font-display text-base font-bold w-6 text-center" style={{ color: '#D4942A' }}>{count}</span>
+                      <button onClick={() => onCountChange(size, Math.min(10, count + 1))}
+                        disabled={count >= 10}
+                        className="w-9 h-9 flex items-center justify-center text-lg font-bold active:scale-90 disabled:opacity-30"
+                        style={{ color: '#D4942A' }}>+</button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {hasSelection ? (
+              <Link href="/cart" onClick={handleClose}
+                className="flex items-center justify-between px-4 py-3.5 rounded-xl no-underline transition-all active:scale-[.99]"
+                style={{ background: 'linear-gradient(135deg,#5A7A3A,#4a6830)', boxShadow: '0 6px 20px rgba(90,122,58,0.30)' }}>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">🛒</span>
+                  <span className="text-sm font-bold tracking-[1px] uppercase text-white/90">View Cart</span>
+                </div>
+                <span className="font-display text-base font-bold" style={{ color: '#F5F0E0' }}>₹{cardTotal} →</span>
+              </Link>
+            ) : (
+              <p className="text-center text-xs py-1" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                Select a pack size above to add to cart
+              </p>
+            )}
+          </div>
+
+          {/* Close */}
+          <button onClick={handleClose}
+            className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center z-20 transition-all hover:scale-110 active:scale-95"
+            style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.6)' }}>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+            </svg>
+          </button>
+        </div>
       </div>
+
+      {/* Lightbox */}
+      {lightboxIdx !== null && (
+        <Lightbox
+          images={images}
+          startIdx={lightboxIdx}
+          onClose={() => setLightboxIdx(null)}
+        />
+      )}
+    </>
+  );
+}
+
+/* ─── Inline stepper ─── */
+function Stepper({ count, onAdd, onRemove }: { count: number; onAdd: () => void; onRemove: () => void }) {
+  return (
+    <div className="flex items-center gap-0 rounded-xl overflow-hidden flex-shrink-0"
+      style={{ border: '1.5px solid rgba(212,148,42,0.40)', background: 'rgba(212,148,42,0.07)' }}>
+      <button
+        onClick={e => { e.stopPropagation(); onRemove(); }}
+        className="w-9 h-9 flex items-center justify-center text-lg font-bold transition-all active:scale-90"
+        style={{ color: '#D4942A' }}>
+        −
+      </button>
+      <span className="font-display text-base font-bold w-6 text-center" style={{ color: '#D4942A' }}>
+        {count}
+      </span>
+      <button
+        onClick={e => { e.stopPropagation(); onAdd(); }}
+        disabled={count >= 10}
+        className="w-9 h-9 flex items-center justify-center text-lg font-bold transition-all active:scale-90 disabled:opacity-30"
+        style={{ color: '#D4942A' }}>
+        +
+      </button>
     </div>
   );
 }
 
-/* ─── Product Card (simplified) ─── */
+/* ─── Product Card ─── */
 function ProductCard({
   product,
   priceMap,
   getCount,
+  onCountChange,
   onOpen,
 }: {
   product: DbProduct;
   priceMap: Record<string, Record<string, number>>;
   getCount: (packSize: string) => number;
+  onCountChange: (packSize: string, count: number) => void;
   onOpen: () => void;
 }) {
   const [activeImg, setActiveImg] = useState(0);
@@ -330,7 +470,6 @@ function ProductCard({
   const images = product.images ?? [];
   const totalInCart = sizeEntries.reduce((sum, [size, price]) => sum + price * getCount(size), 0);
   const packsInCart = sizeEntries.reduce((sum, [size]) => sum + getCount(size), 0);
-  const minPrice = sizeEntries.length ? Math.min(...sizeEntries.map(([, p]) => p)) : 0;
 
   useEffect(() => {
     if (images.length < 2) return;
@@ -340,17 +479,20 @@ function ProductCard({
 
   return (
     <div
-      className="group rounded-[24px] overflow-hidden cursor-pointer transition-all duration-400 hover:-translate-y-1.5 h-full flex flex-col"
+      className="rounded-[24px] overflow-hidden h-full flex flex-col"
       style={{
         background: 'linear-gradient(145deg,rgba(255,255,255,.09),rgba(255,255,255,.04))',
         border: `1px solid ${packsInCart > 0 ? 'rgba(212,148,42,0.4)' : 'rgba(255,255,255,0.14)'}`,
         boxShadow: packsInCart > 0 ? '0 8px 40px rgba(212,148,42,0.12)' : '0 8px 30px rgba(0,0,0,0.25)',
-        transition: 'border-color 0.3s, box-shadow 0.3s, transform 0.4s',
+        transition: 'border-color 0.3s, box-shadow 0.3s',
       }}
-      onClick={onOpen}
     >
-      {/* Image */}
-      <div className="relative overflow-hidden flex-shrink-0" style={{ height: 260, background: 'linear-gradient(160deg,#2A4020,#1E3418)' }}>
+      {/* Image — click opens detail modal */}
+      <div
+        className="group relative overflow-hidden flex-shrink-0 cursor-pointer"
+        style={{ height: 220, background: 'linear-gradient(160deg,#2A4020,#1E3418)' }}
+        onClick={onOpen}
+      >
         {images.length > 0 ? images.map((img, i) => (
           <Image key={i} src={img} alt={product.name} width={640} height={400} unoptimized
             className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-[1.05]
@@ -358,11 +500,9 @@ function ProductCard({
         )) : (
           <div className="w-full h-full flex flex-col items-center justify-center gap-2">
             <span className="text-6xl opacity-10">🫙</span>
-            <span className="text-xs tracking-widest uppercase" style={{ color: 'rgba(235,225,200,0.2)' }}>No image</span>
           </div>
         )}
 
-        {/* Overlay on hover */}
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
           style={{ background: 'rgba(0,0,0,0.35)' }}>
           <div className="flex items-center gap-2 px-4 py-2.5 rounded-full font-semibold text-xs tracking-wide"
@@ -374,10 +514,8 @@ function ProductCard({
           </div>
         </div>
 
-        {/* Gradient bottom */}
         <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to top,rgba(0,0,0,0.5) 0%,transparent 50%)' }} />
 
-        {/* Badge */}
         {product.badge && (
           <span className="absolute top-4 left-4 z-[3] px-3 py-1 rounded-full text-xs font-bold tracking-[2px] uppercase"
             style={{ background: 'linear-gradient(135deg,#D4942A,#B87323)', color: '#1A2A14', boxShadow: '0 2px 12px rgba(212,148,42,0.4)' }}>
@@ -385,7 +523,6 @@ function ProductCard({
           </span>
         )}
 
-        {/* Cart indicator */}
         {packsInCart > 0 && (
           <div className="absolute top-4 right-4 z-[3] px-2.5 py-1 rounded-full flex items-center gap-1.5"
             style={{ background: 'rgba(212,148,42,0.18)', border: '1px solid rgba(212,148,42,0.45)', backdropFilter: 'blur(8px)' }}>
@@ -394,7 +531,6 @@ function ProductCard({
           </div>
         )}
 
-        {/* Image dots */}
         {images.length > 1 && (
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-[3]">
             {images.map((_, i) => (
@@ -406,28 +542,79 @@ function ProductCard({
       </div>
 
       {/* Card body */}
-      <div className="p-5 flex-1 flex flex-col">
-        <h3 className="font-display text-xl font-bold leading-snug mb-1.5" style={{ color: 'rgba(235,225,200,0.98)' }}>
-          {product.name}
-        </h3>
-        <p className="text-base leading-relaxed mb-4 line-clamp-2" style={{ color: 'rgba(235,225,200,0.72)' }}>
-          {product.description}
-        </p>
+      <div className="p-4 flex-1 flex flex-col">
+        <div className="mb-4 cursor-pointer" onClick={onOpen}>
+          <h3 className="font-display text-xl font-bold leading-snug mb-1" style={{ color: 'rgba(235,225,200,0.98)' }}>
+            {product.name}
+          </h3>
+          <p className="text-sm leading-relaxed line-clamp-2" style={{ color: 'rgba(235,225,200,0.60)' }}>
+            {product.description}
+          </p>
+        </div>
 
-        <div className="mt-auto flex items-center justify-between">
-          <div>
-            <span className="text-sm font-bold tracking-[2px] uppercase block mb-0.5" style={{ color: 'rgba(235,225,200,0.60)' }}>Starting from</span>
-            <span className="font-display text-[1.1rem] font-bold" style={{ color: '#D4942A' }}>₹{minPrice}</span>
-          </div>
-          <button
-            onClick={onOpen}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold tracking-wide transition-all hover:scale-105 active:scale-95"
-            style={{ background: 'linear-gradient(135deg,rgba(212,148,42,0.15),rgba(212,148,42,0.07))', border: '1.5px solid rgba(212,148,42,0.28)', color: 'rgba(212,148,42,0.9)' }}>
-            {packsInCart > 0 ? `In Cart · ₹${totalInCart}` : 'Order Now'}
-            <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-              <path d="M1.5 5.5h8M6 2l3.5 3.5L6 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
+        <div className="mt-auto space-y-2.5">
+          <p className="text-[0.65rem] font-bold tracking-[2px] uppercase mb-2" style={{ color: 'rgba(235,225,200,0.28)' }}>
+            Choose Size &amp; Qty
+          </p>
+          {sizeEntries.map(([size, price], i) => {
+            const count = getCount(size);
+            const isBest = i === sizeEntries.length - 1 && sizeEntries.length > 1;
+            return (
+              <div key={size}
+                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-200"
+                style={{
+                  background: count > 0 ? 'rgba(212,148,42,0.08)' : 'rgba(255,255,255,0.03)',
+                  border: `1.5px solid ${count > 0 ? 'rgba(212,148,42,0.30)' : 'rgba(255,255,255,0.07)'}`,
+                }}>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-display text-sm font-bold" style={{ color: count > 0 ? '#D4942A' : 'rgba(235,225,200,0.75)' }}>
+                      {size}
+                    </span>
+                    {isBest && (
+                      <span className="text-[0.6rem] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
+                        style={{ background: 'linear-gradient(135deg,#D4942A,#B87323)', color: '#1A2A14' }}>
+                        Best
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xs" style={{ color: 'rgba(235,225,200,0.35)' }}>₹{price}</span>
+                </div>
+
+                {count === 0 ? (
+                  <button
+                    onClick={e => { e.stopPropagation(); onCountChange(size, 1); }}
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold tracking-wide transition-all active:scale-95 flex-shrink-0"
+                    style={{ background: 'linear-gradient(135deg,#5A7A3A,#4a6830)', color: '#F5F0E0', boxShadow: '0 2px 10px rgba(90,122,58,0.30)' }}>
+                    <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                      <path d="M5.5 1v9M1 5.5h9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                    </svg>
+                    Add
+                  </button>
+                ) : (
+                  <Stepper
+                    count={count}
+                    onAdd={() => onCountChange(size, Math.min(10, count + 1))}
+                    onRemove={() => onCountChange(size, Math.max(0, count - 1))}
+                  />
+                )}
+              </div>
+            );
+          })}
+
+          {packsInCart > 0 && (
+            <Link href="/cart"
+              className="mt-1 flex items-center justify-between px-4 py-3 rounded-xl no-underline transition-all active:scale-[.99]"
+              style={{ background: 'linear-gradient(135deg,rgba(212,148,42,0.15),rgba(212,148,42,0.07))', border: '1.5px solid rgba(212,148,42,0.30)' }}>
+              <div className="flex items-center gap-2">
+                <span className="text-sm">🛒</span>
+                <span className="text-xs font-bold" style={{ color: 'rgba(212,148,42,0.80)' }}>
+                  {packsInCart} pack{packsInCart > 1 ? 's' : ''} · View Cart
+                </span>
+              </div>
+              <span className="font-display text-sm font-bold" style={{ color: '#D4942A' }}>₹{totalInCart} →</span>
+            </Link>
+          )}
         </div>
       </div>
     </div>
@@ -438,12 +625,12 @@ function ProductCard({
 function ProductSkeleton() {
   return (
     <div className="rounded-[24px] overflow-hidden animate-pulse" style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.03)' }}>
-      <div className="h-[260px]" style={{ background: 'rgba(255,255,255,0.04)' }} />
-      <div className="p-5 space-y-3">
+      <div className="h-[220px]" style={{ background: 'rgba(255,255,255,0.04)' }} />
+      <div className="p-4 space-y-3">
         <div className="h-5 w-2/3 rounded-lg" style={{ background: 'rgba(255,255,255,0.06)' }} />
         <div className="h-3 w-full rounded-lg" style={{ background: 'rgba(255,255,255,0.04)' }} />
-        <div className="h-3 w-4/5 rounded-lg" style={{ background: 'rgba(255,255,255,0.04)' }} />
         <div className="h-10 w-full rounded-xl mt-4" style={{ background: 'rgba(255,255,255,0.04)' }} />
+        <div className="h-10 w-full rounded-xl" style={{ background: 'rgba(255,255,255,0.04)' }} />
       </div>
     </div>
   );
@@ -462,7 +649,6 @@ export default function Products() {
     <section id="prods" className="py-16 sm:py-20 md:py-28 px-4 sm:px-5 relative overflow-hidden"
       style={{ background: 'linear-gradient(170deg,#1E3414 0%,#273E1C 40%,#2C4420 70%,#1E3414 100%)' }}>
 
-      {/* Ambient glows */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-24 left-1/4 w-96 h-96 rounded-full opacity-[.08]"
           style={{ background: 'radial-gradient(circle,#D4942A,transparent 70%)' }} />
@@ -474,7 +660,7 @@ export default function Products() {
 
       <div className="max-w-[1040px] lg:max-w-[1120px] mx-auto mb-8 relative z-[2]">
         <p className="text-center text-base tracking-wide" style={{ color: 'rgba(235,225,200,0.72)' }}>
-          Tap any product to explore details, pick your size &amp; place your order
+          Pick your size &amp; add to cart — tap the image for full details
         </p>
       </div>
 
@@ -488,6 +674,11 @@ export default function Products() {
                 product={product}
                 priceMap={priceMap}
                 getCount={(packSize) => getCount(product.id, packSize)}
+                onCountChange={(packSize, count) => {
+                  const prev = getCount(product.id, packSize);
+                  if (count > prev) trackEvent('add_to_cart', { productId: product.id, packSize });
+                  setCount(product.id, packSize, count);
+                }}
                 onOpen={() => setOpenProduct(product)}
               />
             </RevealSection>
@@ -495,7 +686,7 @@ export default function Products() {
         )}
       </div>
 
-      {/* Product modal */}
+      {/* Product detail modal */}
       {openProduct && (
         <ProductModal
           product={openProduct}
@@ -510,7 +701,7 @@ export default function Products() {
         />
       )}
 
-      {/* ── Sticky mini cart bar ── */}
+      {/* Sticky mini cart bar */}
       <div className={`fixed bottom-0 left-0 right-0 z-[1000] px-4 pb-4 md:pb-5 transition-all duration-400
         ${totalPacks > 0 ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'}`}>
         <div className="max-w-md mx-auto">
