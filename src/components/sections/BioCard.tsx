@@ -57,7 +57,7 @@ export default function BioCard() {
                 <span className="text-base md:text-lg flex-shrink-0">{s.icon}</span>
                 <div>
                   <span className="font-display text-lg md:text-xl font-bold text-brass block leading-tight">{s.val}</span>
-                  <span className="text-sm text-sand/[.45] tracking-[1.5px] uppercase">{s.label}</span>
+                  <span className="text-[0.62rem] md:text-sm text-sand/[.45] tracking-[0.5px] md:tracking-[1.5px] uppercase">{s.label}</span>
                 </div>
               </RevealSection>
             ))}
@@ -86,7 +86,7 @@ export default function BioCard() {
                   <div className="w-14 h-14 rounded-full border-2 border-sage/[.1] flex items-center justify-center text-xl bg-gradient-to-br from-cream-light to-sage/[.03] shadow-[0_4px_14px_rgba(26,42,20,.03),inset_0_2px_4px_rgba(255,255,255,.5),0_0_0_3px_rgba(90,122,58,.02)] transition-all active:scale-90">
                     {h.icon}
                   </div>
-                  <span className="text-sm text-sage tracking-[.8px] font-semibold uppercase">{h.label}</span>
+                  <span className="text-[0.65rem] md:text-sm text-sage tracking-[0px] md:tracking-[.8px] font-semibold uppercase text-center">{h.label}</span>
                 </>
               );
               return h.href
