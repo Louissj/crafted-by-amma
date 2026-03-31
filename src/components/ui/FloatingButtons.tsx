@@ -2,11 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { CONTACT } from '@/lib/constants';
 
 export default function FloatingButtons() {
+  const pathname = usePathname();
   const [cartCount, setCartCount] = useState(0);
   const whatsappUrl = `https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent('Hi! I want to order from Crafted by Amma 🌾')}`;
+
+  if (pathname !== '/') return null;
 
   useEffect(() => {
     const read = () => {
