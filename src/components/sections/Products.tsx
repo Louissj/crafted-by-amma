@@ -62,8 +62,18 @@ function ProductModal({
       if (e.key === 'ArrowLeft') setImgIdx(i => (i - 1 + Math.max(images.length, 1)) % Math.max(images.length, 1));
     };
     window.addEventListener('keydown', onKey);
-    document.body.style.overflow = 'hidden';
-    return () => { window.removeEventListener('keydown', onKey); document.body.style.overflow = ''; };
+    // iOS-compatible scroll lock
+    const scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      window.scrollTo(0, scrollY);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [images.length]);
 
@@ -209,7 +219,7 @@ function ProductModal({
 
             {/* Pack size selector */}
             <div className="mt-auto pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-              <p className="text-sm font-bold tracking-[2.5px] uppercase mb-3" style={{ color: 'rgba(235,225,200,0.28)' }}>
+              <p className="text-base font-bold tracking-[2.5px] uppercase mb-3" style={{ color: 'rgba(235,225,200,0.28)' }}>
                 Choose Pack Size &amp; Quantity
               </p>
               <div className="space-y-2">
@@ -226,7 +236,7 @@ function ProductModal({
                       }}>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="font-display text-sm font-bold" style={{ color: isActive ? '#D4942A' : 'rgba(235,225,200,0.70)' }}>
+                          <span className="font-display text-base font-bold" style={{ color: isActive ? '#D4942A' : 'rgba(235,225,200,0.70)' }}>
                             {size}
                           </span>
                           {isBest && (
@@ -236,7 +246,7 @@ function ProductModal({
                             </span>
                           )}
                         </div>
-                        <span className="text-sm" style={{ color: 'rgba(235,225,200,0.35)' }}>₹{price} per pack</span>
+                        <span className="text-base" style={{ color: 'rgba(235,225,200,0.35)' }}>₹{price} per pack</span>
                       </div>
 
                       <div className="flex items-center gap-2 flex-shrink-0">

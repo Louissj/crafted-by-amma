@@ -65,17 +65,15 @@ export default function Navbar() {
   return (
     <>
       <nav className={`fixed top-0 w-full z-[9000] px-4 py-2.5 flex items-center justify-between transition-all duration-400
-        ${scrolled ? 'bg-cream/97 backdrop-blur-lg shadow-[0_1px_0_rgba(26,42,20,.04)]' : 'bg-gradient-to-b from-black/50 to-transparent'}`}>
+        ${scrolled ? 'bg-forest/95 backdrop-blur-lg shadow-[0_2px_12px_rgba(0,0,0,.20)]' : 'bg-gradient-to-b from-black/50 to-transparent'}`}>
         <Link href="/" className="flex items-center gap-2.5 no-underline">
           <Image src="/images/logo.png" alt="Logo" width={40} height={40}
             className="rounded-full border-[1.5px] border-brass/20 flex-shrink-0" />
           <div>
-            <span className={`font-display text-[1.12rem] font-semibold leading-tight block transition-colors
-              ${scrolled ? 'text-forest' : 'text-white [text-shadow:0_1px_8px_rgba(0,0,0,.4)]'}`}>
+            <span className="font-display text-[1.12rem] font-semibold leading-tight block text-white [text-shadow:0_1px_8px_rgba(0,0,0,.4)]">
               Crafted by Amma
             </span>
-            <span className={`font-kannada text-[0.48rem] block mt-px transition-colors
-              ${scrolled ? 'text-clay' : 'text-white/70'}`}>
+            <span className="font-kannada text-[0.48rem] block mt-px text-white/70">
               ಅಮ್ಮನಿಂದ ಕರಕುಶಲ
             </span>
           </div>
@@ -85,8 +83,7 @@ export default function Navbar() {
         <ul className="hidden md:flex gap-5 items-center list-none">
           {links.map(l => (
             <li key={l.href}>
-              <a href={l.href} className={`no-underline text-sm font-medium tracking-[2px] uppercase transition-colors
-                ${scrolled ? 'text-forest' : 'text-white/90'} hover:text-sage`}>
+              <a href={l.href} className="no-underline text-sm font-medium tracking-[2px] uppercase transition-colors text-white/90 hover:text-brass/90">
                 {l.label}
               </a>
             </li>
@@ -96,7 +93,7 @@ export default function Navbar() {
           <li>
             <Link href="/cart" className="relative inline-flex items-center no-underline p-1.5 rounded-full transition-colors hover:bg-forest/5">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                stroke={scrolled ? '#1A2A14' : 'rgba(255,255,255,0.95)'}
+                stroke="rgba(255,255,255,0.95)"
                 strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
                 <line x1="3" y1="6" x2="21" y2="6" />
@@ -107,8 +104,7 @@ export default function Navbar() {
           </li>
 
           <li>
-            <Link href="/track" className={`no-underline text-sm font-medium tracking-[2px] uppercase transition-colors
-              ${scrolled ? 'text-forest' : 'text-white/90'} hover:text-sage`}>
+            <Link href="/track" className="no-underline text-sm font-medium tracking-[2px] uppercase transition-colors text-white/90 hover:text-brass/90">
               Track
             </Link>
           </li>
@@ -123,7 +119,7 @@ export default function Navbar() {
         <div className="flex md:hidden items-center gap-3">
           <Link href="/cart" className="relative p-1.5 rounded-full no-underline">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-              stroke={scrolled ? '#1A2A14' : 'rgba(255,255,255,0.95)'}
+              stroke="rgba(255,255,255,0.95)"
               strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
               <line x1="3" y1="6" x2="21" y2="6" />
@@ -133,11 +129,11 @@ export default function Navbar() {
           </Link>
 
           <button className="flex flex-col gap-[5px] p-1.5 z-[9100]" onClick={() => setMenuOpen(!menuOpen)}>
-            <span className={`w-[22px] h-[1.5px] rounded transition-all ${scrolled ? 'bg-forest' : 'bg-cream-light'}
+            <span className={`w-[22px] h-[1.5px] rounded transition-all bg-cream-light
               ${menuOpen ? 'rotate-45 translate-x-[4.5px] translate-y-[4.5px]' : ''}`} />
-            <span className={`w-[22px] h-[1.5px] rounded transition-all ${scrolled ? 'bg-forest' : 'bg-cream-light'}
+            <span className={`w-[22px] h-[1.5px] rounded transition-all bg-cream-light
               ${menuOpen ? 'opacity-0' : ''}`} />
-            <span className={`w-[22px] h-[1.5px] rounded transition-all ${scrolled ? 'bg-forest' : 'bg-cream-light'}
+            <span className={`w-[22px] h-[1.5px] rounded transition-all bg-cream-light
               ${menuOpen ? '-rotate-45 translate-x-[4.5px] -translate-y-[4.5px]' : ''}`} />
           </button>
         </div>

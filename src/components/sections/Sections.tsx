@@ -43,7 +43,7 @@ export function BenefitsSection() {
           <RevealSection>
             <p className="text-xs font-semibold tracking-[5px] uppercase mb-1.5 text-sage">Why Millets?</p>
             <h2 className="font-display font-bold leading-tight text-[clamp(2rem,5vw,2.6rem)] text-forest">
-              Benefits of Our Products
+              Benefits of Millets
             </h2>
             <div className="w-[50px] h-0.5 bg-gradient-to-r from-sage to-brass rounded mt-3.5 mb-6" />
           </RevealSection>
@@ -75,7 +75,7 @@ export function WhyUs() {
   ];
   return (
     <section id="why" className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 max-w-[1000px] mx-auto">
-      <SectionHeader tag="The Amma Difference" title="Why Families Choose Us" />
+      <SectionHeader tag="" title="Why Families Choose Us" />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         {cards.map((c, i) => (
           <RevealSection key={i} delay={i * 80}

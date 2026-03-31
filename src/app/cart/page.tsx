@@ -22,6 +22,9 @@ export default function CartPage() {
   const [pincodeState, setPincodeState] = useState('');
   const [pincodeError, setPincodeError] = useState('');
   const [deliveryZone, setDeliveryZone] = useState<'karnataka' | 'india' | 'international'>('india');
+  const [pincodeRequired, setPincodeRequired] = useState(false);
+  const [confirmClearAll, setConfirmClearAll] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState<{ productId: string; packSize: string } | null>(null);
 
   useEffect(() => {
     fetch('/api/settings/delivery').then(r => r.json()).then(setDelivery).catch(() => {});
@@ -72,24 +75,42 @@ export default function CartPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pincode]);
 
+  function parseKg(packSize: string): number {
+    const lower = packSize.toLowerCase();
+    const gMatch = lower.match(/(\d+(?:\.\d+)?)\s*g\b/);
+    if (gMatch) return parseFloat(gMatch[1]) / 1000;
+    const kgMatch = lower.match(/(\d+(?:\.\d+)?)\s*kg/);
+    if (kgMatch) return parseFloat(kgMatch[1]);
+    return 1;
+  }
+
   const deliveryCharge = useMemo(() => {
     if (!delivery) return 0;
     if (deliveryZone === 'international') return 0;
+    if (!pincodeState) return 0; // don't show charge until pincode is verified
     if (deliveryZone === 'karnataka') {
       if (delivery.karnatakFree && cartTotal >= delivery.freeAboveAmt) return 0;
       return delivery.baseCharge;
     }
-    return delivery.outstationCharge ?? 120;
-  }, [delivery, deliveryZone, cartTotal]);
+    // India outstation: ₹120 per kg
+    const totalKg = cart.reduce((sum, item) => sum + parseKg(item.packSize) * item.count, 0);
+    const perKgRate = delivery.outstationCharge ?? 120;
+    return Math.round(totalKg * perKgRate);
+  }, [delivery, deliveryZone, cartTotal, pincodeState, cart]);
 
   const grandTotal = cartTotal + deliveryCharge;
 
   const goToCheckout = useCallback(() => {
+    if (deliveryZone !== 'international' && !pincodeState) {
+      setPincodeRequired(true);
+      document.getElementById('pincode-input')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
     try {
       sessionStorage.setItem('amma_delivery', JSON.stringify({ pincode, deliveryZone }));
     } catch { /* ignore */ }
     router.push('/checkout');
-  }, [pincode, deliveryZone, router]);
+  }, [pincode, deliveryZone, pincodeState, router]);
 
   if (!mounted) {
     return (
@@ -128,7 +149,7 @@ export default function CartPage() {
             </div>
           </div>
           {cart.length > 0 && (
-            <button onClick={clearCart} className="text-xs font-semibold text-red-400/70 hover:text-red-500 transition-colors">
+            <button onClick={() => setConfirmClearAll(true)} className="text-xs font-semibold text-red-400/70 hover:text-red-500 transition-colors">
               Clear all
             </button>
           )}
@@ -222,7 +243,7 @@ export default function CartPage() {
                                   <span className="text-sm font-bold text-sage">₹{lineTotal}</span>
                                 </div>
 
-                                <button onClick={() => setCount(item.productId, item.packSize, 0)}
+                                <button onClick={() => setConfirmRemove({ productId: item.productId, packSize: item.packSize })}
                                   className="w-7 h-7 rounded-full flex items-center justify-center text-xs text-forest/20 hover:text-red-400 hover:bg-red-50 transition-all flex-shrink-0">
                                   ✕
                                 </button>
@@ -239,7 +260,7 @@ export default function CartPage() {
               {/* Add more */}
               <div className="flex justify-center mb-6">
                 <Link href="/#prods"
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-sage/80 hover:text-sage no-underline border border-sage/15 hover:border-sage/30 px-5 py-2.5 rounded-full transition-all hover:bg-sage/[.03]">
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-sage/80 hover:text-sage no-underline border border-sage/15 hover:border-sage/30 px-5 py-2.5 rounded-full transition-all hover:bg-sage/[.03]">
                   <span className="text-base leading-none">+</span> Add more products
                 </Link>
               </div>
@@ -265,13 +286,19 @@ export default function CartPage() {
                   <div>
                     <label className="block text-xs font-semibold text-forest/60 mb-1.5">
                       Pincode {deliveryZone !== 'international' && <span className="text-red-400">*</span>}
+                      {pincodeRequired && !pincodeState && deliveryZone !== 'international' && (
+                        <span className="ml-2 text-red-500 font-semibold normal-case tracking-normal">Please enter your pincode to continue</span>
+                      )}
                     </label>
                     <div className="relative">
                       <input
+                        id="pincode-input"
                         value={pincode}
                         onChange={e => {
-                          if (deliveryZone !== 'international')
+                          if (deliveryZone !== 'international') {
                             setPincode(e.target.value.replace(/\D/g, '').slice(0, 6));
+                            if (pincodeRequired) setPincodeRequired(false);
+                          }
                         }}
                         disabled={deliveryZone === 'international'}
                         placeholder="e.g. 560001"
@@ -282,10 +309,10 @@ export default function CartPage() {
                           placeholder:text-forest/45 placeholder:font-normal
                           focus:ring-3 focus:ring-sage/[.08]"
                         style={{
-                          borderColor: pincodeError ? '#f87171' :
+                          borderColor: (pincodeRequired && !pincodeState) || pincodeError ? '#f87171' :
                             pincodeState ? (deliveryZone === 'karnataka' ? '#5A7A3A' : '#B87323') :
                             'rgba(26,42,20,0.10)',
-                          background: pincodeError ? 'rgba(248,113,113,0.04)' :
+                          background: (pincodeRequired && !pincodeState) || pincodeError ? 'rgba(248,113,113,0.04)' :
                             pincodeState ? (deliveryZone === 'karnataka' ? 'rgba(90,122,58,0.04)' : 'rgba(184,115,35,0.04)') :
                             'white',
                         }}
@@ -336,7 +363,7 @@ export default function CartPage() {
                                 {pincodeState}
                               </p>
                               <p className="text-xs" style={{ color: deliveryZone === 'karnataka' ? '#5A7A3A99' : '#B8732399' }}>
-                                {deliveryZone === 'karnataka' ? 'Karnataka · Free delivery eligible' : 'Outside Karnataka · Flat charge applies'}
+                                {deliveryZone === 'karnataka' ? 'Karnataka · Free delivery eligible' : 'Outside Karnataka · ₹120 per kg'}
                               </p>
                             </div>
                           </div>
@@ -615,6 +642,78 @@ export default function CartPage() {
           )}
         </AnimatePresence>
       </main>
+
+      {/* Confirmation popup */}
+      <AnimatePresence>
+        {(confirmClearAll || confirmRemove) && (
+          <motion.div
+            key="confirm-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center px-5"
+            style={{ background: 'rgba(4,10,4,0.70)', backdropFilter: 'blur(10px)' }}
+            onClick={() => { setConfirmClearAll(false); setConfirmRemove(null); }}
+          >
+            <motion.div
+              key="confirm-panel"
+              initial={{ opacity: 0, scale: 0.92, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.94, y: 8 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+              className="w-full max-w-[320px] rounded-2xl overflow-hidden"
+              style={{ background: '#FFFEF9', boxShadow: '0 24px 64px rgba(0,0,0,0.35)' }}
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Red top bar */}
+              <div className="h-1" style={{ background: 'linear-gradient(90deg,#B83020,#E04530,#B83020)' }} />
+
+              <div className="px-6 py-5">
+                {/* Icon + title */}
+                <div className="flex items-start gap-3.5 mb-4">
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 mt-0.5"
+                    style={{ background: 'rgba(184,48,32,0.09)' }}>
+                    🗑️
+                  </div>
+                  <div>
+                    <h3 className="font-display text-[1.05rem] font-bold text-forest leading-tight">
+                      {confirmClearAll ? 'Clear entire cart?' : 'Remove this item?'}
+                    </h3>
+                    <p className="text-sm text-forest/50 mt-1 leading-snug">
+                      {confirmClearAll
+                        ? 'All products will be removed. This cannot be undone.'
+                        : `"${confirmRemove?.packSize}" will be removed from your cart.`}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="h-px bg-forest/[.06] mb-4" />
+
+                {/* Buttons */}
+                <div className="flex gap-2.5">
+                  <button
+                    onClick={() => { setConfirmClearAll(false); setConfirmRemove(null); }}
+                    className="flex-1 py-3 rounded-xl text-sm font-semibold text-forest/60 border border-forest/10 hover:bg-forest/[.03] active:scale-95 transition-all">
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (confirmClearAll) clearCart();
+                      if (confirmRemove) setCount(confirmRemove.productId, confirmRemove.packSize, 0);
+                      setConfirmClearAll(false);
+                      setConfirmRemove(null);
+                    }}
+                    className="flex-1 py-3 rounded-xl text-sm font-bold text-white active:scale-95 transition-all"
+                    style={{ background: 'linear-gradient(135deg,#C8341E,#A02818)', boxShadow: '0 4px 16px rgba(200,52,30,0.35)' }}>
+                    {confirmClearAll ? 'Clear Cart' : 'Remove'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
