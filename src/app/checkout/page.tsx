@@ -49,6 +49,14 @@ export default function CheckoutPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [delivery, setDelivery] = useState<DeliverySettings | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [copiedField, setCopiedField] = useState<'id' | 'amt' | null>(null);
+
+  function copyToClipboard(text: string, field: 'id' | 'amt') {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+    }).catch(() => {});
+  }
 
   useEffect(() => {
     fetch('/api/settings/delivery').then(r => r.json()).then(setDelivery).catch(() => {});
@@ -650,7 +658,7 @@ export default function CheckoutPage() {
 
               {/* UPI Payment */}
               {(() => {
-                const upiUrl = `upi://pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&am=${grandTotal}&cu=INR&tn=CraftedByAmma%20Order`;
+                const upiQrUrl = `upi://pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&am=${grandTotal}&cu=INR&tn=CraftedByAmma%20Order`;
                 const upiApps = [
                   {
                     name: 'GPay',
@@ -701,7 +709,7 @@ export default function CheckoutPage() {
                   },
                   {
                     name: 'Any UPI',
-                    url: upiUrl,
+                    url: `upi://pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&am=${grandTotal}&cu=INR&tn=CraftedByAmma%20Order`,
                     logo: (
                       <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
                         <rect width="48" height="48" rx="12" fill="white"/>
@@ -719,7 +727,7 @@ export default function CheckoutPage() {
                     style={{ background: 'linear-gradient(135deg,rgba(212,148,42,0.04),rgba(255,255,255,1))' }}>
                     <div className="px-5 py-4 border-b border-brass/[.10] flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-bold text-forest">{isMobile ? 'Pay via UPI App' : 'Scan & Pay'}</p>
+                        <p className="text-sm font-bold text-forest">{isMobile ? 'Pay via UPI' : 'Scan & Pay'}</p>
                         <p className="text-xs text-forest/50 mt-0.5">GPay · PhonePe · Paytm · Any UPI App</p>
                       </div>
                       <div className="text-right">
@@ -728,34 +736,86 @@ export default function CheckoutPage() {
                     </div>
 
                     {isMobile ? (
-                      /* Mobile: direct app deep-links */
-                      <div className="px-5 py-5">
-                        <div className="grid grid-cols-2 gap-3 mb-5">
-                          {upiApps.map(app => (
-                            <a key={app.name} href={app.url}
-                              className="flex items-center gap-3 px-4 py-3.5 rounded-xl active:scale-95 transition-transform"
-                              style={{ background: app.bg, border: `1.5px solid ${app.border}`, boxShadow: '0 2px 8px rgba(26,42,20,0.06)' }}>
-                              {app.logo}
-                              <span className="text-sm font-semibold text-forest">{app.name}</span>
-                            </a>
-                          ))}
+                      /* ── Mobile: copy UPI ID + amount, then open app manually ── */
+                      <div className="px-5 py-5 space-y-3">
+
+                        {/* Step 1 — Copy UPI ID */}
+                        <div>
+                          <p className="text-xs font-bold tracking-[2px] uppercase text-forest/40 mb-1.5">Step 1 · Copy UPI ID</p>
+                          <button
+                            onClick={() => copyToClipboard('manjulabasavaraj.urs-1@okicici', 'id')}
+                            className="w-full flex items-center justify-between px-4 py-3 rounded-xl border-[1.5px] active:scale-[.98] transition-all"
+                            style={{
+                              background: copiedField === 'id' ? 'rgba(90,122,58,0.07)' : 'white',
+                              borderColor: copiedField === 'id' ? '#5A7A3A' : 'rgba(26,42,20,0.12)',
+                            }}>
+                            <span className="text-sm font-mono font-semibold text-forest">manjulabasavaraj.urs-1@okicici</span>
+                            <span className="text-xs font-bold ml-3 flex-shrink-0 px-2.5 py-1 rounded-lg transition-all"
+                              style={{
+                                background: copiedField === 'id' ? 'rgba(90,122,58,0.15)' : 'rgba(26,42,20,0.06)',
+                                color: copiedField === 'id' ? '#3d6028' : '#1A2A14',
+                              }}>
+                              {copiedField === 'id' ? '✓ Copied' : 'Copy'}
+                            </span>
+                          </button>
                         </div>
-                        <p className="text-xs text-center text-forest/60 font-medium">
-                          MANJULA H M · <span className="font-mono">manjulabasavaraj.urs-1@okicici</span>
-                        </p>
-                        <div className="mt-3 flex items-center gap-2 justify-center px-4 py-2.5 rounded-xl"
+
+                        {/* Step 2 — Copy Amount */}
+                        <div>
+                          <p className="text-xs font-bold tracking-[2px] uppercase text-forest/40 mb-1.5">Step 2 · Copy Amount</p>
+                          <button
+                            onClick={() => copyToClipboard(String(grandTotal), 'amt')}
+                            className="w-full flex items-center justify-between px-4 py-3 rounded-xl border-[1.5px] active:scale-[.98] transition-all"
+                            style={{
+                              background: copiedField === 'amt' ? 'rgba(90,122,58,0.07)' : 'white',
+                              borderColor: copiedField === 'amt' ? '#5A7A3A' : 'rgba(26,42,20,0.12)',
+                            }}>
+                            <span className="font-display text-lg font-bold" style={{ color: '#D4942A' }}>₹{grandTotal}</span>
+                            <span className="text-xs font-bold ml-3 flex-shrink-0 px-2.5 py-1 rounded-lg transition-all"
+                              style={{
+                                background: copiedField === 'amt' ? 'rgba(90,122,58,0.15)' : 'rgba(26,42,20,0.06)',
+                                color: copiedField === 'amt' ? '#3d6028' : '#1A2A14',
+                              }}>
+                              {copiedField === 'amt' ? '✓ Copied' : 'Copy'}
+                            </span>
+                          </button>
+                        </div>
+
+                        {/* Step 3 — Open app */}
+                        <div>
+                          <p className="text-xs font-bold tracking-[2px] uppercase text-forest/40 mb-1.5">Step 3 · Open your UPI app</p>
+                          <div className="grid grid-cols-4 gap-2">
+                            {[
+                              { name: 'GPay', url: `tez://upi/pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&cu=INR` },
+                              { name: 'PhonePe', url: `phonepe://pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&cu=INR` },
+                              { name: 'Paytm', url: `paytmmp://pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&cu=INR` },
+                              { name: 'Any UPI', url: `upi://pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&cu=INR` },
+                            ].map(app => (
+                              <a key={app.name} href={app.url}
+                                className="flex flex-col items-center justify-center gap-1 py-3 rounded-xl text-center active:scale-95 transition-transform"
+                                style={{ background: 'rgba(26,42,20,0.04)', border: '1.5px solid rgba(26,42,20,0.08)' }}>
+                                <span className="text-xs font-bold text-forest/70">{app.name}</span>
+                              </a>
+                            ))}
+                          </div>
+                          <p className="text-xs text-forest/45 mt-2 text-center">
+                            New Payment → Pay to UPI ID → paste ID → enter amount → Pay
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl"
                           style={{ background: 'rgba(212,148,42,0.08)', border: '1px solid rgba(212,148,42,0.2)' }}>
                           <span className="text-xs font-semibold" style={{ color: '#B87323' }}>
-                            ⚠ Verify name &amp; amount before confirming
+                            ⚠ Verify name <strong>MANJULA H M</strong> before confirming
                           </span>
                         </div>
                       </div>
                     ) : (
-                      /* Desktop: QR code */
+                      /* ── Desktop: QR code ── */
                       <div className="px-5 py-6 flex flex-col items-center">
                         <div className="p-4 bg-white rounded-2xl border border-forest/[.06] mb-4"
                           style={{ boxShadow: '0 4px 20px rgba(26,42,20,0.08)' }}>
-                          <QRCodeSVG value={upiUrl} size={168} level="M" fgColor="#1A2A14"
+                          <QRCodeSVG value={upiQrUrl} size={168} level="M" fgColor="#1A2A14"
                             imageSettings={{ src: '/images/logo.png', width: 28, height: 28, excavate: true }} />
                         </div>
                         <p className="text-base font-bold text-forest mb-1">MANJULA H M</p>
