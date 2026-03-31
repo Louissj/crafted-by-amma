@@ -260,8 +260,9 @@ export default function CartPage() {
               {/* Add more */}
               <div className="flex justify-center mb-6">
                 <Link href="/#prods"
-                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-sage/80 hover:text-sage no-underline border border-sage/15 hover:border-sage/30 px-5 py-2.5 rounded-full transition-all hover:bg-sage/[.03]">
-                  <span className="text-base leading-none">+</span> Add more products
+                  className="inline-flex items-center justify-center gap-2 w-full py-4 rounded-2xl font-bold text-sm tracking-[1.5px] uppercase no-underline transition-all hover:shadow-xl active:scale-[.98]"
+                  style={{ background: 'linear-gradient(135deg,#2A4A1E,#3A6028)', color: '#C8B44A', boxShadow: '0 8px 24px rgba(26,42,20,0.18)' }}>
+                  <span className="text-lg leading-none font-bold">+</span> Add More Products
                 </Link>
               </div>
 
