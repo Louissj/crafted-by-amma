@@ -124,7 +124,7 @@ export default function Hero() {
         {/* CTAs */}
         <div className="flex gap-3 justify-center md:justify-start flex-wrap mb-8 opacity-0 animate-fade-up"
           style={{ animationDelay: '.6s', animationFillMode: 'forwards' }}>
-          <a href="#order"
+          <a href="#prods"
             className="px-7 sm:px-8 py-3.5 sm:py-4 rounded-full text-sm sm:text-base font-bold tracking-[1.5px] uppercase
               no-underline inline-flex items-center gap-2 transition-all hover:-translate-y-0.5 hover:shadow-xl active:scale-95"
             style={{ background: 'linear-gradient(135deg,#5A7A3A,#7A9A50)', color: '#F5F0E0', boxShadow: '0 6px 24px rgba(90,122,58,0.50)' }}>

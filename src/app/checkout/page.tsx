@@ -117,11 +117,16 @@ export default function CheckoutPage() {
     if (!delivery) return 0;
     if (deliveryZone === 'international') return 0;
     if (deliveryZone === 'karnataka') {
-      if (delivery.karnatakFree && cartTotal >= delivery.freeAboveAmt) return 0;
-      return delivery.baseCharge;
+      // 1kg packs are free; all other sizes charged per pack
+      const chargeablePacks = cart
+        .filter(item => item.packSize !== '1kg')
+        .reduce((sum, item) => sum + item.count, 0);
+      return chargeablePacks * delivery.baseCharge;
     }
-    return delivery.outstationCharge ?? 120;
-  }, [delivery, deliveryZone, cartTotal]);
+    // Outside Karnataka: outstationCharge per pack
+    const totalPacks = cart.reduce((sum, item) => sum + item.count, 0);
+    return totalPacks * (delivery.outstationCharge ?? 120);
+  }, [delivery, deliveryZone, cart]);
 
   const grandTotal = cartTotal + deliveryCharge;
 
@@ -549,9 +554,13 @@ export default function CheckoutPage() {
 
               {/* Continue button */}
               <button onClick={() => { if (validateStep1()) setStep(2); }}
-                className="w-full mt-7 py-[18px] rounded-2xl font-bold text-sm tracking-[1px] transition-all hover:shadow-xl active:scale-[.99]"
+                className="w-full mt-7 px-5 py-[18px] rounded-2xl font-bold text-sm tracking-[1px] transition-all hover:shadow-xl active:scale-[.99] flex items-center justify-between"
                 style={{ background: 'linear-gradient(135deg,#1A2A14,#243318)', color: '#D4942A', boxShadow: '0 8px 28px rgba(26,42,20,0.22)' }}>
-                Continue to Payment →
+                <span className="tracking-[1px] uppercase">Continue to Payment</span>
+                <span className="flex items-center gap-2">
+                  <span className="font-display text-lg font-bold">₹{grandTotal}</span>
+                  <span>→</span>
+                </span>
               </button>
             </motion.div>
           )}

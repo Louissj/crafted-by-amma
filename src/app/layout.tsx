@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import PageTracker from '@/components/ui/PageTracker';
+import FloatingButtons from '@/components/ui/FloatingButtons';
 
 export const metadata: Metadata = {
   title: 'Crafted by Amma — Homemade Millet Products | Mysuru',
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <PageTracker />
         {children}
+        <FloatingButtons />
       </body>
     </html>
   );

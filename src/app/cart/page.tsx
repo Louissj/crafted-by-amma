@@ -89,14 +89,16 @@ export default function CartPage() {
     if (deliveryZone === 'international') return 0;
     if (!pincodeState) return 0; // don't show charge until pincode is verified
     if (deliveryZone === 'karnataka') {
-      if (delivery.karnatakFree && cartTotal >= delivery.freeAboveAmt) return 0;
-      return delivery.baseCharge;
+      // 1kg packs are free; all other sizes charged per pack
+      const chargeablePacks = cart
+        .filter(item => item.packSize !== '1kg')
+        .reduce((sum, item) => sum + item.count, 0);
+      return chargeablePacks * delivery.baseCharge;
     }
-    // India outstation: ₹120 per kg
-    const totalKg = cart.reduce((sum, item) => sum + parseKg(item.packSize) * item.count, 0);
-    const perKgRate = delivery.outstationCharge ?? 120;
-    return Math.round(totalKg * perKgRate);
-  }, [delivery, deliveryZone, cartTotal, pincodeState, cart]);
+    // Outside Karnataka: outstationCharge per pack
+    const totalPacks = cart.reduce((sum, item) => sum + item.count, 0);
+    return totalPacks * (delivery.outstationCharge ?? 120);
+  }, [delivery, deliveryZone, pincodeState, cart]);
 
   const grandTotal = cartTotal + deliveryCharge;
 
@@ -364,7 +366,7 @@ export default function CartPage() {
                                 {pincodeState}
                               </p>
                               <p className="text-xs" style={{ color: deliveryZone === 'karnataka' ? '#5A7A3A99' : '#B8732399' }}>
-                                {deliveryZone === 'karnataka' ? 'Karnataka · Free delivery eligible' : 'Outside Karnataka · ₹120 per kg'}
+                                {deliveryZone === 'karnataka' ? 'Karnataka · Free delivery on 1kg packs' : `Outside Karnataka · ₹${delivery?.outstationCharge ?? 120} per pack`}
                               </p>
                             </div>
                           </div>
@@ -389,71 +391,37 @@ export default function CartPage() {
                     </AnimatePresence>
                   </div>
 
-                  {/* Free delivery progress / banner */}
+                  {/* Karnataka delivery info banner */}
                   {!pincodeLoading && deliveryZone === 'karnataka' && delivery && (
-                    <>
-                      {deliveryCharge > 0 ? (
-                        /* Progress bar — not yet free */
-                        <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-                          className="rounded-xl border border-amber-200/70 overflow-hidden"
-                          style={{ background: 'linear-gradient(135deg,rgba(212,148,42,0.06),rgba(212,148,42,0.02))' }}>
-                          <div className="px-4 pt-3 pb-2">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-base">🚚</span>
-                                <span className="text-xs font-bold text-forest/80">
-                                  Add <strong className="text-brass">₹{delivery.freeAboveAmt - cartTotal}</strong> more for free delivery
-                                </span>
-                              </div>
-                              <span className="text-xs font-semibold text-forest/45">
-                                ₹{cartTotal} / ₹{delivery.freeAboveAmt}
-                              </span>
-                            </div>
-                            {/* Progress bar */}
-                            <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(26,42,20,0.08)' }}>
-                              <motion.div
-                                className="h-full rounded-full"
-                                style={{ background: 'linear-gradient(90deg,#D4942A,#B87323)' }}
-                                initial={{ width: 0 }}
-                                animate={{ width: `${Math.min(100, (cartTotal / delivery.freeAboveAmt) * 100)}%` }}
-                                transition={{ duration: 0.6, ease: 'easeOut' }}
-                              />
-                            </div>
-                            <p className="text-xs text-forest/45 mt-1.5">
-                              Free delivery on orders ₹{delivery.freeAboveAmt}+ in Karnataka
-                            </p>
+                    deliveryCharge === 0 ? (
+                      <motion.div key="ka-free" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+                        className="flex items-center justify-between px-4 py-3 rounded-xl border border-sage/25"
+                        style={{ background: 'linear-gradient(135deg,rgba(90,122,58,0.08),rgba(90,122,58,0.03))' }}>
+                        <div className="flex items-center gap-2">
+                          <span className="text-base">🎉</span>
+                          <div>
+                            <p className="text-xs font-bold text-sage">Free delivery applied!</p>
+                            <p className="text-xs text-sage/70 mt-0.5">1kg pack · Karnataka</p>
                           </div>
-                        </motion.div>
-                      ) : (
-                        /* Already free */
-                        <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
-                          className="rounded-xl border border-sage/25 overflow-hidden"
-                          style={{ background: 'linear-gradient(135deg,rgba(90,122,58,0.08),rgba(90,122,58,0.03))' }}>
-                          <div className="px-4 pt-3 pb-2">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-base">🎉</span>
-                                <span className="text-xs font-bold text-sage">Free delivery unlocked!</span>
-                              </div>
-                              <span className="text-xs font-bold text-sage">₹0</span>
-                            </div>
-                            {/* Full progress bar */}
-                            <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(90,122,58,0.12)' }}>
-                              <motion.div
-                                className="h-full rounded-full"
-                                style={{ background: 'linear-gradient(90deg,#5A7A3A,#4a6830)' }}
-                                initial={{ width: '0%' }}
-                                animate={{ width: '100%' }}
-                                transition={{ duration: 0.5, ease: 'easeOut' }}
-                              />
-                            </div>
-                            <p className="text-xs text-forest/50 mt-1.5">
-                              You save <strong className="text-sage">₹{delivery.baseCharge}</strong> on delivery · Keep it up! 🌾
-                            </p>
+                        </div>
+                        <span className="text-sm font-bold text-sage">₹0</span>
+                      </motion.div>
+                    ) : (
+                      <motion.div key="ka-charge" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+                        className="px-4 py-3 rounded-xl border border-amber-200/70"
+                        style={{ background: 'rgba(212,148,42,0.05)' }}>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">🚚</span>
+                            <p className="text-xs font-bold text-forest/80">Delivery: ₹{delivery.baseCharge}/pack</p>
                           </div>
-                        </motion.div>
-                      )}
-                    </>
+                          <span className="text-sm font-bold" style={{ color: '#B87323' }}>₹{deliveryCharge}</span>
+                        </div>
+                        <p className="text-xs text-forest/55 leading-snug">
+                          1kg packs → free delivery · Other sizes → ₹{delivery.baseCharge} per pack in Karnataka
+                        </p>
+                      </motion.div>
+                    )
                   )}
 
                   {/* International checkbox */}
@@ -680,11 +648,25 @@ export default function CartPage() {
                     <h3 className="font-display text-[1.05rem] font-bold text-forest leading-tight">
                       {confirmClearAll ? 'Clear entire cart?' : 'Remove this item?'}
                     </h3>
-                    <p className="text-sm text-forest/50 mt-1 leading-snug">
-                      {confirmClearAll
-                        ? 'All products will be removed. This cannot be undone.'
-                        : `"${confirmRemove?.packSize}" will be removed from your cart.`}
-                    </p>
+                    {confirmClearAll ? (
+                      <p className="text-sm text-forest/50 mt-1 leading-snug">
+                        All {totalPacks} packs (₹{cartTotal}) will be removed. This cannot be undone.
+                      </p>
+                    ) : (() => {
+                      const item = cart.find(i => i.productId === confirmRemove?.productId && i.packSize === confirmRemove?.packSize);
+                      const product = PRODUCTS[confirmRemove?.productId as keyof typeof PRODUCTS];
+                      const unitPrice = priceMap[confirmRemove?.productId ?? '']?.[confirmRemove?.packSize ?? ''] ?? 0;
+                      const lineTotal = unitPrice * (item?.count ?? 1);
+                      return (
+                        <div className="mt-2 space-y-0.5">
+                          <p className="text-sm font-semibold text-forest">{product?.name}</p>
+                          <p className="text-sm text-forest/50">
+                            {confirmRemove?.packSize} · {item?.count} {item?.count === 1 ? 'pack' : 'packs'} · ₹{unitPrice}/pack
+                          </p>
+                          <p className="text-sm font-bold" style={{ color: '#C8341E' }}>Total removed: ₹{lineTotal}</p>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
 
