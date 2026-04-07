@@ -33,25 +33,36 @@ export default function FloatingButtons() {
 
       {/* Track Order */}
       <Link href="/track"
-        className="group flex items-center no-underline active:scale-95 transition-all duration-200">
-        {/* Label — visible on hover (desktop) */}
-        <span className="mr-2.5 hidden md:block opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-200
-          text-[0.65rem] font-bold tracking-[2px] uppercase px-3 py-1.5 rounded-full pointer-events-none"
-          style={{ background: 'rgba(10,18,8,0.90)', color: 'rgba(200,180,74,0.90)', border: '1px solid rgba(200,180,74,0.25)' }}>
-          Track Order
-        </span>
-        {/* Circle button */}
-        <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
-          style={{
-            background: 'rgba(10,18,8,0.90)',
-            border: '1.5px solid rgba(200,180,74,0.35)',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.30)',
-            backdropFilter: 'blur(12px)',
-          }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C8B44A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="10" r="3"/>
-            <path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 13-8 13S4 15.25 4 10a8 8 0 0 1 8-8z"/>
+        className="group flex flex-col items-center no-underline active:scale-95 transition-all duration-200">
+        {/* Curved "Track Order" label above the circle */}
+        <div className="mb-1 flex-shrink-0">
+          <svg width="72" height="22" viewBox="0 0 72 22" fill="none">
+            <path id="arc" d="M4,20 Q36,-4 68,20" fill="none"/>
+            <text fontSize="7.5" fontWeight="700" letterSpacing="1.2" fill="rgba(200,180,74,0.85)" fontFamily="inherit">
+              <textPath href="#arc" startOffset="50%" textAnchor="middle">TRACK ORDER</textPath>
+            </text>
           </svg>
+        </div>
+        {/* Label — slide in on hover (desktop) */}
+        <div className="group flex items-center">
+          <span className="mr-2.5 hidden md:block opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-200
+            text-[0.65rem] font-bold tracking-[2px] uppercase px-3 py-1.5 rounded-full pointer-events-none"
+            style={{ background: 'rgba(10,18,8,0.90)', color: 'rgba(200,180,74,0.90)', border: '1px solid rgba(200,180,74,0.25)' }}>
+            Track Order
+          </span>
+          {/* Circle button */}
+          <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+            style={{
+              background: 'rgba(10,18,8,0.90)',
+              border: '1.5px solid rgba(200,180,74,0.35)',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.30)',
+              backdropFilter: 'blur(12px)',
+            }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C8B44A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="10" r="3"/>
+              <path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 13-8 13S4 15.25 4 10a8 8 0 0 1 8-8z"/>
+            </svg>
+          </div>
         </div>
       </Link>
 

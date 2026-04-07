@@ -441,17 +441,17 @@ function Stepper({ count, onAdd, onRemove }: { count: number; onAdd: () => void;
       style={{ border: '1.5px solid rgba(212,148,42,0.40)', background: 'rgba(212,148,42,0.07)' }}>
       <button
         onClick={e => { e.stopPropagation(); onRemove(); }}
-        className="w-9 h-9 flex items-center justify-center text-lg font-bold transition-all active:scale-90"
+        className="w-10 h-10 flex items-center justify-center text-xl font-bold transition-all active:scale-90"
         style={{ color: '#D4942A' }}>
         −
       </button>
-      <span className="font-display text-base font-bold w-6 text-center" style={{ color: '#D4942A' }}>
+      <span className="font-display text-lg font-bold w-7 text-center" style={{ color: '#D4942A' }}>
         {count}
       </span>
       <button
         onClick={e => { e.stopPropagation(); onAdd(); }}
         disabled={count >= 10}
-        className="w-9 h-9 flex items-center justify-center text-lg font-bold transition-all active:scale-90 disabled:opacity-30"
+        className="w-10 h-10 flex items-center justify-center text-xl font-bold transition-all active:scale-90 disabled:opacity-30"
         style={{ color: '#D4942A' }}>
         +
       </button>
@@ -587,7 +587,7 @@ function ProductCard({
                       </span>
                     )}
                   </div>
-                  <span className="text-xs" style={{ color: 'rgba(235,225,200,0.35)' }}>₹{price}</span>
+                  <span className="text-xs" style={{ color: 'rgba(235,225,200,0.35)' }}>₹{price} per pack</span>
                 </div>
 
                 {count === 0 ? (

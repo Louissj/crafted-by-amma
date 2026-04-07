@@ -114,7 +114,7 @@ export default function Navbar() {
           </li>
           <li>
             <Link href="/track" className="no-underline text-sm font-medium tracking-[2px] uppercase text-white/90 hover:text-brass/90 transition-colors">
-              Track
+              Track Order
             </Link>
           </li>
           <li>
@@ -132,7 +132,7 @@ export default function Navbar() {
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 13-8 13S4 15.25 4 10a8 8 0 0 1 8-8z"/>
             </svg>
-            Track
+            Track Order
           </Link>
           <Link href="/cart" className="relative p-1.5 no-underline">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.95)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">

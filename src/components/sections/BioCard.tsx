@@ -19,7 +19,6 @@ export default function BioCard() {
 
   const highlights = [
     { icon: '⭐', label: 'Testimonials', href: '#testi' },
-    { icon: '📦', label: 'Orders', href: '#prods' },
     { icon: '🌍', label: 'Worldwide', href: null },
     { icon: '🛒', label: 'Order Now', href: '#prods' },
   ];

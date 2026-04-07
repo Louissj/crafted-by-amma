@@ -4,7 +4,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PRODUCTS } from '@/lib/constants';
-import { CART_PRICES } from '@/lib/useCart';
 import { useProducts } from '@/lib/useProducts';
 
 type CartItem = { productId: string; packSize: string; count: number };
@@ -103,7 +102,7 @@ function StatusTimeline({ status }: { status: string }) {
 }
 
 function OrderCard({ order, index, priceMap }: { order: TrackOrder; index: number; priceMap: Record<string, Record<string, number>> }) {
-  const [expanded, setExpanded] = useState(index === 0);
+  const [expanded, setExpanded] = useState(false);
   const items = resolveProducts(order.products);
   const meta = STATUS_META[order.status] || STATUS_META.pending;
   const productSubtotal = (order.totalAmount ?? 0) - (order.deliveryCharge ?? 0);
