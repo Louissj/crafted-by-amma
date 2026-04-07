@@ -84,7 +84,7 @@ export default function Navbar() {
           <Image src="/images/logo.png" alt="Logo" width={40} height={40}
             className="rounded-full border-[1.5px] border-brass/20 flex-shrink-0" />
           <div>
-            <span className="font-display text-[1.12rem] font-semibold leading-tight block text-white [text-shadow:0_1px_8px_rgba(0,0,0,.4)]">
+            <span className="font-display text-[1.0rem] font-semibold leading-tight block text-white whitespace-nowrap [text-shadow:0_1px_8px_rgba(0,0,0,.4)]">
               Crafted by Amma
             </span>
             <span className="font-kannada text-[0.48rem] block mt-px text-white/70">
