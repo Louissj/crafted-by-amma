@@ -65,10 +65,10 @@ export default function Navbar() {
   const close = () => setMenuOpen(false);
 
   const links = [
-    { href: '#about', label: 'Story', icon: '📖' },
+    { href: '/#about', label: 'Story', icon: '📖' },
     { href: '/products', label: 'Products', icon: '🌾' },
-    { href: '#why', label: 'Why Us', icon: '💚' },
-    { href: '#testi', label: 'Reviews', icon: '⭐' },
+    { href: '/#why', label: 'Why Us', icon: '💚' },
+    { href: '/#testi', label: 'Reviews', icon: '⭐' },
   ];
 
   const whatsappUrl = `https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent('Hi! I want to order from Crafted by Amma 🌾')}`;
