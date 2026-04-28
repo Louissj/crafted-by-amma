@@ -1,15 +1,24 @@
 'use client';
 
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { QRCodeSVG } from 'qrcode.react';
 import { useCart } from '@/lib/useCart';
 import { useProducts } from '@/lib/useProducts';
 import { PRODUCTS } from '@/lib/constants';
 import { trackEvent } from '@/lib/analytics';
 
 type DeliverySettings = { baseCharge: number; outstationCharge: number; freeAboveAmt: number; karnatakFree: boolean; note: string };
+
+type RazorpayResponse = {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+};
+
+type RazorpayWindow = Window & {
+  Razorpay: new (options: Record<string, unknown>) => { open(): void };
+};
 
 const STEPS = ['Details', 'Payment'];
 
@@ -41,27 +50,20 @@ export default function CheckoutPage() {
   const [pincodeState, setPincodeState] = useState('');
   const [pincodeError, setPincodeError] = useState('');
   const [deliveryZone, setDeliveryZone] = useState<'karnataka' | 'india' | 'international'>('india');
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [orderId, setOrderId] = useState('');
   const [error, setError] = useState('');
-  const fileRef = useRef<HTMLInputElement>(null);
   const [delivery, setDelivery] = useState<DeliverySettings | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
-  const [copiedField, setCopiedField] = useState<'id' | 'amt' | null>(null);
-
-  function copyToClipboard(text: string, field: 'id' | 'amt') {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopiedField(field);
-      setTimeout(() => setCopiedField(null), 2000);
-    }).catch(() => {});
-  }
 
   useEffect(() => {
     fetch('/api/settings/delivery').then(r => r.json()).then(setDelivery).catch(() => {});
     trackEvent('checkout_start');
-    setIsMobile(/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent));
+
+    // Load Razorpay checkout script
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.head.appendChild(script);
 
     // Pre-fill pincode/zone carried over from cart page
     try {
@@ -73,6 +75,10 @@ export default function CheckoutPage() {
         sessionStorage.removeItem('amma_delivery');
       }
     } catch { /* ignore */ }
+
+    return () => {
+      if (document.head.contains(script)) document.head.removeChild(script);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -117,32 +123,16 @@ export default function CheckoutPage() {
     if (!delivery) return 0;
     if (deliveryZone === 'international') return 0;
     if (deliveryZone === 'karnataka') {
-      // 1kg packs are free; all other sizes charged per pack
       const chargeablePacks = cart
         .filter(item => item.packSize !== '1kg')
         .reduce((sum, item) => sum + item.count, 0);
       return chargeablePacks * delivery.baseCharge;
     }
-    // Outside Karnataka: outstationCharge per pack
-    const totalPacks = cart.reduce((sum, item) => sum + item.count, 0);
-    return totalPacks * (delivery.outstationCharge ?? 120);
+    const packs = cart.reduce((sum, item) => sum + item.count, 0);
+    return packs * (delivery.outstationCharge ?? 120);
   }, [delivery, deliveryZone, cart]);
 
   const grandTotal = cartTotal + deliveryCharge;
-
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    setFile(f);
-    const reader = new FileReader();
-    reader.onload = ev => setPreview(ev.target?.result as string);
-    reader.readAsDataURL(f);
-  };
-
-  const removeFile = () => {
-    setFile(null); setPreview('');
-    if (fileRef.current) fileRef.current.value = '';
-  };
 
   function validateField(field: keyof typeof fieldErrors, value: string): string {
     if (field === 'name') return value.trim().length < 2 ? 'Enter your full name' : '';
@@ -173,23 +163,84 @@ export default function CheckoutPage() {
     return !Object.values(errors).some(Boolean);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!file) { setError('Please upload your payment screenshot.'); return; }
-    setSubmitting(true); setError('');
+  const handleRazorpayPay = async () => {
+    setSubmitting(true);
+    setError('');
     try {
-      const fd = new FormData();
-      fd.append('name', form.name); fd.append('phone', form.phone);
-      fd.append('cartItems', JSON.stringify(cart));
-      fd.append('city', form.city); fd.append('pincode', pincode); fd.append('deliveryZone', deliveryZone);
-      fd.append('address', form.address); fd.append('notes', form.notes);
-      fd.append('screenshot', file);
-      const res = await fetch('/api/orders', { method: 'POST', body: fd });
+      const res = await fetch('/api/orders/razorpay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cartItems: cart, deliveryZone }),
+      });
       const data = await res.json();
-      if (res.ok) { clearCart(); setOrderId(data.orderId || ''); }
-      else setError(data.error || 'Something went wrong. Please try again.');
-    } catch { setError('Network error. Please try again.'); }
-    finally { setSubmitting(false); }
+      if (!res.ok) {
+        setError(data.error || 'Failed to initiate payment');
+        setSubmitting(false);
+        return;
+      }
+
+      const options = {
+        key: data.key,
+        amount: data.amount,
+        currency: data.currency,
+        name: 'Crafted by Amma',
+        description: 'Homemade Millet Products · Mysuru',
+        image: '/images/logo.png',
+        order_id: data.razorpayOrderId,
+        prefill: {
+          name: form.name,
+          contact: form.phone,
+        },
+        notes: {
+          city: form.city,
+          address: form.address,
+        },
+        theme: { color: '#5A7A3A' },
+        handler: async (response: RazorpayResponse) => {
+          setSubmitting(true);
+          try {
+            const verifyRes = await fetch('/api/orders/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+                name: form.name,
+                phone: form.phone,
+                city: form.city,
+                address: form.address,
+                pincode,
+                deliveryZone,
+                notes: form.notes,
+                cartItems: cart,
+              }),
+            });
+            const verifyData = await verifyRes.json();
+            if (verifyRes.ok) {
+              clearCart();
+              setOrderId(verifyData.orderId || '');
+            } else {
+              setError(verifyData.error || 'Payment verification failed. Please contact support.');
+            }
+          } catch {
+            setError('Payment verification failed. Please contact support.');
+          } finally {
+            setSubmitting(false);
+          }
+        },
+        modal: {
+          ondismiss: () => setSubmitting(false),
+        },
+      };
+
+      const rzp = new (window as unknown as RazorpayWindow).Razorpay(options);
+      rzp.open();
+      setSubmitting(false);
+    } catch {
+      setError('Failed to initiate payment. Please try again.');
+      setSubmitting(false);
+    }
   };
 
   if (!mounted) {
@@ -220,10 +271,9 @@ export default function CheckoutPage() {
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}
               transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
               className="text-5xl mb-4">🌾</motion.div>
-            <h1 className="font-display text-2xl font-bold mb-1.5" style={{ color: '#D4942A' }}>Order Placed!</h1>
-            <p className="text-sm text-white/60">Thank you! We&apos;ll confirm via WhatsApp within 2 hours.</p>
+            <h1 className="font-display text-2xl font-bold mb-1.5" style={{ color: '#D4942A' }}>Order Confirmed!</h1>
+            <p className="text-sm text-white/60">Payment received. We&apos;ll dispatch your order within 1 business day.</p>
 
-            {/* Order ID pill */}
             <div className="inline-flex items-center gap-2.5 mt-5 px-5 py-2.5 rounded-full"
               style={{ background: 'rgba(212,148,42,0.15)', border: '1px solid rgba(212,148,42,0.3)' }}>
               <span className="text-xs font-bold tracking-[2px] uppercase" style={{ color: 'rgba(212,148,42,0.7)' }}>Order ID</span>
@@ -236,7 +286,6 @@ export default function CheckoutPage() {
             <p className="text-xs text-forest/50 text-center mb-6">
               Use your WhatsApp number to track your order status anytime.
             </p>
-
             <div className="flex flex-col gap-3">
               <Link href="/track"
                 className="flex items-center justify-center gap-2 py-[18px] rounded-2xl font-bold text-sm no-underline text-forest transition-all"
@@ -342,7 +391,6 @@ export default function CheckoutPage() {
               className="bg-white rounded-[28px] p-7 md:p-9"
               style={{ boxShadow: '0 12px 48px rgba(26,42,20,0.10), 0 2px 8px rgba(26,42,20,0.04)' }}>
 
-              {/* Section title */}
               <div className="flex items-center gap-3 mb-1">
                 <div className="w-1 h-5 bg-sage rounded-full" />
                 <h2 className="font-display text-2xl font-bold text-forest">Delivery Details</h2>
@@ -420,7 +468,6 @@ export default function CheckoutPage() {
                       inputMode="numeric"
                       disabled={deliveryZone === 'international'}
                     />
-                    {/* Pincode status pills */}
                     {pincodeLoading && (
                       <span className="inline-flex items-center gap-1.5 mt-2 bg-forest/5 text-forest/50 text-xs px-3 py-1 rounded-full animate-pulse">
                         <span className="w-3 h-3 border border-forest/30 border-t-forest/70 rounded-full animate-spin inline-block" />
@@ -454,7 +501,7 @@ export default function CheckoutPage() {
                   </InputField>
                 </div>
 
-                {/* International toggle — premium card style */}
+                {/* International toggle */}
                 <div
                   className={`rounded-2xl px-4 py-3 cursor-pointer select-none transition-all ${
                     deliveryZone === 'international'
@@ -567,22 +614,20 @@ export default function CheckoutPage() {
 
           {/* ── STEP 2: PAYMENT ── */}
           {step === 2 && (
-            <motion.form key="step2" onSubmit={handleSubmit}
+            <motion.div key="step2"
               initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.3 }}
               className="bg-white rounded-[28px] p-7 md:p-9"
               style={{ boxShadow: '0 12px 48px rgba(26,42,20,0.10), 0 2px 8px rgba(26,42,20,0.04)' }}>
 
-              {/* Section title */}
               <div className="flex items-center gap-3 mb-1">
                 <div className="w-1 h-5 bg-sage rounded-full" />
                 <h2 className="font-display text-2xl font-bold text-forest">Review &amp; Pay</h2>
               </div>
-              <p className="text-sm text-forest/50 mt-1 mb-7 ml-4">Tap your UPI app, pay, upload screenshot, done.</p>
+              <p className="text-sm text-forest/50 mt-1 mb-7 ml-4">Review your order, then pay securely via Razorpay.</p>
 
               {/* Order summary */}
               <div className="mb-7 rounded-2xl overflow-hidden border border-forest/[.06]">
-                {/* Dark header */}
                 <div className="px-5 py-4 flex items-center justify-between"
                   style={{ background: 'linear-gradient(135deg,#1A2A14,#243318)' }}>
                   <div>
@@ -595,7 +640,6 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                {/* Items */}
                 <div className="px-5 pt-4 pb-2 space-y-3">
                   {cart.map(item => {
                     const unitPrice = priceMap[item.productId]?.[item.packSize] || 0;
@@ -615,7 +659,6 @@ export default function CheckoutPage() {
                   })}
                 </div>
 
-                {/* Totals */}
                 <div className="px-5 pt-3 pb-4 space-y-2.5 border-t border-dashed border-forest/10 mt-2">
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-forest/60">Products subtotal</span>
@@ -635,7 +678,6 @@ export default function CheckoutPage() {
                     )}
                   </div>
 
-                  {/* Savings callout */}
                   {deliveryZone !== 'international' && deliveryCharge === 0 && delivery && (
                     <div className="flex items-center gap-2 px-3 py-2 rounded-xl"
                       style={{ background: 'rgba(90,122,58,0.07)', border: '1px solid rgba(90,122,58,0.15)' }}>
@@ -665,216 +707,29 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* UPI Payment */}
-              {(() => {
-                const upiQrUrl = `upi://pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&am=${grandTotal}&cu=INR&tn=CraftedByAmma%20Order`;
-                const upiApps = [
-                  {
-                    name: 'GPay',
-                    url: `tez://upi/pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&am=${grandTotal}&cu=INR&tn=CraftedByAmma%20Order`,
-                    logo: (
-                      <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
-                        <rect width="48" height="48" rx="12" fill="white"/>
-                        <text x="24" y="20" textAnchor="middle" fontSize="11" fontWeight="700" fontFamily="Arial" fill="#4285F4">G</text>
-                        <text x="8" y="34" fontSize="9" fontWeight="700" fontFamily="Arial">
-                          <tspan fill="#4285F4">P</tspan><tspan fill="#EA4335">a</tspan><tspan fill="#FBBC05">y</tspan>
-                        </text>
-                        <circle cx="24" cy="17" r="7" fill="none" stroke="#4285F4" strokeWidth="2.5"/>
-                        <path d="M24 10 A7 7 0 0 1 31 17" stroke="#EA4335" strokeWidth="2.5" fill="none"/>
-                        <path d="M31 17 A7 7 0 0 1 24 24" stroke="#FBBC05" strokeWidth="2.5" fill="none"/>
-                        <path d="M24 24 A7 7 0 0 1 17 17" stroke="#34A853" strokeWidth="2.5" fill="none"/>
-                        <rect x="20" y="15" width="8" height="4" rx="1" fill="white"/>
-                        <rect x="21" y="16" width="4" height="2" rx="0.5" fill="#4285F4"/>
-                      </svg>
-                    ),
-                    bg: '#f8f9ff',
-                    border: '#4285F422',
-                  },
-                  {
-                    name: 'PhonePe',
-                    url: `phonepe://pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&am=${grandTotal}&cu=INR&tn=CraftedByAmma%20Order`,
-                    logo: (
-                      <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
-                        <rect width="48" height="48" rx="12" fill="#5F259F"/>
-                        <text x="24" y="32" textAnchor="middle" fontSize="20" fontWeight="900" fontFamily="Arial" fill="white">P</text>
-                        <circle cx="32" cy="18" r="4" fill="#CBB3F0"/>
-                      </svg>
-                    ),
-                    bg: '#f9f5ff',
-                    border: '#5F259F22',
-                  },
-                  {
-                    name: 'Paytm',
-                    url: `paytmmp://pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&am=${grandTotal}&cu=INR&tn=CraftedByAmma%20Order`,
-                    logo: (
-                      <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
-                        <rect width="48" height="48" rx="12" fill="#00B9F1"/>
-                        <rect x="8" y="14" width="32" height="20" rx="3" fill="white"/>
-                        <text x="24" y="29" textAnchor="middle" fontSize="10" fontWeight="800" fontFamily="Arial" fill="#00B9F1">Paytm</text>
-                      </svg>
-                    ),
-                    bg: '#f0fbff',
-                    border: '#00B9F122',
-                  },
-                  {
-                    name: 'Any UPI',
-                    url: `upi://pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&am=${grandTotal}&cu=INR&tn=CraftedByAmma%20Order`,
-                    logo: (
-                      <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
-                        <rect width="48" height="48" rx="12" fill="white"/>
-                        <text x="24" y="22" textAnchor="middle" fontSize="10" fontWeight="900" fontFamily="Arial" fill="#6C3D9E">UPI</text>
-                        <rect x="8" y="26" width="15" height="3" rx="1.5" fill="#F47920"/>
-                        <rect x="25" y="26" width="15" height="3" rx="1.5" fill="#6C3D9E"/>
-                      </svg>
-                    ),
-                    bg: '#fdf8ff',
-                    border: '#6C3D9E22',
-                  },
-                ];
-                return (
-                  <div className="mb-7 rounded-2xl overflow-hidden border border-brass/15"
-                    style={{ background: 'linear-gradient(135deg,rgba(212,148,42,0.04),rgba(255,255,255,1))' }}>
-                    <div className="px-5 py-4 border-b border-brass/[.10] flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-bold text-forest">{isMobile ? 'Pay via UPI' : 'Scan & Pay'}</p>
-                        <p className="text-xs text-forest/50 mt-0.5">GPay · PhonePe · Paytm · Any UPI App</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-display text-2xl font-bold" style={{ color: '#D4942A' }}>₹{grandTotal}</p>
-                      </div>
-                    </div>
-
-                    {isMobile ? (
-                      /* ── Mobile: copy UPI ID + amount, then open app manually ── */
-                      <div className="px-5 py-5 space-y-3">
-
-                        {/* Step 1 — Copy UPI ID */}
-                        <div>
-                          <p className="text-xs font-bold tracking-[2px] uppercase text-forest/40 mb-1.5">Step 1 · Copy UPI ID</p>
-                          <button
-                            onClick={() => copyToClipboard('manjulabasavaraj.urs-1@okicici', 'id')}
-                            className="w-full flex items-center justify-between px-4 py-3 rounded-xl border-[1.5px] active:scale-[.98] transition-all"
-                            style={{
-                              background: copiedField === 'id' ? 'rgba(90,122,58,0.07)' : 'white',
-                              borderColor: copiedField === 'id' ? '#5A7A3A' : 'rgba(26,42,20,0.12)',
-                            }}>
-                            <span className="text-sm font-mono font-semibold text-forest">manjulabasavaraj.urs-1@okicici</span>
-                            <span className="text-xs font-bold ml-3 flex-shrink-0 px-2.5 py-1 rounded-lg transition-all"
-                              style={{
-                                background: copiedField === 'id' ? 'rgba(90,122,58,0.15)' : 'rgba(26,42,20,0.06)',
-                                color: copiedField === 'id' ? '#3d6028' : '#1A2A14',
-                              }}>
-                              {copiedField === 'id' ? '✓ Copied' : 'Copy'}
-                            </span>
-                          </button>
-                        </div>
-
-                        {/* Step 2 — Copy Amount */}
-                        <div>
-                          <p className="text-xs font-bold tracking-[2px] uppercase text-forest/40 mb-1.5">Step 2 · Copy Amount</p>
-                          <button
-                            onClick={() => copyToClipboard(String(grandTotal), 'amt')}
-                            className="w-full flex items-center justify-between px-4 py-3 rounded-xl border-[1.5px] active:scale-[.98] transition-all"
-                            style={{
-                              background: copiedField === 'amt' ? 'rgba(90,122,58,0.07)' : 'white',
-                              borderColor: copiedField === 'amt' ? '#5A7A3A' : 'rgba(26,42,20,0.12)',
-                            }}>
-                            <span className="font-display text-lg font-bold" style={{ color: '#D4942A' }}>₹{grandTotal}</span>
-                            <span className="text-xs font-bold ml-3 flex-shrink-0 px-2.5 py-1 rounded-lg transition-all"
-                              style={{
-                                background: copiedField === 'amt' ? 'rgba(90,122,58,0.15)' : 'rgba(26,42,20,0.06)',
-                                color: copiedField === 'amt' ? '#3d6028' : '#1A2A14',
-                              }}>
-                              {copiedField === 'amt' ? '✓ Copied' : 'Copy'}
-                            </span>
-                          </button>
-                        </div>
-
-                        {/* Step 3 — Open app */}
-                        <div>
-                          <p className="text-xs font-bold tracking-[2px] uppercase text-forest/40 mb-1.5">Step 3 · Open your UPI app</p>
-                          <div className="grid grid-cols-4 gap-2">
-                            {[
-                              { name: 'GPay', url: `tez://upi/pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&cu=INR` },
-                              { name: 'PhonePe', url: `phonepe://pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&cu=INR` },
-                              { name: 'Paytm', url: `paytmmp://pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&cu=INR` },
-                              { name: 'Any UPI', url: `upi://pay?pa=manjulabasavaraj.urs-1@okicici&pn=Crafted%20by%20Amma&cu=INR` },
-                            ].map(app => (
-                              <a key={app.name} href={app.url}
-                                className="flex flex-col items-center justify-center gap-1 py-3 rounded-xl text-center active:scale-95 transition-transform"
-                                style={{ background: 'rgba(26,42,20,0.04)', border: '1.5px solid rgba(26,42,20,0.08)' }}>
-                                <span className="text-xs font-bold text-forest/70">{app.name}</span>
-                              </a>
-                            ))}
-                          </div>
-                          <p className="text-xs text-forest/45 mt-2 text-center">
-                            New Payment → Pay to UPI ID → paste ID → enter amount → Pay
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl"
-                          style={{ background: 'rgba(212,148,42,0.08)', border: '1px solid rgba(212,148,42,0.2)' }}>
-                          <span className="text-xs font-semibold" style={{ color: '#B87323' }}>
-                            ⚠ Verify name <strong>MANJULA H M</strong> before confirming
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      /* ── Desktop: QR code ── */
-                      <div className="px-5 py-6 flex flex-col items-center">
-                        <div className="p-4 bg-white rounded-2xl border border-forest/[.06] mb-4"
-                          style={{ boxShadow: '0 4px 20px rgba(26,42,20,0.08)' }}>
-                          <QRCodeSVG value={upiQrUrl} size={168} level="M" fgColor="#1A2A14"
-                            imageSettings={{ src: '/images/logo.png', width: 28, height: 28, excavate: true }} />
-                        </div>
-                        <p className="text-base font-bold text-forest mb-1">MANJULA H M</p>
-                        <p className="text-xs font-mono text-forest/50 tracking-wide mb-4">manjulabasavaraj.urs-1@okicici</p>
-                        <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl"
-                          style={{ background: 'rgba(212,148,42,0.08)', border: '1px solid rgba(212,148,42,0.2)' }}>
-                          <span className="text-xs font-semibold" style={{ color: '#B87323' }}>
-                            ⚠ Verify name &amp; amount before confirming
-                          </span>
-                        </div>
-                      </div>
-                    )}
+              {/* Razorpay secure payment block */}
+              <div className="mb-7 rounded-2xl border border-sage/20 overflow-hidden"
+                style={{ background: 'linear-gradient(135deg,rgba(90,122,58,0.03),#fff)' }}>
+                <div className="px-5 py-5 flex flex-col items-center gap-4 text-center">
+                  <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl flex-shrink-0"
+                    style={{ background: 'rgba(90,122,58,0.08)', border: '1.5px solid rgba(90,122,58,0.15)' }}>
+                    🔒
                   </div>
-                );
-              })()}
-
-              {/* Screenshot upload */}
-              <div className="mb-6">
-                <label className="block text-xs font-bold tracking-[2px] uppercase text-forest/70 mb-3">
-                  Upload Payment Screenshot *
-                </label>
-                <div className={`border-2 rounded-2xl text-center cursor-pointer transition-all relative overflow-hidden min-h-[120px] flex items-center justify-center
-                  ${preview ? 'border-sage border-solid bg-sage/[.02]' : 'border-dashed border-forest/15 bg-white hover:border-sage/40 hover:bg-sage/[.01]'}`}>
-                  {!preview ? (
-                    <div className="flex flex-col items-center gap-2.5 py-8">
-                      <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl"
-                        style={{ background: 'rgba(26,42,20,0.05)' }}>
-                        📸
-                      </div>
-                      <div className="text-sm font-semibold text-forest/60">Tap to upload</div>
-                      <div className="text-xs text-forest/50">JPG, PNG, WebP · Max 5MB</div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-4 px-5 py-4 w-full">
-                      <img src={preview} alt="" className="w-16 h-16 object-cover rounded-xl border-2 border-sage/30 flex-shrink-0" />
-                      <div className="text-left flex-1 min-w-0">
-                        <div className="text-sm font-bold text-sage truncate">{file?.name}</div>
-                        <div className="inline-flex items-center gap-1.5 mt-1 text-xs font-semibold px-2.5 py-1 rounded-full"
-                          style={{ background: 'rgba(90,122,58,0.1)', color: '#5A7A3A' }}>
-                          ✓ Ready to submit
-                        </div>
-                      </div>
-                      <button type="button" onClick={removeFile}
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-xs text-red-400/70 hover:text-red-500 hover:bg-red-50 transition-all flex-shrink-0 border border-red-200/50">
-                        ✕
-                      </button>
-                    </div>
-                  )}
-                  <input ref={fileRef} type="file" accept="image/*" onChange={handleFile}
-                    className="absolute inset-0 opacity-0 cursor-pointer" />
+                  <div>
+                    <p className="font-bold text-forest text-base">Pay via UPI</p>
+                    <p className="text-xs text-forest/50 mt-1.5">GPay · PhonePe · Paytm · Any UPI App</p>
+                  </div>
+                  <div className="flex items-center gap-3 flex-wrap justify-center">
+                    {['GPay', 'PhonePe', 'Paytm', 'Any UPI'].map(app => (
+                      <span key={app} className="text-xs font-bold px-3 py-1 rounded-full border"
+                        style={{ background: 'rgba(26,42,20,0.04)', color: '#1A2A14', borderColor: 'rgba(26,42,20,0.1)' }}>
+                        {app}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-xs text-forest/40">
+                    Powered by Razorpay · 100% secure &amp; encrypted
+                  </p>
                 </div>
               </div>
 
@@ -892,19 +747,26 @@ export default function CheckoutPage() {
                   className="px-5 py-[18px] rounded-2xl text-sm font-semibold text-forest/60 border-[1.5px] border-forest/10 hover:border-forest/20 transition-all flex-shrink-0">
                   ← Back
                 </button>
-                <button type="submit" disabled={submitting}
-                  className="flex-1 py-[18px] rounded-2xl text-sm font-bold tracking-[1px] disabled:opacity-50 transition-all hover:shadow-xl"
+                <button
+                  onClick={handleRazorpayPay}
+                  disabled={submitting}
+                  className="flex-1 py-[18px] rounded-2xl text-sm font-bold tracking-[1px] disabled:opacity-60 transition-all hover:shadow-xl active:scale-[.99] flex items-center justify-center gap-2"
                   style={{ background: 'linear-gradient(135deg,#5A7A3A,#4a6830)', color: '#fff', boxShadow: '0 8px 24px rgba(90,122,58,0.28)' }}>
-                  {submitting
-                    ? <span className="flex items-center justify-center gap-2">
-                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Placing Order…
-                      </span>
-                    : '✨ Place Order'}
+                  {submitting ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Preparing…</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>🔒</span>
+                      <span>Pay ₹{grandTotal} Securely</span>
+                    </>
+                  )}
                 </button>
               </div>
-              <p className="text-xs text-forest/50 text-center mt-3">WhatsApp confirmation within 2 hours</p>
-            </motion.form>
+              <p className="text-xs text-forest/50 text-center mt-3">UPI payment powered by Razorpay · 100% secure</p>
+            </motion.div>
           )}
         </AnimatePresence>
       </main>
