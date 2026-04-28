@@ -6,12 +6,11 @@ import { rateLimitOrder } from '@/lib/rateLimit';
 
 type CartItem = { productId: string; packSize: string; count: number };
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
-
 export async function POST(req: NextRequest) {
+  const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID!,
+    key_secret: process.env.RAZORPAY_KEY_SECRET!,
+  });
   try {
     const ip = getClientIP(req);
     const { allowed } = rateLimitOrder(ip);
