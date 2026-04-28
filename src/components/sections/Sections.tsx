@@ -644,6 +644,17 @@ export function Footer() {
                 Mysore – 570023, Karnataka
               </address>
             </div>
+            {/* FSSAI */}
+            <div className="mb-3 flex items-center gap-2">
+              <span className="text-[0.6rem] font-bold tracking-[1.5px] uppercase px-2 py-1 rounded"
+                style={{ background: 'rgba(212,148,42,0.08)', border: '1px solid rgba(212,148,42,0.15)', color: 'rgba(212,148,42,0.50)' }}>
+                FSSAI
+              </span>
+              <span className="text-[0.65rem] font-mono" style={{ color: 'rgba(235,225,200,0.22)' }}>
+                21226197000270
+              </span>
+            </div>
+
             <div className="flex gap-2 mb-1">
               <a href={CONTACT.instagram} target="_blank"
                 className="w-8 h-8 rounded-full flex items-center justify-center text-sm no-underline transition-all hover:scale-110"
@@ -703,6 +714,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-cream-light/[.03] pt-4 flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-cream-light/[.08]">
           <span>© 2026 Crafted by Amma · ಅಮ್ಮನಿಂದ ಕರಕುಶಲ</span>
+          <span style={{ color: 'rgba(235,225,200,0.08)' }}>FSSAI Lic. No. 21226197000270</span>
           <a href="https://maps.google.com/?q=#234+7th+Cross+G+Block+Ramakrishna+Nagar+Mysore+570023" target="_blank"
             className="no-underline text-cream-light/[.08] hover:text-sage/40 transition-colors">
             📍 #234, G Block, Ramakrishna Nagar, Mysore – 570023

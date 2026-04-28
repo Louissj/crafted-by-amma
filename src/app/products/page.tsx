@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Navbar from '@/components/ui/Navbar';
 import { useCart } from '@/lib/useCart';
 import { useProducts } from '@/lib/useProducts';
 import { trackEvent } from '@/lib/analytics';
@@ -16,6 +17,7 @@ export default function ProductsPage() {
   return (
     <div className="min-h-screen"
       style={{ background: 'linear-gradient(170deg,#1A2E12 0%,#1E3414 30%,#243818 60%,#1A2E12 100%)' }}>
+      <Navbar />
 
       {/* Page header */}
       <div className="pt-24 pb-10 px-4 text-center relative overflow-hidden">

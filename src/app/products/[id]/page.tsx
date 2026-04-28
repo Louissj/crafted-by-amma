@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Navbar from '@/components/ui/Navbar';
 import { useCart } from '@/lib/useCart';
 import { useProducts, DbProduct } from '@/lib/useProducts';
 import { trackEvent } from '@/lib/analytics';
@@ -238,14 +239,17 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 
   if (loading || !product) {
     return (
-      <div className="min-h-screen lg:grid lg:grid-cols-2"
+      <div className="min-h-screen"
         style={{ background: 'linear-gradient(170deg,#1A2E12,#1E3414)' }}>
-        <div className="animate-pulse" style={{ minHeight: 400, background: 'rgba(255,255,255,0.03)' }} />
-        <div className="px-8 py-10 space-y-5">
-          <div className="h-7 w-1/2 rounded-xl animate-pulse" style={{ background: 'rgba(255,255,255,0.06)' }} />
-          <div className="h-10 w-3/4 rounded-xl animate-pulse" style={{ background: 'rgba(255,255,255,0.05)' }} />
-          <div className="h-5 w-1/3 rounded-xl animate-pulse" style={{ background: 'rgba(255,255,255,0.04)' }} />
-          <div className="h-28 w-full rounded-2xl animate-pulse mt-4" style={{ background: 'rgba(255,255,255,0.04)' }} />
+        <Navbar />
+        <div className="pt-[60px] lg:grid lg:grid-cols-2">
+          <div className="animate-pulse" style={{ minHeight: 400, background: 'rgba(255,255,255,0.03)' }} />
+          <div className="px-8 py-10 space-y-5">
+            <div className="h-7 w-1/2 rounded-xl animate-pulse" style={{ background: 'rgba(255,255,255,0.06)' }} />
+            <div className="h-10 w-3/4 rounded-xl animate-pulse" style={{ background: 'rgba(255,255,255,0.05)' }} />
+            <div className="h-5 w-1/3 rounded-xl animate-pulse" style={{ background: 'rgba(255,255,255,0.04)' }} />
+            <div className="h-28 w-full rounded-2xl animate-pulse mt-4" style={{ background: 'rgba(255,255,255,0.04)' }} />
+          </div>
         </div>
       </div>
     );
@@ -265,13 +269,11 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(170deg,#1A2E12 0%,#1E3414 50%,#243818 100%)' }}>
 
-      {/* Gold top bar */}
-      <div className="h-[2px]"
-        style={{ background: 'linear-gradient(90deg,transparent 5%,rgba(200,180,74,0.5) 50%,transparent 95%)' }} />
+      <Navbar />
 
-      {/* Back button */}
+      {/* Back button — sits just below the navbar */}
       <button onClick={() => router.back()}
-        className="fixed top-[60px] left-4 z-[500] w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90"
+        className="fixed top-[68px] left-4 z-[500] w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90"
         style={{ background: 'rgba(0,0,0,0.60)', border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(12px)' }}>
         <svg width="9" height="16" viewBox="0 0 9 16" fill="none">
           <path d="M8 1L1 8l7 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -279,10 +281,10 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
       </button>
 
       {/* ── Two-column layout on desktop ── */}
-      <div className="lg:grid lg:grid-cols-2 lg:h-[calc(100vh-2px)]">
+      <div className="pt-[60px] lg:pt-0 lg:mt-[60px] lg:grid lg:grid-cols-2 lg:h-[calc(100vh-60px)]">
 
         {/* LEFT — sticky image gallery */}
-        <div className="lg:sticky lg:top-0 lg:h-[calc(100vh-2px)] flex flex-col"
+        <div className="lg:sticky lg:top-[60px] lg:h-[calc(100vh-60px)] flex flex-col"
           style={{ borderRight: '1px solid rgba(255,255,255,0.05)' }}>
 
           {/* Mobile: fixed height. Desktop: fills full left column */}
@@ -292,7 +294,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
         </div>
 
         {/* RIGHT — scrollable details */}
-        <div className="lg:overflow-y-auto lg:h-[calc(100vh-2px)] pb-36 lg:pb-32">
+        <div className="lg:overflow-y-auto lg:h-[calc(100vh-60px)] pb-36 lg:pb-32">
           <div className="px-5 md:px-8 lg:px-10 pt-8 lg:pt-10 max-w-xl lg:max-w-none mx-auto">
 
             {/* Header */}
