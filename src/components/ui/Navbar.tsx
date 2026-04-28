@@ -66,7 +66,7 @@ export default function Navbar() {
 
   const links = [
     { href: '#about', label: 'Story', icon: '📖' },
-    { href: '#prods', label: 'Products', icon: '🌾' },
+    { href: '/products', label: 'Products', icon: '🌾' },
     { href: '#why', label: 'Why Us', icon: '💚' },
     { href: '#testi', label: 'Reviews', icon: '⭐' },
   ];
@@ -118,7 +118,7 @@ export default function Navbar() {
             </Link>
           </li>
           <li>
-            <Link href={cartCount > 0 ? '/cart' : '/#prods'}
+            <Link href={cartCount > 0 ? '/cart' : '/products'}
               className="bg-gradient-to-br from-sage to-sage-light text-cream-light px-5 py-2 rounded-full text-sm font-medium tracking-[2px] uppercase shadow-md no-underline">
               {cartCount > 0 ? `Cart (${cartCount})` : 'Order Now'}
             </Link>
@@ -213,7 +213,7 @@ export default function Navbar() {
         <div className="px-5 pb-10 flex-shrink-0 space-y-3">
 
           {/* Cart / Order Now CTA */}
-          <Link href={cartCount > 0 ? '/cart' : '/#prods'} onClick={close}
+          <Link href={cartCount > 0 ? '/cart' : '/products'} onClick={close}
             className="flex items-center justify-between w-full px-5 py-4 rounded-2xl no-underline transition-all active:scale-[.98]"
             style={{
               background: 'linear-gradient(135deg,#5A7A3A,#4a6830)',
