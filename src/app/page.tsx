@@ -1,3 +1,11 @@
+import LaunchingSoon from '@/components/sections/LaunchingSoon';
+
+// 🚀 Switch to full site: replace <LaunchingSoon /> with the commented block below
+export default function Home() {
+  return <LaunchingSoon />;
+}
+
+/*
 import Navbar from '@/components/ui/Navbar';
 import Hero from '@/components/sections/Hero';
 import BioCard from '@/components/sections/BioCard';
@@ -26,3 +34,4 @@ export default function Home() {
     </div>
   );
 }
+*/
