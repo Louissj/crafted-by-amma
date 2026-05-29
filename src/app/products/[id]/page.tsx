@@ -256,7 +256,9 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   }
 
   const productPrices = priceMap[product.id] || product.prices || {};
-  const sizeEntries = Object.entries(productPrices);
+  const mrpMap: Record<string, number> = product.mrp || {};
+  const parseSz = (s: string) => parseFloat(s) * (s.includes('kg') ? 1000 : 1);
+  const sizeEntries = Object.entries(productPrices).sort(([a], [b]) => parseSz(a) - parseSz(b));
   const images = product.images ?? [];
   const priceRange = sizeEntries.length
     ? sizeEntries.length === 1
@@ -404,10 +406,19 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                             </span>
                           )}
                         </div>
-                        <span className="text-sm" style={{ color: 'rgba(235,225,200,0.38)' }}>
-                          ₹{price} per pack
+                        <span className="text-sm flex items-center gap-2 flex-wrap" style={{ color: 'rgba(235,225,200,0.38)' }}>
+                          ₹{price}
+                          {mrpMap[size] && mrpMap[size] > price && (
+                            <span className="line-through text-xs" style={{ color: 'rgba(235,225,200,0.22)' }}>₹{mrpMap[size]}</span>
+                          )}
+                          {mrpMap[size] && mrpMap[size] > price && (
+                            <span className="text-xs font-bold px-1.5 py-0.5 rounded-full"
+                              style={{ background: 'rgba(90,180,58,0.15)', color: 'rgba(130,210,80,0.85)' }}>
+                              {Math.round((1 - price / mrpMap[size]) * 100)}% off
+                            </span>
+                          )}
                           {count > 1 && (
-                            <span className="ml-2 font-bold" style={{ color: 'rgba(212,148,42,0.65)' }}>
+                            <span className="font-bold" style={{ color: 'rgba(212,148,42,0.65)' }}>
                               · ₹{price * count} total
                             </span>
                           )}

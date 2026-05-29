@@ -13,6 +13,7 @@ export type DbProduct = {
   ingredients: string;
   usage: UsageStep[];
   prices: Record<string, number>;
+  mrp: Record<string, number>;
   images: string[];
   active: boolean;
   sortOrder: number;

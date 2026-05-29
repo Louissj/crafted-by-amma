@@ -25,6 +25,7 @@ type DbProduct = {
   description: string; ingredients: string;
   usage: { type: string; instructions: string }[];
   prices: Record<string, number>;
+  mrp: Record<string, number>;
   images: string[];
   active: boolean; sortOrder: number;
 };
@@ -346,7 +347,7 @@ export default function AdminDashboard() {
         name: editingProduct.name, shortName: editingProduct.shortName,
         badge: editingProduct.badge, description: editingProduct.description,
         ingredients: editingProduct.ingredients, usage: editingProduct.usage,
-        prices: editingProduct.prices, active: editingProduct.active,
+        prices: editingProduct.prices, mrp: editingProduct.mrp, active: editingProduct.active,
       }),
     });
     await fetchProducts();
@@ -379,6 +380,12 @@ export default function AdminDashboard() {
     if (!editingProduct) return;
     const num = parseFloat(value);
     setEditingProduct(prev => prev ? { ...prev, prices: { ...prev.prices, [packSize]: isNaN(num) ? 0 : num } } : prev);
+  };
+
+  const updateMrp = (packSize: string, value: string) => {
+    if (!editingProduct) return;
+    const num = parseFloat(value);
+    setEditingProduct(prev => prev ? { ...prev, mrp: { ...(prev.mrp || {}), [packSize]: isNaN(num) ? 0 : num } } : prev);
   };
 
   const addPackSize = () => {
@@ -1990,18 +1997,31 @@ export default function AdminDashboard() {
                     <label className="text-[.57rem] font-bold uppercase tracking-[2.5px]" style={{ color: 'rgba(200,180,74,0.45)' }}>Prices</label>
                     <button onClick={addPackSize} className="text-sm font-bold text-brass hover:underline">+ Add size</button>
                   </div>
+                  <div className="grid grid-cols-3 gap-1 mb-1.5">
+                    <span className="text-[0.55rem] uppercase tracking-widest text-white/25 pl-14">Size</span>
+                    <span className="text-[0.55rem] uppercase tracking-widest text-white/25">Selling ₹</span>
+                    <span className="text-[0.55rem] uppercase tracking-widest text-white/25">MRP ₹ (optional)</span>
+                  </div>
                   <div className="space-y-2">
                     {Object.entries(editingProduct.prices).map(([size, price]) => (
                       <div key={size} className="flex items-center gap-2">
                         <span className="text-sm font-bold text-white/60 w-12 flex-shrink-0">{size}</span>
                         <div className="flex-1 relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-smtext-white/30">₹</span>
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-white/30">₹</span>
                           <input type="number" value={price} onChange={e => updatePrice(size, e.target.value)}
-                            className="w-full pl-7 pr-3 py-2 border-[1.5px] border-white/[.08] rounded-xl text-smoutline-none transition-all text-white/80"
+                            className="w-full pl-7 pr-3 py-2 border-[1.5px] border-white/[.08] rounded-xl text-sm outline-none transition-all text-white/80"
                             style={{ background: 'rgba(255,255,255,0.05)' }} />
                         </div>
+                        <div className="flex-1 relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-white/20">₹</span>
+                          <input type="number" placeholder="MRP"
+                            value={(editingProduct.mrp || {})[size] || ''}
+                            onChange={e => updateMrp(size, e.target.value)}
+                            className="w-full pl-7 pr-3 py-2 border-[1.5px] border-white/[.06] rounded-xl text-sm outline-none transition-all text-white/50"
+                            style={{ background: 'rgba(255,255,255,0.03)' }} />
+                        </div>
                         <button onClick={() => removePackSize(size)}
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-smtext-red-400/40 hover:text-red-400 transition-all flex-shrink-0"
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-sm text-red-400/40 hover:text-red-400 transition-all flex-shrink-0"
                           style={{ background: 'rgba(239,68,68,0.06)' }}>
                           ✕
                         </button>

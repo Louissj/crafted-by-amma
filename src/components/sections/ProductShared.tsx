@@ -190,7 +190,9 @@ export function ProductModal({
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
 
   const productPrices = priceMap[product.id] || product.prices || {};
-  const sizeEntries = Object.entries(productPrices);
+  const mrpMapModal: Record<string, number> = product.mrp || {};
+  const parseSz = (s: string) => parseFloat(s) * (s.includes('kg') ? 1000 : 1);
+  const sizeEntries = Object.entries(productPrices).sort(([a], [b]) => parseSz(a) - parseSz(b));
   const images = product.images ?? [];
   const priceRange = sizeEntries.length
     ? sizeEntries.length === 1
@@ -318,7 +320,12 @@ export function ProductModal({
                         </span>
                       )}
                     </div>
-                    <span className="text-xs" style={{ color: 'rgba(235,225,200,0.35)' }}>₹{price} per pack</span>
+                    <span className="text-xs flex items-center gap-1.5" style={{ color: 'rgba(235,225,200,0.35)' }}>
+                    ₹{price}
+                    {mrpMapModal[size] && mrpMapModal[size] > price && (
+                      <span className="line-through text-[0.65rem]" style={{ color: 'rgba(235,225,200,0.22)' }}>₹{mrpMapModal[size]}</span>
+                    )}
+                  </span>
                   </div>
                   {count === 0 ? (
                     <button onClick={() => onCountChange(size, 1)}
@@ -408,7 +415,9 @@ export function ProductCard({
   const router = useRouter();
   const [activeImg, setActiveImg] = useState(0);
   const productPrices = priceMap[product.id] || product.prices || {};
-  const sizeEntries = Object.entries(productPrices);
+  const mrpMap: Record<string, number> = product.mrp || {};
+  const parseSzCard = (s: string) => parseFloat(s) * (s.includes('kg') ? 1000 : 1);
+  const sizeEntries = Object.entries(productPrices).sort(([a], [b]) => parseSzCard(a) - parseSzCard(b));
   const images = product.images ?? [];
   const totalInCart = sizeEntries.reduce((sum, [size, price]) => sum + price * getCount(size), 0);
   const packsInCart = sizeEntries.reduce((sum, [size]) => sum + getCount(size), 0);
@@ -460,6 +469,16 @@ export function ProductCard({
             {product.badge}
           </span>
         )}
+
+        {/* Sample available badge — links to /samples with this product pre-selected */}
+        <Link href={`/samples?product=${product.id}`}
+          onClick={e => e.stopPropagation()}
+          className="absolute bottom-8 left-3 z-[3] no-underline active:scale-95 transition-all">
+          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.56rem] font-bold tracking-[1.5px] uppercase"
+            style={{ background: 'rgba(90,122,58,0.55)', border: '1px solid rgba(90,122,58,0.6)', color: 'rgba(180,220,130,0.9)', backdropFilter: 'blur(8px)' }}>
+            <span style={{ fontSize: 7, lineHeight: 1 }}>●</span> Sample available
+          </span>
+        </Link>
 
         {packsInCart > 0 && (
           <div className="absolute top-4 right-4 z-[3] px-2.5 py-1 rounded-full flex items-center gap-1.5"
@@ -516,7 +535,12 @@ export function ProductCard({
                       </span>
                     )}
                   </div>
-                  <span className="text-xs" style={{ color: 'rgba(235,225,200,0.35)' }}>₹{price} per pack</span>
+                  <span className="text-xs flex items-center gap-1.5" style={{ color: 'rgba(235,225,200,0.35)' }}>
+                    ₹{price}
+                    {mrpMap[size] && mrpMap[size] > price && (
+                      <span className="line-through text-[0.65rem]" style={{ color: 'rgba(235,225,200,0.22)' }}>₹{mrpMap[size]}</span>
+                    )}
+                  </span>
                 </div>
 
                 {count === 0 ? (

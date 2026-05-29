@@ -17,12 +17,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   try {
     const body = await req.json();
-    const allowed = ['name', 'shortName', 'badge', 'description', 'ingredients', 'usage', 'prices', 'images', 'active', 'sortOrder'];
+    const allowed = ['name', 'shortName', 'badge', 'description', 'ingredients', 'usage', 'prices', 'mrp', 'images', 'active', 'sortOrder'];
     const data: Record<string, unknown> = {};
 
     for (const key of allowed) {
       if (key in body) {
-        if (['usage', 'prices', 'images', 'active', 'sortOrder'].includes(key)) {
+        if (['usage', 'prices', 'mrp', 'images', 'active', 'sortOrder'].includes(key)) {
           data[key] = body[key];
         } else {
           data[key] = sanitize(String(body[key]));

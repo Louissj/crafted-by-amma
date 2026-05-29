@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/lib/useCart';
 import { useProducts } from '@/lib/useProducts';
+import { useSampleCart } from '@/lib/useSampleCart';
 import { PRODUCTS } from '@/lib/constants';
 import { trackEvent } from '@/lib/analytics';
 
@@ -15,6 +16,7 @@ export default function CartPage() {
   const router = useRouter();
   const { priceMap } = useProducts();
   const { cart, setCount, clearCart, cartTotal, totalPacks, mounted } = useCart(priceMap);
+  const { sampleItems, removeSamplePack, sampleTotal, sampleCount } = useSampleCart();
   const [delivery, setDelivery] = useState<DeliverySettings | null>(null);
 
   const [pincode, setPincode] = useState('');
@@ -43,7 +45,8 @@ export default function CartPage() {
 
   function isKarnatakaPincode(pin: string) {
     const n = parseInt(pin, 10);
-    return n >= 560001 && n <= 597999;
+    // Karnataka pincodes: 560001–591999
+    return n >= 560001 && n <= 591999;
   }
 
   useEffect(() => {
@@ -55,22 +58,32 @@ export default function CartPage() {
       setDeliveryZone('india');
       return;
     }
-    setPincodeLoading(true);
+
+    // Immediately set zone from local range check — no API dependency
+    const isKarnataka = isKarnatakaPincode(pin);
+    setDeliveryZone(isKarnataka ? 'karnataka' : 'india');
+    setPincodeState(isKarnataka ? 'Karnataka' : '');
     setPincodeError('');
-    setPincodeState('');
-    fetch(`https://api.postalpincode.in/pincode/${pin}`)
+
+    // Best-effort API call for actual state name display only
+    setPincodeLoading(true);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000); // 5s timeout
+    fetch(`https://api.postalpincode.in/pincode/${pin}`, { signal: controller.signal })
       .then(r => r.json())
       .then(data => {
+        clearTimeout(timer);
         if (data?.[0]?.Status === 'Success' && data[0].PostOffice?.length > 0) {
           const po = data[0].PostOffice[0];
-          setPincodeState(po.State || '');
-          setDeliveryZone(isKarnatakaPincode(pin) ? 'karnataka' : 'india');
-        } else {
-          setPincodeError('Pincode not found');
-          setDeliveryZone('india');
+          const state = po.State || '';
+          setPincodeState(state);
+          // Re-confirm zone from API state name if available
+          const isKa = state.toLowerCase().includes('karnataka') || isKarnatakaPincode(pin);
+          setDeliveryZone(isKa ? 'karnataka' : 'india');
         }
+        // If API says not found, keep local result — don't show error
       })
-      .catch(() => setPincodeError('Could not verify pincode'))
+      .catch(() => { clearTimeout(timer); /* silent — local check already ran */ })
       .finally(() => setPincodeLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pincode]);
@@ -87,20 +100,24 @@ export default function CartPage() {
   const deliveryCharge = useMemo(() => {
     if (!delivery) return 0;
     if (deliveryZone === 'international') return 0;
-    if (!pincodeState) return 0; // don't show charge until pincode is verified
-    if (deliveryZone === 'karnataka') {
-      // 1kg packs are free; all other sizes charged per pack
-      const chargeablePacks = cart
-        .filter(item => item.packSize !== '1kg')
-        .reduce((sum, item) => sum + item.count, 0);
-      return chargeablePacks * delivery.baseCharge;
-    }
-    // Outside Karnataka: outstationCharge per pack
-    const totalPacks = cart.reduce((sum, item) => sum + item.count, 0);
-    return totalPacks * (delivery.outstationCharge ?? 120);
-  }, [delivery, deliveryZone, pincodeState, cart]);
+    if (!pincodeState) return 0;
 
-  const grandTotal = cartTotal + deliveryCharge;
+    // Sample packs are always chargeable — each sample is 50g, never qualifies as free
+    const samplePackCount = sampleItems.reduce((sum, i) => sum + i.qty, 0);
+
+    if (deliveryZone === 'karnataka') {
+      // Regular cart: 1kg packs are free; all other sizes charged per pack
+      const chargeablePacks = cart
+        .filter(item => parseKg(item.packSize) < 1)
+        .reduce((sum, item) => sum + item.count, 0);
+      return (chargeablePacks + samplePackCount) * delivery.baseCharge;
+    }
+    // Outside Karnataka: all packs charged
+    const totalPacks = cart.reduce((sum, item) => sum + item.count, 0);
+    return (totalPacks + samplePackCount) * (delivery.outstationCharge ?? 120);
+  }, [delivery, deliveryZone, pincodeState, cart, sampleItems]);
+
+  const grandTotal = cartTotal + sampleTotal + deliveryCharge;
 
   const goToCheckout = useCallback(() => {
     if (deliveryZone !== 'international' && !pincodeState) {
@@ -132,7 +149,7 @@ export default function CartPage() {
       <header className="sticky top-0 z-50 border-b border-forest/[.05]"
         style={{ background: 'rgba(247,244,239,0.96)', backdropFilter: 'blur(20px)' }}>
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center">
-          <Link href="/#prods"
+          <Link href="/products"
             className="flex items-center gap-1.5 text-xs font-semibold text-forest/40 hover:text-forest transition-colors no-underline">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5M12 5l-7 7 7 7" />
@@ -162,7 +179,7 @@ export default function CartPage() {
         <AnimatePresence mode="wait">
 
           {/* Empty state */}
-          {cart.length === 0 && (
+          {cart.length === 0 && sampleItems.length === 0 && (
             <motion.div key="empty" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
               className="text-center py-24">
               <div className="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center text-4xl"
@@ -171,7 +188,7 @@ export default function CartPage() {
               </div>
               <h2 className="font-display text-2xl font-bold text-forest mb-2">Your cart is empty</h2>
               <p className="text-sm text-forest/40 mb-8 max-w-xs mx-auto">Browse our homemade products and add them to your cart.</p>
-              <Link href="/#prods"
+              <Link href="/products"
                 className="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl font-semibold text-sm no-underline text-brass transition-all hover:shadow-xl"
                 style={{ background: 'linear-gradient(135deg,#1A2A14,#243318)', boxShadow: '0 8px 24px rgba(26,42,20,0.2)' }}>
                 Browse Products →
@@ -180,7 +197,7 @@ export default function CartPage() {
           )}
 
           {/* Cart items */}
-          {cart.length > 0 && (
+          {(cart.length > 0 || sampleItems.length > 0) && (
             <motion.div key="cart" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
 
               {/* Product groups */}
@@ -261,7 +278,7 @@ export default function CartPage() {
 
               {/* Add more */}
               <div className="flex justify-center mb-6">
-                <Link href="/#prods"
+                <Link href="/products"
                   className="inline-flex items-center justify-center gap-2 w-full py-4 rounded-2xl font-bold text-sm tracking-[1.5px] uppercase no-underline transition-all hover:shadow-xl active:scale-[.98]"
                   style={{ background: 'linear-gradient(135deg,#2A4A1E,#3A6028)', color: '#C8B44A', boxShadow: '0 8px 24px rgba(26,42,20,0.18)' }}>
                   <span className="text-lg leading-none font-bold">+</span> Add More Products
@@ -519,12 +536,43 @@ export default function CartPage() {
                   {/* Dashed divider */}
                   <div className="mx-5 my-3 border-t-2 border-dashed border-forest/[.08]" />
 
+                  {/* Sample pack items */}
+                  {sampleItems.length > 0 && (
+                    <div className="px-5 pt-3 pb-2 border-t" style={{ borderColor: 'rgba(212,148,42,0.12)' }}>
+                      <p className="text-[0.6rem] font-bold uppercase tracking-[2px] mb-2" style={{ color: 'rgba(212,148,42,0.45)' }}>Sample Packs</p>
+                      {sampleItems.map(item => (
+                        <div key={item.packKey} className="flex items-start justify-between gap-3 py-2">
+                          <div className="flex-1">
+                            <p className="text-sm font-bold" style={{ color: '#1A2A14' }}>{item.label}</p>
+                            <p className="text-xs mt-0.5" style={{ color: 'rgba(26,42,20,0.45)' }}>
+                              {item.selectedProducts.length} products selected
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm font-bold" style={{ color: '#1A2A14' }}>₹{item.price}</span>
+                            <button onClick={() => removeSamplePack(item.packKey)}
+                              className="w-7 h-7 rounded-full flex items-center justify-center text-xs transition-all hover:bg-red-50"
+                              style={{ color: 'rgba(26,42,20,0.3)' }}>✕</button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   {/* Subtotals */}
                   <div className="px-5 pb-4 space-y-2.5">
+                    {totalPacks > 0 && (
                     <div className="flex justify-between items-center">
                       <span className="text-xs font-medium text-forest/60">Products ({totalPacks} pack{totalPacks !== 1 ? 's' : ''})</span>
                       <span className="text-sm font-bold text-forest">₹{cartTotal}</span>
                     </div>
+                    )}
+                    {sampleCount > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-medium text-forest/60">Sample Packs ({sampleCount})</span>
+                      <span className="text-sm font-bold text-forest">₹{sampleTotal}</span>
+                    </div>
+                    )}
                     <div className="flex justify-between items-center">
                       <div>
                         <span className="text-xs font-medium text-forest/60">Delivery</span>

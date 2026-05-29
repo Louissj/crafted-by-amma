@@ -6,10 +6,12 @@ import { useCart } from '@/lib/useCart';
 import { useProducts } from '@/lib/useProducts';
 import { trackEvent } from '@/lib/analytics';
 import { ProductCard, ProductSkeleton } from '@/components/sections/ProductShared';
+import { useSampleCart } from '@/lib/useSampleCart';
 
 export default function ProductsPage() {
   const { products, priceMap, loading } = useProducts();
   const { cart, setCount, cartTotal, totalPacks } = useCart(priceMap);
+  const { sampleTotal, sampleCount } = useSampleCart();
 
   const getCount = (productId: string, packSize: string) =>
     cart.find(i => i.productId === productId && i.packSize === packSize)?.count || 0;
@@ -36,6 +38,54 @@ export default function ProductsPage() {
         <p className="text-sm relative z-[1]" style={{ color: 'rgba(235,225,200,0.55)' }}>
           {loading ? 'Loading…' : `${products.length} product${products.length !== 1 ? 's' : ''} · Homemade · Mysuru`}
         </p>
+      </div>
+
+      {/* ── Sample Packs section ── */}
+      <div className="max-w-[1120px] mx-auto px-4 mb-12">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="h-px flex-1" style={{ background: 'rgba(212,148,42,0.15)' }} />
+          <p className="text-[0.62rem] font-bold tracking-[4px] uppercase" style={{ color: 'rgba(212,148,42,0.50)' }}>Sample Packs</p>
+          <div className="h-px flex-1" style={{ background: 'rgba(212,148,42,0.15)' }} />
+        </div>
+        <Link href="/samples" className="group flex flex-col sm:flex-row items-center gap-5 px-6 py-5 rounded-2xl no-underline transition-all hover:scale-[1.01] active:scale-[.99]"
+          style={{
+            background: 'linear-gradient(135deg,rgba(212,148,42,0.08),rgba(212,148,42,0.04))',
+            border: '1.5px solid rgba(212,148,42,0.22)',
+            boxShadow: '0 4px 24px rgba(212,148,42,0.07)',
+          }}>
+          <div className="flex-shrink-0 flex items-center gap-3">
+            {['Pack of 3', 'Pack of 5', 'Pack of 10'].map((label, i) => (
+              <div key={i} className="flex flex-col items-center gap-1 px-4 py-3 rounded-xl"
+                style={{ background: 'rgba(212,148,42,0.08)', border: '1px solid rgba(212,148,42,0.18)' }}>
+                <span className="font-display text-base font-bold" style={{ color: '#D4942A' }}>{label}</span>
+                <span className="text-[0.58rem] font-bold uppercase tracking-wider" style={{ color: 'rgba(212,148,42,0.45)' }}>
+                  {i === 0 ? 'Choose 3' : i === 1 ? 'Choose 5' : 'All 10'}
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className="flex-1 text-center sm:text-left">
+            <p className="font-display text-lg font-bold mb-1" style={{ color: 'rgba(235,225,200,0.92)' }}>
+              Try a Sample Pack
+            </p>
+            <p className="text-sm mb-3" style={{ color: 'rgba(235,225,200,0.40)' }}>
+              Not sure what to order? Pick any 3, 5, or all 10 products as a tasting sample.
+            </p>
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-wide"
+              style={{ background: 'rgba(212,148,42,0.12)', border: '1px solid rgba(212,148,42,0.30)', color: '#D4942A' }}>
+              {sampleCount > 0 ? `${sampleCount} sample pack in cart · ₹${sampleTotal}` : 'Build your sample pack →'}
+            </span>
+          </div>
+        </Link>
+      </div>
+
+      {/* ── Products section ── */}
+      <div className="max-w-[1120px] mx-auto px-4 mb-4">
+        <div className="flex items-center gap-3">
+          <div className="h-px flex-1" style={{ background: 'rgba(255,255,255,0.06)' }} />
+          <p className="text-[0.62rem] font-bold tracking-[4px] uppercase" style={{ color: 'rgba(235,225,200,0.22)' }}>All Products</p>
+          <div className="h-px flex-1" style={{ background: 'rgba(255,255,255,0.06)' }} />
+        </div>
       </div>
 
       {/* Grid */}

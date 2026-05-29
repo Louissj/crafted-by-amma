@@ -98,7 +98,19 @@ model Product {
   ingredients String
   usage       Json     // [{ type: string, instructions: string }]
   prices      Json     // { "250g": 110, "500g": 190, ... }
+  mrp         Json     @default("{}") // { "250g": 150, "500g": 250, ... } — optional MRP per size
   images      Json     @default("[]") // ["/images/..."]
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SamplePack {
+  id          String   @id @default(cuid())
+  name        String   @default("Sample Pack")
+  description String   @default("")
+  options     Json     // [{ key: "pack-3", label: "Pack of 3", count: 3, price: 199 }]
   active      Boolean  @default(true)
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
