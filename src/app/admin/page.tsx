@@ -19,7 +19,7 @@ type Offer = { id: string; icon: string; text: string; active: boolean; sortOrde
 type DeliverySettings = { id: string; baseCharge: number; outstationCharge: number; freeAboveAmt: number; karnatakFree: boolean; note: string };
 type AdminReview = { id: string; name: string; place: string; rating: number; text: string; approved: boolean; createdAt: string };
 type Tab = 'orders' | 'offers' | 'delivery' | 'products' | 'analytics' | 'reviews' | 'samples';
-type SampleOption = { key: string; label: string; count: number; price: number };
+type SampleOption = { key: string; label: string; count: number; price: number; mrp?: number };
 type SamplePackData = { id: string; name: string; description: string; options: SampleOption[]; active: boolean };
 
 type DbProduct = {
@@ -1212,16 +1212,17 @@ export default function AdminDashboard() {
               {/* Options table */}
               <div className="rounded-2xl overflow-hidden mb-4" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
                 {/* Header */}
-                <div className="grid grid-cols-[1fr_80px_80px_40px] gap-3 px-4 py-2.5"
+                <div className="grid grid-cols-[1fr_64px_80px_80px_40px] gap-2 px-4 py-2.5"
                   style={{ background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                   <span className="text-[0.58rem] font-bold uppercase tracking-widest text-white/30">Label</span>
-                  <span className="text-[0.58rem] font-bold uppercase tracking-widest text-white/30">Products</span>
-                  <span className="text-[0.58rem] font-bold uppercase tracking-widest text-white/30">Price ₹</span>
+                  <span className="text-[0.58rem] font-bold uppercase tracking-widest text-white/30">Count</span>
+                  <span className="text-[0.58rem] font-bold uppercase tracking-widest text-white/30">Selling ₹</span>
+                  <span className="text-[0.58rem] font-bold uppercase tracking-widest text-white/30">MRP ₹</span>
                   <span />
                 </div>
 
                 {editingSamplePack.options.map((opt, idx) => (
-                  <div key={opt.key} className="grid grid-cols-[1fr_80px_80px_40px] gap-3 items-center px-4 py-3"
+                  <div key={opt.key} className="grid grid-cols-[1fr_64px_80px_80px_40px] gap-2 items-center px-4 py-3"
                     style={{ borderBottom: idx < editingSamplePack.options.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
                     {/* Label */}
                     <input value={opt.label}
@@ -1235,9 +1236,9 @@ export default function AdminDashboard() {
                       onChange={e => setEditingSamplePack(prev => prev ? {
                         ...prev, options: prev.options.map((o, i) => i === idx ? { ...o, count: parseInt(e.target.value) || 1 } : o)
                       } : prev)}
-                      className="w-full px-3 py-2 rounded-xl text-sm text-white/80 outline-none border border-white/[.08] text-center"
+                      className="w-full px-2 py-2 rounded-xl text-sm text-white/80 outline-none border border-white/[.08] text-center"
                       style={{ background: 'rgba(255,255,255,0.05)' }} />
-                    {/* Price */}
+                    {/* Selling price */}
                     <div className="relative">
                       <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-white/30">₹</span>
                       <input type="number" min={0} value={opt.price}
@@ -1246,6 +1247,17 @@ export default function AdminDashboard() {
                         } : prev)}
                         className="w-full pl-6 pr-2 py-2 rounded-xl text-sm text-white/80 outline-none border border-white/[.08]"
                         style={{ background: 'rgba(255,255,255,0.05)' }} />
+                    </div>
+                    {/* MRP */}
+                    <div className="relative">
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-white/20">₹</span>
+                      <input type="number" min={0} placeholder="MRP"
+                        value={opt.mrp ?? ''}
+                        onChange={e => setEditingSamplePack(prev => prev ? {
+                          ...prev, options: prev.options.map((o, i) => i === idx ? { ...o, mrp: parseFloat(e.target.value) || undefined } : o)
+                        } : prev)}
+                        className="w-full pl-6 pr-2 py-2 rounded-xl text-sm text-white/50 outline-none border border-white/[.06]"
+                        style={{ background: 'rgba(255,255,255,0.03)' }} />
                     </div>
                     {/* Remove */}
                     <button onClick={() => setEditingSamplePack(prev => prev ? {

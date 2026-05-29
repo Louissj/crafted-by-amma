@@ -135,9 +135,21 @@ function SamplesContent() {
                   <span className="font-display text-lg font-bold" style={{ color: isActive ? '#D4942A' : 'rgba(235,225,200,0.75)' }}>
                     {opt.label}
                   </span>
-                  <span className="font-display text-base font-bold" style={{ color: isActive ? '#D4942A' : 'rgba(235,225,200,0.50)' }}>
-                    ₹{opt.price}
-                  </span>
+                  {/* Price row */}
+                  <div className="flex flex-col items-center gap-0.5">
+                    <span className="font-display text-base font-bold" style={{ color: isActive ? '#D4942A' : 'rgba(235,225,200,0.50)' }}>
+                      ₹{opt.price}
+                    </span>
+                    {opt.mrp && opt.mrp > opt.price && (
+                      <div className="flex items-center gap-1.5">
+                        <span className="line-through text-[0.65rem]" style={{ color: 'rgba(235,225,200,0.22)' }}>₹{opt.mrp}</span>
+                        <span className="text-[0.55rem] font-bold px-1.5 py-0.5 rounded-full"
+                          style={{ background: 'rgba(34,197,94,0.15)', color: 'rgba(74,222,128,0.9)' }}>
+                          {Math.round((1 - opt.price / opt.mrp) * 100)}% OFF
+                        </span>
+                      </div>
+                    )}
+                  </div>
                   <span className="text-[0.58rem] font-semibold tracking-wide text-center" style={{ color: 'rgba(235,225,200,0.28)' }}>
                     {opt.count >= productsCount && productsCount > 0 ? 'All products' : `Choose any ${opt.count}`}
                   </span>

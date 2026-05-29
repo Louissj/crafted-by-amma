@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 const KEY = 'cba-sample-cart';
 
-export type SamplePackOption = { key: string; label: string; count: number; price: number };
+export type SamplePackOption = { key: string; label: string; count: number; price: number; mrp?: number };
 export type SampleCartItem = {
   packKey: string;
   label: string;
