@@ -63,13 +63,14 @@ export default function OffersSection() {
           'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
         }`}>
           {offers.map((offer, i) => (
-            <div key={offer.id}
-              className="flex items-center gap-4 px-5 py-4 rounded-2xl transition-all"
+            <Link key={offer.id} href="/products" className="no-underline"
+              style={{ animationDelay: `${i * 80}ms` }}>
+            <div
+              className="flex items-center gap-4 px-5 py-4 rounded-2xl transition-all hover:scale-[1.02] active:scale-[.98] cursor-pointer"
               style={{
                 background: 'linear-gradient(135deg,rgba(212,148,42,0.12),rgba(212,148,42,0.06))',
                 border: '1.5px solid rgba(212,148,42,0.30)',
                 boxShadow: '0 4px 20px rgba(212,148,42,0.10)',
-                animationDelay: `${i * 80}ms`,
               }}>
               {/* Icon */}
               <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 text-2xl"
@@ -92,6 +93,7 @@ export default function OffersSection() {
                 <path d="M5 12h14M12 5l7 7-7 7"/>
               </svg>
             </div>
+            </Link>
           ))}
         </div>
 
