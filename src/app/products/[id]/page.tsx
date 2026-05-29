@@ -406,23 +406,23 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                             </span>
                           )}
                         </div>
-                        <span className="text-sm flex items-center gap-2 flex-wrap" style={{ color: 'rgba(235,225,200,0.38)' }}>
-                          ₹{price}
+                        <div className="flex items-center gap-2 flex-wrap mt-1">
+                          <span className="font-display text-[1.05rem] font-bold" style={{ color: '#D4942A' }}>₹{price}</span>
                           {mrpMap[size] && mrpMap[size] > price && (
-                            <span className="line-through text-xs" style={{ color: 'rgba(235,225,200,0.22)' }}>₹{mrpMap[size]}</span>
-                          )}
-                          {mrpMap[size] && mrpMap[size] > price && (
-                            <span className="text-xs font-bold px-1.5 py-0.5 rounded-full"
-                              style={{ background: 'rgba(90,180,58,0.15)', color: 'rgba(130,210,80,0.85)' }}>
-                              {Math.round((1 - price / mrpMap[size]) * 100)}% off
-                            </span>
+                            <>
+                              <span className="line-through text-sm" style={{ color: 'rgba(235,225,200,0.25)' }}>₹{mrpMap[size]}</span>
+                              <span className="text-[0.65rem] font-bold px-2 py-0.5 rounded-full"
+                                style={{ background: 'rgba(34,197,94,0.15)', color: 'rgba(74,222,128,0.95)', border: '1px solid rgba(34,197,94,0.20)' }}>
+                                {Math.round((1 - price / mrpMap[size]) * 100)}% OFF
+                              </span>
+                            </>
                           )}
                           {count > 1 && (
-                            <span className="font-bold" style={{ color: 'rgba(212,148,42,0.65)' }}>
+                            <span className="text-xs font-bold" style={{ color: 'rgba(212,148,42,0.65)' }}>
                               · ₹{price * count} total
                             </span>
                           )}
-                        </span>
+                        </div>
                       </div>
 
                       {count === 0 ? (

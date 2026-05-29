@@ -320,12 +320,18 @@ export function ProductModal({
                         </span>
                       )}
                     </div>
-                    <span className="text-xs flex items-center gap-1.5" style={{ color: 'rgba(235,225,200,0.35)' }}>
-                    ₹{price}
-                    {mrpMapModal[size] && mrpMapModal[size] > price && (
-                      <span className="line-through text-[0.65rem]" style={{ color: 'rgba(235,225,200,0.22)' }}>₹{mrpMapModal[size]}</span>
-                    )}
-                  </span>
+                    <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                      <span className="font-display text-sm font-bold" style={{ color: '#D4942A' }}>₹{price}</span>
+                      {mrpMapModal[size] && mrpMapModal[size] > price && (
+                        <>
+                          <span className="line-through text-xs" style={{ color: 'rgba(235,225,200,0.22)' }}>₹{mrpMapModal[size]}</span>
+                          <span className="text-[0.58rem] font-bold px-1.5 py-0.5 rounded-full"
+                            style={{ background: 'rgba(34,197,94,0.15)', color: 'rgba(74,222,128,0.9)' }}>
+                            {Math.round((1 - price / mrpMapModal[size]) * 100)}% off
+                          </span>
+                        </>
+                      )}
+                    </div>
                   </div>
                   {count === 0 ? (
                     <button onClick={() => onCountChange(size, 1)}
@@ -535,12 +541,18 @@ export function ProductCard({
                       </span>
                     )}
                   </div>
-                  <span className="text-xs flex items-center gap-1.5" style={{ color: 'rgba(235,225,200,0.35)' }}>
-                    ₹{price}
+                  <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                    <span className="font-display text-sm font-bold" style={{ color: '#D4942A' }}>₹{price}</span>
                     {mrpMap[size] && mrpMap[size] > price && (
-                      <span className="line-through text-[0.65rem]" style={{ color: 'rgba(235,225,200,0.22)' }}>₹{mrpMap[size]}</span>
+                      <>
+                        <span className="line-through text-xs" style={{ color: 'rgba(235,225,200,0.22)' }}>₹{mrpMap[size]}</span>
+                        <span className="text-[0.58rem] font-bold px-1.5 py-0.5 rounded-full"
+                          style={{ background: 'rgba(34,197,94,0.15)', color: 'rgba(74,222,128,0.9)' }}>
+                          {Math.round((1 - price / mrpMap[size]) * 100)}% off
+                        </span>
+                      </>
                     )}
-                  </span>
+                  </div>
                 </div>
 
                 {count === 0 ? (

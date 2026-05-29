@@ -18,7 +18,9 @@ type Order = {
 type Offer = { id: string; icon: string; text: string; active: boolean; sortOrder: number };
 type DeliverySettings = { id: string; baseCharge: number; outstationCharge: number; freeAboveAmt: number; karnatakFree: boolean; note: string };
 type AdminReview = { id: string; name: string; place: string; rating: number; text: string; approved: boolean; createdAt: string };
-type Tab = 'orders' | 'offers' | 'delivery' | 'products' | 'analytics' | 'reviews';
+type Tab = 'orders' | 'offers' | 'delivery' | 'products' | 'analytics' | 'reviews' | 'samples';
+type SampleOption = { key: string; label: string; count: number; price: number };
+type SamplePackData = { id: string; name: string; description: string; options: SampleOption[]; active: boolean };
 
 type DbProduct = {
   id: string; name: string; shortName: string; badge: string;
@@ -86,6 +88,12 @@ export default function AdminDashboard() {
   const [products, setProducts] = useState<DbProduct[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
   const [editingProduct, setEditingProduct] = useState<DbProduct | null>(null);
+
+  // Sample packs state
+  const [samplePack, setSamplePack] = useState<SamplePackData | null>(null);
+  const [samplePackLoading, setSamplePackLoading] = useState(false);
+  const [samplePackSaving, setSamplePackSaving] = useState(false);
+  const [editingSamplePack, setEditingSamplePack] = useState<SamplePackData | null>(null);
   const [productSaving, setProductSaving] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -178,6 +186,20 @@ export default function AdminDashboard() {
     }
   }, []);
 
+  const fetchSamplePack = useCallback(async () => {
+    setSamplePackLoading(true);
+    try {
+      const res = await fetch('/api/sample-packs');
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        setSamplePack(data[0]);
+        setEditingSamplePack(JSON.parse(JSON.stringify(data[0])));
+      }
+    } finally {
+      setSamplePackLoading(false);
+    }
+  }, []);
+
   const fetchReviews = useCallback(async () => {
     setReviewsLoading(true);
     try {
@@ -197,7 +219,8 @@ export default function AdminDashboard() {
     if (tab === 'products') fetchProducts();
     if (tab === 'analytics') fetchAnalytics();
     if (tab === 'reviews') fetchReviews();
-  }, [loggedIn, tab, filter, fetchOrders, fetchOffers, fetchDelivery, fetchProducts, fetchAnalytics, fetchReviews]);
+    if (tab === 'samples') fetchSamplePack();
+  }, [loggedIn, tab, filter, fetchOrders, fetchOffers, fetchDelivery, fetchProducts, fetchAnalytics, fetchReviews, fetchSamplePack]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -668,6 +691,7 @@ export default function AdminDashboard() {
   const NAV_ITEMS: { id: Tab; icon: string; label: string }[] = [
     { id: 'orders',    icon: '📦', label: 'Orders' },
     { id: 'products',  icon: '🛍️', label: 'Products' },
+    { id: 'samples',   icon: '🧪', label: 'Samples' },
     { id: 'analytics', icon: '📊', label: 'Analytics' },
     { id: 'reviews',   icon: '⭐', label: 'Reviews' },
     { id: 'offers',    icon: '🏷️', label: 'Offers' },
@@ -675,7 +699,7 @@ export default function AdminDashboard() {
   ];
 
   const tabLabels: Record<Tab, string> = {
-    orders: 'Orders', products: 'Products', analytics: 'Analytics', reviews: 'Reviews', offers: 'Offers', delivery: 'Delivery',
+    orders: 'Orders', products: 'Products', samples: 'Samples', analytics: 'Analytics', reviews: 'Reviews', offers: 'Offers', delivery: 'Delivery',
   };
 
   return (
@@ -1164,6 +1188,116 @@ export default function AdminDashboard() {
               ))}
             </AnimatePresence>
           </div>
+        </motion.div>
+      )}
+
+      {/* ── SAMPLES TAB ── */}
+      {tab === 'samples' && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="p-4 md:p-6 max-w-xl">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="font-display text-xl font-bold text-white">Sample Packs</h2>
+              <p className="text-sm text-white/30 mt-0.5">Configure pack options, counts and prices.</p>
+            </div>
+          </div>
+
+          {samplePackLoading ? (
+            <div className="space-y-3">
+              {[0,1,2].map(i => <div key={i} className="h-14 rounded-2xl animate-pulse" style={{ background: 'rgba(255,255,255,0.05)' }} />)}
+            </div>
+          ) : !editingSamplePack ? (
+            <p className="text-white/30 text-sm">No sample pack found. Run the seed script.</p>
+          ) : (
+            <>
+              {/* Options table */}
+              <div className="rounded-2xl overflow-hidden mb-4" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+                {/* Header */}
+                <div className="grid grid-cols-[1fr_80px_80px_40px] gap-3 px-4 py-2.5"
+                  style={{ background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <span className="text-[0.58rem] font-bold uppercase tracking-widest text-white/30">Label</span>
+                  <span className="text-[0.58rem] font-bold uppercase tracking-widest text-white/30">Products</span>
+                  <span className="text-[0.58rem] font-bold uppercase tracking-widest text-white/30">Price ₹</span>
+                  <span />
+                </div>
+
+                {editingSamplePack.options.map((opt, idx) => (
+                  <div key={opt.key} className="grid grid-cols-[1fr_80px_80px_40px] gap-3 items-center px-4 py-3"
+                    style={{ borderBottom: idx < editingSamplePack.options.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                    {/* Label */}
+                    <input value={opt.label}
+                      onChange={e => setEditingSamplePack(prev => prev ? {
+                        ...prev, options: prev.options.map((o, i) => i === idx ? { ...o, label: e.target.value } : o)
+                      } : prev)}
+                      className="w-full px-3 py-2 rounded-xl text-sm text-white/80 outline-none border border-white/[.08]"
+                      style={{ background: 'rgba(255,255,255,0.05)' }} />
+                    {/* Count */}
+                    <input type="number" min={1} max={50} value={opt.count}
+                      onChange={e => setEditingSamplePack(prev => prev ? {
+                        ...prev, options: prev.options.map((o, i) => i === idx ? { ...o, count: parseInt(e.target.value) || 1 } : o)
+                      } : prev)}
+                      className="w-full px-3 py-2 rounded-xl text-sm text-white/80 outline-none border border-white/[.08] text-center"
+                      style={{ background: 'rgba(255,255,255,0.05)' }} />
+                    {/* Price */}
+                    <div className="relative">
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-white/30">₹</span>
+                      <input type="number" min={0} value={opt.price}
+                        onChange={e => setEditingSamplePack(prev => prev ? {
+                          ...prev, options: prev.options.map((o, i) => i === idx ? { ...o, price: parseFloat(e.target.value) || 0 } : o)
+                        } : prev)}
+                        className="w-full pl-6 pr-2 py-2 rounded-xl text-sm text-white/80 outline-none border border-white/[.08]"
+                        style={{ background: 'rgba(255,255,255,0.05)' }} />
+                    </div>
+                    {/* Remove */}
+                    <button onClick={() => setEditingSamplePack(prev => prev ? {
+                      ...prev, options: prev.options.filter((_, i) => i !== idx)
+                    } : prev)}
+                      disabled={editingSamplePack.options.length <= 1}
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all disabled:opacity-20 hover:text-red-400"
+                      style={{ background: 'rgba(239,68,68,0.08)', color: 'rgba(239,68,68,0.5)' }}>
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Add option */}
+              <button onClick={() => {
+                const count = (editingSamplePack.options.at(-1)?.count ?? 5) + 5;
+                setEditingSamplePack(prev => prev ? {
+                  ...prev,
+                  options: [...prev.options, { key: `pack-${count}`, label: `Pack of ${count}`, count, price: 0 }]
+                } : prev);
+              }}
+                className="w-full py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-80 mb-6"
+                style={{ background: 'rgba(212,148,42,0.08)', border: '1.5px dashed rgba(212,148,42,0.25)', color: 'rgba(212,148,42,0.70)' }}>
+                + Add pack option
+              </button>
+
+              {/* Save */}
+              <button
+                onClick={async () => {
+                  if (!editingSamplePack) return;
+                  setSamplePackSaving(true);
+                  const res = await fetch(`/api/sample-packs/${editingSamplePack.id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ options: editingSamplePack.options }),
+                  });
+                  if (res.ok) {
+                    const updated = await res.json();
+                    setSamplePack(updated);
+                    setEditingSamplePack(JSON.parse(JSON.stringify(updated)));
+                    showToast('Sample pack saved!');
+                  }
+                  setSamplePackSaving(false);
+                }}
+                disabled={samplePackSaving}
+                className="w-full py-3.5 rounded-2xl font-bold text-sm tracking-wide transition-all disabled:opacity-50"
+                style={{ background: 'linear-gradient(135deg,#5A7A3A,#4a6830)', color: '#F5F0E0', boxShadow: '0 4px 20px rgba(90,122,58,0.25)' }}>
+                {samplePackSaving ? 'Saving…' : 'Save Changes'}
+              </button>
+            </>
+          )}
         </motion.div>
       )}
 
