@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Navbar from '@/components/ui/Navbar';
 import { useProducts } from '@/lib/useProducts';
 import { useSampleCart, SamplePackOption } from '@/lib/useSampleCart';
@@ -16,6 +16,7 @@ type SamplePack = {
 };
 
 function SamplesContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const preAddId = searchParams.get('product'); // product ID to auto-select
 
@@ -26,7 +27,6 @@ function SamplesContent() {
   const [packLoading, setPackLoading] = useState(true);
   const [selectedOption, setSelectedOption] = useState<SamplePackOption | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
-  const [added, setAdded] = useState(false);
 
   // Keep a stable ref to products so effects don't re-fire on product reference changes
   const productsRef = useRef(products);
@@ -78,8 +78,7 @@ function SamplesContent() {
       selectedProducts: selected,
       qty: 1,
     });
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2500);
+    router.push('/cart');
   };
 
   const existingSample = selectedOption
@@ -270,7 +269,7 @@ function SamplesContent() {
         <div className="fixed bottom-0 left-0 right-0 z-[1000] px-4 pb-5">
           <div className="max-w-md mx-auto space-y-2">
 
-            {existingSample && !added && (
+            {existingSample && (
               <div className="flex items-center justify-between px-4 py-2 rounded-xl"
                 style={{ background: 'rgba(90,122,58,0.15)', border: '1px solid rgba(90,122,58,0.25)' }}>
                 <span className="text-xs font-semibold" style={{ color: 'rgba(180,220,130,0.80)' }}>
@@ -284,7 +283,7 @@ function SamplesContent() {
               className="w-full flex items-center justify-between px-5 py-4 rounded-2xl font-bold transition-all active:scale-[.98]"
               style={{
                 background: canAdd
-                  ? added ? 'linear-gradient(135deg,#3a8a3a,#2e6e2e)' : 'linear-gradient(135deg,#5A7A3A,#4a6830)'
+                  ? 'linear-gradient(135deg,#5A7A3A,#4a6830)'
                   : 'rgba(255,255,255,0.05)',
                 border: `1.5px solid ${canAdd ? 'rgba(90,122,58,0.55)' : 'rgba(255,255,255,0.08)'}`,
                 boxShadow: canAdd ? '0 8px 28px rgba(90,122,58,0.22)' : 'none',
@@ -292,9 +291,7 @@ function SamplesContent() {
                 cursor: canAdd ? 'pointer' : 'not-allowed',
               }}>
               <span className="text-sm tracking-wide">
-                {added
-                  ? '✓ Added to cart!'
-                  : canAdd
+                {canAdd
                     ? `Add ${selectedOption.label} to Cart`
                     : `Select ${selectedOption.count - selected.length} more product${selectedOption.count - selected.length !== 1 ? 's' : ''}`}
               </span>
