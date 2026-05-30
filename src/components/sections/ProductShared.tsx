@@ -296,7 +296,7 @@ export function ProductModal({
           <div className="flex-shrink-0 px-4 pb-5 pt-3 space-y-2"
             style={{ background: 'linear-gradient(to top,#0e1c09,#192C10)', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
             <p className="text-[0.65rem] font-bold tracking-[2px] uppercase" style={{ color: 'rgba(235,225,200,0.28)' }}>
-              Choose Size &amp; Qty
+              Choose Your Quantity
             </p>
             {sizeEntries.map(([size, price], i) => {
               const count = getCount(size);
@@ -517,7 +517,7 @@ export function ProductCard({
 
         <div className="mt-auto space-y-2.5">
           <p className="text-[0.65rem] font-bold tracking-[2px] uppercase mb-2" style={{ color: 'rgba(235,225,200,0.28)' }}>
-            Choose Size &amp; Qty
+            Choose Your Quantity
           </p>
           {sizeEntries.map(([size, price], i) => {
             const count = getCount(size);
