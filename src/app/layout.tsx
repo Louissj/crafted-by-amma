@@ -5,8 +5,8 @@ import FloatingButtons from '@/components/ui/FloatingButtons';
 
 export const metadata: Metadata = {
   title: 'Crafted by Amma — Homemade Millet Products | Mysuru',
-  description: 'Homemade Millet Malt Powder & Instant Multigrain Dosa Powder from Mysuru. 21+ natural ingredients. Zero preservatives. Ships worldwide.',
-  keywords: 'millet, malt powder, dosa powder, homemade, Mysuru, healthy food, organic, natural',
+  description: 'Homemade Millet Products, Masala Powders & Chutney Pudi from Mysuru. 21+ natural ingredients. Zero preservatives. Ships worldwide.',
+  keywords: 'millet, malt powder, dosa powder, rasam powder, sambar powder, chutney pudi, homemade, Mysuru, healthy food, organic, natural',
   icons: {
     icon: '/images/logo.png',
     apple: '/images/logo.png',

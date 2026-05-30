@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function Hero() {
   return (
@@ -87,9 +88,9 @@ export default function Hero() {
           Crafted By Amma
           <span className="block text-[.55em] font-medium mt-2"
             style={{ color: 'rgba(235,225,200,0.90)', textShadow: '0 1px 14px rgba(0,0,0,.70)' }}>
-            Homemade Millet{' '}
+            Homemade · Traditional ·{' '}
             <span style={{ color: '#C8B44A', textShadow: '0 1px 12px rgba(0,0,0,.60)' }} className="relative inline-block">
-              Products
+              Nutritious
               <span className="absolute bottom-0.5 -left-0.5 -right-0.5 h-1.5 bg-sage/25 rounded -z-10" />
             </span>
           </span>
@@ -114,23 +115,25 @@ export default function Hero() {
             color: 'rgba(235,225,200,0.85)',
             textShadow: '0 1px 8px rgba(0,0,0,.50)',
           }}>
-          From Amma&apos;s kitchen in Mysuru — Millet Malt Powder &amp; Instant Multigrain Dosa Powder.
-          <span className="block mt-2 text-sm sm:text-base tracking-[1px]"
-            style={{ color: 'rgba(200,180,74,0.88)', textShadow: '0 1px 8px rgba(0,0,0,.45)' }}>
-            Zero preservatives · Zero added sugar · 21+ ingredients
-          </span>
+          Millet Powders, Masala Powders and Chutney Pudi.
         </p>
 
         {/* CTAs */}
         <div className="flex gap-3 justify-center md:justify-start flex-wrap mb-8 opacity-0 animate-fade-up"
           style={{ animationDelay: '.6s', animationFillMode: 'forwards' }}>
-          <a href="#prods"
+          <a href="/samples"
+            className="px-7 sm:px-8 py-3.5 sm:py-4 rounded-full text-sm sm:text-base font-bold tracking-[1.5px] uppercase
+              no-underline inline-flex items-center gap-2 transition-all hover:-translate-y-0.5 hover:shadow-xl active:scale-95"
+            style={{ background: 'linear-gradient(135deg,#D4942A,#B87323)', color: '#1A0A00', boxShadow: '0 6px 24px rgba(212,148,42,0.45)' }}>
+            🧪 Sample Kit
+          </a>
+          <a href="/products"
             className="px-7 sm:px-8 py-3.5 sm:py-4 rounded-full text-sm sm:text-base font-bold tracking-[1.5px] uppercase
               no-underline inline-flex items-center gap-2 transition-all hover:-translate-y-0.5 hover:shadow-xl active:scale-95"
             style={{ background: 'linear-gradient(135deg,#5A7A3A,#7A9A50)', color: '#F5F0E0', boxShadow: '0 6px 24px rgba(90,122,58,0.50)' }}>
             🛒 Order Now
           </a>
-          <a href="#prods"
+          <a href="/products"
             className="px-7 sm:px-8 py-3.5 sm:py-4 rounded-full text-sm sm:text-base font-bold tracking-[1.5px] uppercase
               no-underline inline-flex items-center gap-2 transition-all hover:border-brass/60 hover:text-brass active:scale-95"
             style={{ color: 'rgba(235,225,200,0.92)', border: '1.5px solid rgba(235,225,200,0.40)' }}>
@@ -141,12 +144,31 @@ export default function Hero() {
         {/* Trust pills */}
         <div className="flex gap-2 justify-center md:justify-start flex-wrap opacity-0 animate-fade-up"
           style={{ animationDelay: '.75s', animationFillMode: 'forwards' }}>
-          {['🌿 100% Natural', '🚫 No Chemicals', '✈️ Ships Worldwide'].map(t => (
+          {['🌿 100% Natural', '🚫 No Chemicals', '✈️ Ships Worldwide', '🧪 Zero Preservatives', '🍬 Zero Added Sugar', '🌾 21+ Ingredients'].map(t => (
             <span key={t} className="text-sm sm:text-base font-semibold px-4 py-1.5 rounded-full"
               style={{ background: 'rgba(255,255,255,0.11)', border: '1px solid rgba(255,255,255,0.26)', color: 'rgba(235,225,200,0.92)' }}>
               {t}
             </span>
           ))}
+        </div>
+
+        {/* Offer bar — right below trust pills */}
+        <div className="mt-5 opacity-0 animate-fade-up" style={{ animationDelay: '.85s', animationFillMode: 'forwards' }}>
+          <Link href="/products" className="no-underline flex items-center justify-center gap-3 px-5 py-2.5 rounded-full"
+            style={{
+              background: 'rgba(212,148,42,0.10)',
+              border: '1px solid rgba(212,148,42,0.30)',
+            }}>
+            <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#D4942A', boxShadow: '0 0 6px rgba(212,148,42,0.8)', animation: 'pulse 1.8s ease-in-out infinite' }} />
+            <p className="text-[0.72rem] sm:text-sm font-semibold tracking-[1px]"
+              style={{ color: 'rgba(235,225,200,0.75)' }}>
+              <span className="font-black" style={{ color: '#D4942A' }}>UP TO 20% OFF</span>
+              {' · '}
+              <span className="hidden sm:inline">Millet Powders, Masala Powders &amp; Chutney Pudi · </span>
+              <span className="underline underline-offset-2" style={{ color: 'rgba(212,148,42,0.85)' }}>Shop Now →</span>
+            </p>
+            <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#D4942A', boxShadow: '0 0 6px rgba(212,148,42,0.8)', animation: 'pulse 1.8s ease-in-out 0.4s infinite' }} />
+          </Link>
         </div>
 
         {/* Scroll hint */}
@@ -163,6 +185,7 @@ export default function Hero() {
         <div className="absolute inset-10 border border-dashed border-brass/[.06] rounded-full" />
         <div className="absolute inset-[5rem] xl:inset-[5.5rem] border border-brass/[.10] rounded-full" />
       </div>
+
     </section>
   );
 }

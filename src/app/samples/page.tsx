@@ -56,8 +56,10 @@ function SamplesContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedKey]);
 
+  const isAllLocked = !!(selectedOption && selectedOption.count >= products.length && products.length > 0);
+
   const toggleProduct = (id: string) => {
-    if (!selectedOption) return;
+    if (!selectedOption || isAllLocked) return; // Pack of 10: locked, no toggling
     const max = selectedOption.count;
     setSelected(prev => {
       if (prev.includes(id)) return prev.filter(p => p !== id);
@@ -171,10 +173,16 @@ function SamplesContent() {
 
             {/* Counter + progress */}
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold" style={{ color: 'rgba(235,225,200,0.55)' }}>
-                {selectedOption.count >= products.length && products.length > 0
-                  ? 'All products included'
-                  : `Select any ${selectedOption.count} products`}
+              <p className="text-sm font-semibold flex items-center gap-2" style={{ color: 'rgba(235,225,200,0.55)' }}>
+                {isAllLocked ? (
+                  <>
+                    All products included
+                    <span className="text-[0.6rem] font-bold px-2 py-0.5 rounded-full tracking-wide"
+                      style={{ background: 'rgba(212,148,42,0.12)', border: '1px solid rgba(212,148,42,0.25)', color: 'rgba(212,148,42,0.70)' }}>
+                      🔒 Locked
+                    </span>
+                  </>
+                ) : `Select any ${selectedOption.count} products`}
               </p>
               <span className="font-display text-lg font-bold"
                 style={{ color: selected.length === selectedOption.count ? '#D4942A' : 'rgba(235,225,200,0.35)' }}>
@@ -213,7 +221,7 @@ function SamplesContent() {
                             : isMaxed ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)',
                           border: `1.5px solid ${isSelected ? 'rgba(212,148,42,0.52)' : 'rgba(255,255,255,0.08)'}`,
                           opacity: isMaxed ? 0.4 : 1,
-                          cursor: isMaxed ? 'not-allowed' : 'pointer',
+                          cursor: isAllLocked ? 'default' : isMaxed ? 'not-allowed' : 'pointer',
                           boxShadow: isSelected ? '0 3px 14px rgba(212,148,42,0.10)' : 'none',
                         }}>
 
