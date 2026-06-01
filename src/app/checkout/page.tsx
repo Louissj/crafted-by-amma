@@ -5,10 +5,16 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/lib/useCart';
 import { useProducts } from '@/lib/useProducts';
-import { PRODUCTS } from '@/lib/constants';
 import { trackEvent } from '@/lib/analytics';
 
-type DeliverySettings = { baseCharge: number; outstationCharge: number; freeAboveAmt: number; karnatakFree: boolean; note: string };
+type DeliverySlab = { maxGrams: number; charge: number };
+type DeliverySettings = {
+  baseCharge: number; outstationCharge: number; freeAboveAmt: number;
+  karnatakFree: boolean; note: string;
+  karnatakaSlabs: DeliverySlab[]; southIndiaSlabs: DeliverySlab[]; northIndiaSlabs: DeliverySlab[];
+};
+const SOUTH_INDIA_STATES = ['tamil nadu','kerala','andhra pradesh','telangana','goa','puducherry','pondicherry','lakshadweep','andaman and nicobar'];
+function parseKgCo(s: string) { return parseFloat(s) * (s.toLowerCase().includes('kg') ? 1000 : 1); }
 
 type RazorpayResponse = {
   razorpay_order_id: string;
@@ -40,7 +46,7 @@ const inputCls = "w-full px-4 py-3.5 border-[1.5px] border-forest/[.10] rounded-
 const inputErrCls = "w-full px-4 py-3.5 border-[1.5px] border-red-400/60 rounded-xl text-sm bg-red-50/30 outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition-all placeholder:text-forest/50 text-forest font-medium";
 
 export default function CheckoutPage() {
-  const { priceMap } = useProducts();
+  const { products, priceMap } = useProducts();
   const { cart, cartTotal, totalPacks, clearCart, mounted } = useCart(priceMap);
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ name: '', phone: '', city: '', address: '', notes: '' });
@@ -49,7 +55,7 @@ export default function CheckoutPage() {
   const [pincodeLoading, setPincodeLoading] = useState(false);
   const [pincodeState, setPincodeState] = useState('');
   const [pincodeError, setPincodeError] = useState('');
-  const [deliveryZone, setDeliveryZone] = useState<'karnataka' | 'india' | 'international'>('india');
+  const [deliveryZone, setDeliveryZone] = useState<'karnataka' | 'south-india' | 'north-india' | 'international'>('north-india');
   const [submitting, setSubmitting] = useState(false);
   const [orderId, setOrderId] = useState('');
   const [error, setError] = useState('');
@@ -82,39 +88,42 @@ export default function CheckoutPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function isKarnatakaPincode(pin: string) {
-    const n = parseInt(pin, 10);
-    return n >= 560001 && n <= 597999;
-  }
-
   useEffect(() => {
     if (deliveryZone === 'international') return;
     const pin = pincode.replace(/\D/g, '');
     if (pin.length !== 6) {
       setPincodeState('');
       setPincodeError('');
-      setDeliveryZone('india');
+      setDeliveryZone('north-india');
       return;
     }
     setPincodeLoading(true);
     setPincodeError('');
     setPincodeState('');
-    fetch(`https://api.postalpincode.in/pincode/${pin}`)
-      .then(r => r.json())
+    fetch(`/api/pincode/${pin}`)
+      .then(async r => { if (!r.ok) throw new Error('err'); return r.json(); })
       .then(data => {
-        if (data?.[0]?.Status === 'Success' && data[0].PostOffice?.length > 0) {
+        if (Array.isArray(data) && data[0]?.Status === 'Success' && data[0].PostOffice?.length > 0) {
           const po = data[0].PostOffice[0];
-          const stateName: string = po.State || '';
-          setPincodeState(stateName);
-          const isKA = isKarnatakaPincode(pin);
-          setDeliveryZone(isKA ? 'karnataka' : 'india');
+          const state: string = po.State || '';
+          setPincodeState(state);
+          const sl = state.toLowerCase();
+          if (sl.includes('karnataka')) setDeliveryZone('karnataka');
+          else if (SOUTH_INDIA_STATES.some(s => sl.includes(s))) setDeliveryZone('south-india');
+          else setDeliveryZone('north-india');
           setForm(f => ({ ...f, city: po.District || po.Name || f.city }));
         } else {
           setPincodeError('Pincode not found');
-          setDeliveryZone('india');
+          setDeliveryZone('north-india');
         }
       })
-      .catch(() => setPincodeError('Could not verify pincode'))
+      .catch(() => {
+        const n = parseInt(pin, 10);
+        const isKA = n >= 560001 && n <= 591999;
+        setPincodeState(isKA ? 'Karnataka' : '');
+        setDeliveryZone(isKA ? 'karnataka' : 'north-india');
+        setPincodeError('');
+      })
       .finally(() => setPincodeLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pincode]);
@@ -122,14 +131,21 @@ export default function CheckoutPage() {
   const deliveryCharge = useMemo(() => {
     if (!delivery) return 0;
     if (deliveryZone === 'international') return 0;
-    if (deliveryZone === 'karnataka') {
-      const chargeablePacks = cart
-        .filter(item => item.packSize !== '1kg')
-        .reduce((sum, item) => sum + item.count, 0);
-      return chargeablePacks * delivery.baseCharge;
+
+    function slabCharge(slabs: DeliverySlab[], grams: number, fallback: number) {
+      if (!slabs?.length) return fallback;
+      const sorted = [...slabs].sort((a, b) => a.maxGrams - b.maxGrams);
+      return (sorted.find(s => grams <= s.maxGrams) ?? sorted[sorted.length - 1]).charge;
     }
-    const packs = cart.reduce((sum, item) => sum + item.count, 0);
-    return packs * (delivery.outstationCharge ?? 120);
+
+    const grams = cart.reduce((sum, item) => {
+      const kg = parseKgCo(item.packSize);
+      return kg >= 1 ? sum : sum + Math.round(kg) * item.count;
+    }, 0);
+
+    if (deliveryZone === 'karnataka') return grams === 0 ? 0 : slabCharge(delivery.karnatakaSlabs, grams, delivery.baseCharge);
+    if (deliveryZone === 'south-india') return slabCharge(delivery.southIndiaSlabs, grams, delivery.outstationCharge);
+    return slabCharge(delivery.northIndiaSlabs, grams, delivery.outstationCharge);
   }, [delivery, deliveryZone, cart]);
 
   const grandTotal = cartTotal + deliveryCharge;
@@ -417,7 +433,7 @@ export default function CheckoutPage() {
                       <div key={`${item.productId}-${item.packSize}`} className="flex items-center justify-between gap-3">
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-white leading-tight">
-                            {PRODUCTS[item.productId as keyof typeof PRODUCTS]?.shortName}
+                            {products.find(p => p.id === item.productId)?.shortName}
                           </p>
                           <p className="text-xs text-white/50 mt-0.5">
                             {item.packSize} · {item.count} pack{item.count > 1 ? 's' : ''} × ₹{unitPrice}
@@ -510,7 +526,7 @@ export default function CheckoutPage() {
                   }`}
                   onClick={() => {
                     if (deliveryZone === 'international') {
-                      setDeliveryZone('india');
+                      setDeliveryZone('north-india');
                       setPincodeState('');
                       setPincodeError('');
                     } else {
@@ -647,7 +663,7 @@ export default function CheckoutPage() {
                       <div key={`${item.productId}-${item.packSize}`} className="flex items-center gap-3">
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-forest leading-tight">
-                            {PRODUCTS[item.productId as keyof typeof PRODUCTS]?.shortName}
+                            {products.find(p => p.id === item.productId)?.shortName}
                           </p>
                           <p className="text-xs text-forest/50 mt-0.5">
                             {item.packSize} · {item.count} pack{item.count > 1 ? 's' : ''} × ₹{unitPrice} each

@@ -462,7 +462,11 @@ export default function CartPage() {
                           <span className="text-sm font-bold" style={{ color: '#B87323' }}>₹{deliveryCharge}</span>
                         </div>
                         <p className="text-xs text-forest/55 leading-snug">
-                          1kg packs → free delivery · Other sizes → ₹{delivery.baseCharge} per pack in Karnataka
+                          {deliveryZone === 'karnataka'
+                            ? '1kg packs → free delivery · Other sizes → weight-based charge'
+                            : deliveryZone === 'south-india'
+                            ? 'South India · Weight-based delivery charge'
+                            : 'North India · Weight-based delivery charge'}
                         </p>
                       </motion.div>
                     )
