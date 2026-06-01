@@ -393,7 +393,7 @@ export function ProductModal({
 }
 
 /* ─── Inline stepper ─── */
-export function Stepper({ count, onAdd, onRemove }: { count: number; onAdd: () => void; onRemove: () => void }) {
+export function Stepper({ count, onAdd, onRemove, maxReached }: { count: number; onAdd: () => void; onRemove: () => void; maxReached?: boolean }) {
   return (
     <div className="flex items-center gap-0 rounded-xl overflow-hidden flex-shrink-0"
       style={{ border: '1.5px solid rgba(212,148,42,0.40)', background: 'rgba(212,148,42,0.07)' }}>
@@ -402,7 +402,7 @@ export function Stepper({ count, onAdd, onRemove }: { count: number; onAdd: () =
         style={{ color: '#D4942A' }}>−</button>
       <span className="font-display text-lg font-bold w-7 text-center" style={{ color: '#D4942A' }}>{count}</span>
       <button onClick={e => { e.stopPropagation(); onAdd(); }}
-        disabled={count >= 10}
+        disabled={maxReached ?? count >= 10}
         className="w-10 h-10 flex items-center justify-center text-xl font-bold transition-all active:scale-90 disabled:opacity-30"
         style={{ color: '#D4942A' }}>+</button>
     </div>
@@ -422,6 +422,7 @@ export function ProductCard({
   const [activeImg, setActiveImg] = useState(0);
   const productPrices = priceMap[product.id] || product.prices || {};
   const mrpMap: Record<string, number> = product.mrp || {};
+  const stockMap: Record<string, number> = product.stock || {};
   const parseSzCard = (s: string) => parseFloat(s) * (s.includes('kg') ? 1000 : 1);
   const sizeEntries = Object.entries(productPrices).sort(([a], [b]) => parseSzCard(a) - parseSzCard(b));
   const images = product.images ?? [];
@@ -476,6 +477,17 @@ export function ProductCard({
           </span>
         )}
 
+        {/* Out of Stock overlay */}
+        {Object.keys(stockMap).length > 0 && Object.values(stockMap).every(s => s === 0) && (
+          <div className="absolute inset-0 z-[4] flex items-center justify-center"
+            style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(2px)' }}>
+            <span className="px-4 py-2 rounded-full text-sm font-bold tracking-[2px] uppercase"
+              style={{ background: 'rgba(239,68,68,0.85)', color: '#fff', boxShadow: '0 4px 16px rgba(239,68,68,0.4)' }}>
+              Out of Stock
+            </span>
+          </div>
+        )}
+
         {/* Sample available badge — links to /samples with this product pre-selected */}
         <Link href={`/samples?product=${product.id}`}
           onClick={e => e.stopPropagation()}
@@ -522,28 +534,46 @@ export function ProductCard({
           {sizeEntries.map(([size, price], i) => {
             const count = getCount(size);
             const isBest = i === sizeEntries.length - 1 && sizeEntries.length > 1;
+            const stockQty = stockMap[size];
+            const hasStock = stockQty === undefined || stockQty === null; // undefined = unlimited
+            const outOfStock = stockQty === 0;
+            const maxQty = hasStock ? 10 : Math.min(10, stockQty);
+            const lowStock = !hasStock && !outOfStock && stockQty <= 5;
             return (
               <div key={size}
                 className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-200"
                 style={{
-                  background: count > 0 ? 'rgba(212,148,42,0.08)' : 'rgba(255,255,255,0.03)',
-                  border: `1.5px solid ${count > 0 ? 'rgba(212,148,42,0.30)' : 'rgba(255,255,255,0.07)'}`,
+                  background: outOfStock ? 'rgba(255,255,255,0.02)' : count > 0 ? 'rgba(212,148,42,0.08)' : 'rgba(255,255,255,0.03)',
+                  border: `1.5px solid ${outOfStock ? 'rgba(255,255,255,0.04)' : count > 0 ? 'rgba(212,148,42,0.30)' : 'rgba(255,255,255,0.07)'}`,
+                  opacity: outOfStock ? 0.5 : 1,
                 }}>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-display text-sm font-bold" style={{ color: count > 0 ? '#D4942A' : 'rgba(235,225,200,0.75)' }}>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-display text-sm font-bold" style={{ color: outOfStock ? 'rgba(235,225,200,0.35)' : count > 0 ? '#D4942A' : 'rgba(235,225,200,0.75)' }}>
                       {size}
                     </span>
-                    {isBest && (
+                    {isBest && !outOfStock && (
                       <span className="text-[0.6rem] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
                         style={{ background: 'linear-gradient(135deg,#D4942A,#B87323)', color: '#1A2A14' }}>
                         Best
                       </span>
                     )}
+                    {outOfStock && (
+                      <span className="text-[0.58rem] font-bold px-1.5 py-0.5 rounded-full"
+                        style={{ background: 'rgba(239,68,68,0.12)', color: 'rgba(239,68,68,0.7)' }}>
+                        Out of stock
+                      </span>
+                    )}
+                    {lowStock && (
+                      <span className="text-[0.58rem] font-bold px-1.5 py-0.5 rounded-full"
+                        style={{ background: 'rgba(251,191,36,0.12)', color: 'rgba(251,191,36,0.8)' }}>
+                        Only {stockQty} left
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
-                    <span className="font-display text-sm font-bold" style={{ color: '#D4942A' }}>₹{price}</span>
-                    {mrpMap[size] && mrpMap[size] > price && (
+                    <span className="font-display text-sm font-bold" style={{ color: outOfStock ? 'rgba(235,225,200,0.25)' : '#D4942A' }}>₹{price}</span>
+                    {mrpMap[size] && mrpMap[size] > price && !outOfStock && (
                       <>
                         <span className="line-through text-xs" style={{ color: 'rgba(235,225,200,0.22)' }}>₹{mrpMap[size]}</span>
                         <span className="text-[0.58rem] font-bold px-1.5 py-0.5 rounded-full"
@@ -555,7 +585,9 @@ export function ProductCard({
                   </div>
                 </div>
 
-                {count === 0 ? (
+                {outOfStock ? (
+                  <span className="text-xs font-semibold flex-shrink-0" style={{ color: 'rgba(239,68,68,0.5)' }}>—</span>
+                ) : count === 0 ? (
                   <button onClick={e => { e.stopPropagation(); onCountChange(size, 1); }}
                     className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold tracking-wide transition-all active:scale-95 flex-shrink-0"
                     style={{ background: 'linear-gradient(135deg,#5A7A3A,#4a6830)', color: '#F5F0E0', boxShadow: '0 2px 10px rgba(90,122,58,0.30)' }}>
@@ -567,8 +599,9 @@ export function ProductCard({
                 ) : (
                   <Stepper
                     count={count}
-                    onAdd={() => onCountChange(size, Math.min(10, count + 1))}
+                    onAdd={() => onCountChange(size, Math.min(maxQty, count + 1))}
                     onRemove={() => onCountChange(size, Math.max(0, count - 1))}
+                    maxReached={count >= maxQty}
                   />
                 )}
               </div>

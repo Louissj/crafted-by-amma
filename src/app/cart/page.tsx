@@ -10,8 +10,20 @@ import { useSampleCart } from '@/lib/useSampleCart';
 import { PRODUCTS } from '@/lib/constants';
 import { trackEvent } from '@/lib/analytics';
 
-type KarnatakaSlab = { maxGrams: number; charge: number };
-type DeliverySettings = { baseCharge: number; outstationCharge: number; freeAboveAmt: number; karnatakFree: boolean; note: string; karnatakaSlabs: KarnatakaSlab[] };
+type DeliverySlab = { maxGrams: number; charge: number };
+type DeliverySettings = {
+  baseCharge: number; outstationCharge: number; freeAboveAmt: number;
+  karnatakFree: boolean; note: string;
+  karnatakaSlabs: DeliverySlab[];
+  southIndiaSlabs: DeliverySlab[];
+  northIndiaSlabs: DeliverySlab[];
+};
+
+const SOUTH_INDIA_STATES = [
+  'tamil nadu', 'kerala', 'andhra pradesh', 'telangana',
+  'goa', 'puducherry', 'pondicherry', 'lakshadweep',
+  'andaman and nicobar islands', 'andaman & nicobar',
+];
 
 export default function CartPage() {
   const router = useRouter();
@@ -24,7 +36,7 @@ export default function CartPage() {
   const [pincodeLoading, setPincodeLoading] = useState(false);
   const [pincodeState, setPincodeState] = useState('');
   const [pincodeError, setPincodeError] = useState('');
-  const [deliveryZone, setDeliveryZone] = useState<'karnataka' | 'india' | 'international'>('india');
+  const [deliveryZone, setDeliveryZone] = useState<'karnataka' | 'south-india' | 'north-india' | 'international'>('north-india');
   const [pincodeRequired, setPincodeRequired] = useState(false);
   const [confirmClearAll, setConfirmClearAll] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState<{ productId: string; packSize: string } | null>(null);
@@ -50,7 +62,7 @@ export default function CartPage() {
     if (pin.length !== 6) {
       setPincodeState('');
       setPincodeError('');
-      setDeliveryZone('india');
+      setDeliveryZone('north-india');
       return;
     }
 
@@ -66,8 +78,11 @@ export default function CartPage() {
       .then(data => {
         if (Array.isArray(data) && data[0]?.Status === 'Success' && data[0].PostOffice?.length > 0) {
           const state: string = data[0].PostOffice[0].State || '';
-          setPincodeState(state || 'India');
-          setDeliveryZone(state.toLowerCase().includes('karnataka') ? 'karnataka' : 'india');
+          setPincodeState(state);
+          const sl = state.toLowerCase();
+          if (sl.includes('karnataka')) setDeliveryZone('karnataka');
+          else if (SOUTH_INDIA_STATES.some(s => sl.includes(s))) setDeliveryZone('south-india');
+          else setDeliveryZone('north-india');
           setPincodeError('');
         } else {
           setPincodeError('Invalid pincode — please check and retry.');
@@ -75,11 +90,11 @@ export default function CartPage() {
         }
       })
       .catch(() => {
-        // API unreachable — fall back to Karnataka range check
+        // Fallback: Karnataka range check, else north-india
         const n = parseInt(pin, 10);
         const isKarnataka = n >= 560001 && n <= 591999;
-        setPincodeState(isKarnataka ? 'Karnataka' : 'India');
-        setDeliveryZone(isKarnataka ? 'karnataka' : 'india');
+        setPincodeState(isKarnataka ? 'Karnataka' : '');
+        setDeliveryZone(isKarnataka ? 'karnataka' : 'north-india');
         setPincodeError('');
       })
       .finally(() => setPincodeLoading(false));
@@ -100,34 +115,31 @@ export default function CartPage() {
     if (deliveryZone === 'international') return 0;
     if (!pincodeState) return 0;
 
-    if (deliveryZone === 'karnataka') {
-      const slabs: KarnatakaSlab[] = delivery.karnatakaSlabs?.length
-        ? [...delivery.karnatakaSlabs].sort((a, b) => a.maxGrams - b.maxGrams)
-        : [];
-
-      // Calculate total grams — 1kg packs are FREE (excluded)
-      const totalGrams = cart.reduce((sum, item) => {
-        const kg = parseKg(item.packSize);
-        if (kg >= 1) return sum; // 1kg+ packs are free
-        return sum + Math.round(kg * 1000) * item.count;
-      }, 0);
-
-      // Sample packs: each sample = 50g per product
-      const sampleGrams = sampleItems.reduce((sum, i) => sum + 50 * i.count * i.qty, 0);
-      const chargeable = totalGrams + sampleGrams;
-
-      if (chargeable === 0) return 0;
-      if (!slabs.length) return delivery.baseCharge; // fallback
-
-      // Find matching slab
-      const slab = slabs.find(s => chargeable <= s.maxGrams) ?? slabs[slabs.length - 1];
-      return slab.charge;
+    // Helper: weight-based slab lookup
+    function slabCharge(slabs: DeliverySlab[], grams: number, fallback: number): number {
+      if (!slabs?.length) return fallback;
+      const sorted = [...slabs].sort((a, b) => a.maxGrams - b.maxGrams);
+      return (sorted.find(s => grams <= s.maxGrams) ?? sorted[sorted.length - 1]).charge;
     }
 
-    // Outside Karnataka: per-pack charge
-    const totalPacks = cart.reduce((sum, item) => sum + item.count, 0);
-    const samplePackCount = sampleItems.reduce((sum, i) => sum + i.qty, 0);
-    return (totalPacks + samplePackCount) * (delivery.outstationCharge ?? 120);
+    // Total chargeable grams: 1kg+ packs FREE, samples = 50g each
+    const chargeableGrams = cart.reduce((sum, item) => {
+      const kg = parseKg(item.packSize);
+      return kg >= 1 ? sum : sum + Math.round(kg * 1000) * item.count;
+    }, 0) + sampleItems.reduce((sum, i) => sum + 50 * i.count * i.qty, 0);
+
+    if (deliveryZone === 'karnataka') {
+      if (chargeableGrams === 0) return 0;
+      return slabCharge(delivery.karnatakaSlabs, chargeableGrams, delivery.baseCharge);
+    }
+    if (deliveryZone === 'south-india') {
+      return slabCharge(delivery.southIndiaSlabs, chargeableGrams, delivery.outstationCharge);
+    }
+    if (deliveryZone === 'north-india') {
+      return slabCharge(delivery.northIndiaSlabs, chargeableGrams, delivery.outstationCharge);
+    }
+    // international: no fixed charge
+    return 0;
   }, [delivery, deliveryZone, pincodeState, cart, sampleItems]);
 
   const grandTotal = cartTotal + sampleTotal + deliveryCharge;
@@ -396,7 +408,9 @@ export default function CartPage() {
                                 {pincodeState}
                               </p>
                               <p className="text-xs" style={{ color: deliveryZone === 'karnataka' ? '#5A7A3A99' : '#B8732399' }}>
-                                {deliveryZone === 'karnataka' ? 'Karnataka · Free delivery on 1kg packs' : `Outside Karnataka · ₹${delivery?.outstationCharge ?? 120} per pack`}
+                                {deliveryZone === 'karnataka' ? 'Karnataka · Free delivery on 1kg packs' :
+                                 deliveryZone === 'south-india' ? 'South India · Weight-based delivery' :
+                                 'North India · Weight-based delivery'}
                               </p>
                             </div>
                           </div>
@@ -458,7 +472,7 @@ export default function CartPage() {
                   <div
                     onClick={() => {
                       if (deliveryZone === 'international') {
-                        setDeliveryZone('india');
+                        setDeliveryZone('north-india');
                         setPincodeState('');
                         setPincodeError('');
                       } else {

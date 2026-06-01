@@ -257,6 +257,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 
   const productPrices = priceMap[product.id] || product.prices || {};
   const mrpMap: Record<string, number> = product.mrp || {};
+  const stockMap: Record<string, number> = product.stock || {};
   const parseSz = (s: string) => parseFloat(s) * (s.includes('kg') ? 1000 : 1);
   const sizeEntries = Object.entries(productPrices).sort(([a], [b]) => parseSz(a) - parseSz(b));
   const images = product.images ?? [];
@@ -385,24 +386,42 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 {sizeEntries.map(([size, price], i) => {
                   const count = getCount(size);
                   const isBest = i === sizeEntries.length - 1 && sizeEntries.length > 1;
+                  const stockQty = stockMap[size];
+                  const outOfStock = stockQty === 0;
+                  const unlimited = stockQty === undefined || stockQty === null;
+                  const maxQty = unlimited ? 10 : Math.min(10, stockQty);
+                  const lowStock = !unlimited && !outOfStock && stockQty <= 5;
                   return (
                     <div key={size}
                       className="flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-200"
                       style={{
-                        background: count > 0 ? 'rgba(212,148,42,0.07)' : 'rgba(255,255,255,0.03)',
-                        border: `1.5px solid ${count > 0 ? 'rgba(212,148,42,0.35)' : 'rgba(255,255,255,0.07)'}`,
+                        background: outOfStock ? 'rgba(255,255,255,0.02)' : count > 0 ? 'rgba(212,148,42,0.07)' : 'rgba(255,255,255,0.03)',
+                        border: `1.5px solid ${outOfStock ? 'rgba(255,255,255,0.04)' : count > 0 ? 'rgba(212,148,42,0.35)' : 'rgba(255,255,255,0.07)'}`,
                         boxShadow: count > 0 ? '0 4px 20px rgba(212,148,42,0.07)' : 'none',
+                        opacity: outOfStock ? 0.55 : 1,
                       }}>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
+                        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                           <span className="font-display text-base font-bold"
-                            style={{ color: count > 0 ? '#D4942A' : 'rgba(235,225,200,0.85)' }}>
+                            style={{ color: outOfStock ? 'rgba(235,225,200,0.35)' : count > 0 ? '#D4942A' : 'rgba(235,225,200,0.85)' }}>
                             {size}
                           </span>
-                          {isBest && (
+                          {isBest && !outOfStock && (
                             <span className="text-[0.58rem] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
                               style={{ background: 'linear-gradient(135deg,#D4942A,#B87323)', color: '#1A2A14' }}>
                               Best Value
+                            </span>
+                          )}
+                          {outOfStock && (
+                            <span className="text-[0.58rem] font-bold px-2 py-0.5 rounded-full"
+                              style={{ background: 'rgba(239,68,68,0.12)', color: 'rgba(239,68,68,0.7)' }}>
+                              Out of stock
+                            </span>
+                          )}
+                          {lowStock && (
+                            <span className="text-[0.58rem] font-bold px-2 py-0.5 rounded-full"
+                              style={{ background: 'rgba(251,191,36,0.12)', color: 'rgba(251,191,36,0.8)' }}>
+                              Only {stockQty} left
                             </span>
                           )}
                         </div>
@@ -425,7 +444,9 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                         </div>
                       </div>
 
-                      {count === 0 ? (
+                      {outOfStock ? (
+                        <span className="text-xs font-semibold flex-shrink-0" style={{ color: 'rgba(239,68,68,0.5)' }}>—</span>
+                      ) : count === 0 ? (
                         <button
                           onClick={() => { trackEvent('add_to_cart', { productId: product.id, packSize: size }); setCount(product.id, size, 1); }}
                           className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm tracking-wide transition-all active:scale-95 flex-shrink-0"
@@ -442,8 +463,8 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                             className="w-11 h-11 flex items-center justify-center text-xl font-bold active:scale-90"
                             style={{ color: '#D4942A' }}>−</button>
                           <span className="font-display text-lg font-bold w-8 text-center" style={{ color: '#D4942A' }}>{count}</span>
-                          <button onClick={() => setCount(product.id, size, Math.min(10, count + 1))}
-                            disabled={count >= 10}
+                          <button onClick={() => setCount(product.id, size, Math.min(maxQty, count + 1))}
+                            disabled={count >= maxQty}
                             className="w-11 h-11 flex items-center justify-center text-xl font-bold active:scale-90 disabled:opacity-30"
                             style={{ color: '#D4942A' }}>+</button>
                         </div>

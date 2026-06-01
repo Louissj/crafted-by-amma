@@ -14,6 +14,7 @@ export type DbProduct = {
   usage: UsageStep[];
   prices: Record<string, number>;
   mrp: Record<string, number>;
+  stock: Record<string, number>;
   images: string[];
   active: boolean;
   sortOrder: number;

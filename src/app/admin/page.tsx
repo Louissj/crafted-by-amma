@@ -16,8 +16,14 @@ type Order = {
 };
 
 type Offer = { id: string; icon: string; text: string; active: boolean; sortOrder: number };
-type KarnatakaSlab = { maxGrams: number; charge: number };
-type DeliverySettings = { id: string; baseCharge: number; outstationCharge: number; freeAboveAmt: number; karnatakFree: boolean; note: string; karnatakaSlabs: KarnatakaSlab[] };
+type DeliverySlab = { maxGrams: number; charge: number };
+type DeliverySettings = {
+  id: string; baseCharge: number; outstationCharge: number; freeAboveAmt: number;
+  karnatakFree: boolean; note: string;
+  karnatakaSlabs: DeliverySlab[];
+  southIndiaSlabs: DeliverySlab[];
+  northIndiaSlabs: DeliverySlab[];
+};
 type AdminReview = { id: string; name: string; place: string; rating: number; text: string; approved: boolean; createdAt: string };
 type Tab = 'orders' | 'offers' | 'delivery' | 'products' | 'analytics' | 'reviews' | 'samples';
 type SampleOption = { key: string; label: string; count: number; price: number; mrp?: number };
@@ -29,6 +35,7 @@ type DbProduct = {
   usage: { type: string; instructions: string }[];
   prices: Record<string, number>;
   mrp: Record<string, number>;
+  stock: Record<string, number>;
   images: string[];
   active: boolean; sortOrder: number;
 };
@@ -89,6 +96,12 @@ export default function AdminDashboard() {
   const [products, setProducts] = useState<DbProduct[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
   const [editingProduct, setEditingProduct] = useState<DbProduct | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [addingSaving, setAddingSaving] = useState(false);
+  const [newProduct, setNewProduct] = useState({
+    id: '', name: '', shortName: '', badge: '', description: '', ingredients: '',
+    prices: { '250g': 0 } as Record<string, number>,
+  });
 
   // Sample packs state
   const [samplePack, setSamplePack] = useState<SamplePackData | null>(null);
@@ -371,13 +384,47 @@ export default function AdminDashboard() {
         name: editingProduct.name, shortName: editingProduct.shortName,
         badge: editingProduct.badge, description: editingProduct.description,
         ingredients: editingProduct.ingredients, usage: editingProduct.usage,
-        prices: editingProduct.prices, mrp: editingProduct.mrp, active: editingProduct.active,
+        prices: editingProduct.prices, mrp: editingProduct.mrp, stock: editingProduct.stock, active: editingProduct.active,
       }),
     });
     await fetchProducts();
     setProductSaving(false);
     setEditingProduct(null);
     showToast('Product saved successfully!');
+  };
+
+  const createProduct = async () => {
+    if (!newProduct.id || !newProduct.name) return;
+    setAddingSaving(true);
+    const res = await fetch('/api/products', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: newProduct.id.toLowerCase().replace(/\s+/g, '-'),
+        name: newProduct.name, shortName: newProduct.shortName || newProduct.name,
+        badge: newProduct.badge, description: newProduct.description,
+        ingredients: newProduct.ingredients, usage: [], prices: newProduct.prices,
+        sortOrder: 99,
+      }),
+    });
+    if (res.ok) {
+      await fetchProducts();
+      setShowAddForm(false);
+      setNewProduct({ id: '', name: '', shortName: '', badge: '', description: '', ingredients: '', prices: { '250g': 0 } });
+      showToast('Product created!');
+    } else {
+      const err = await res.json();
+      showToast(err.error || 'Failed to create product');
+    }
+    setAddingSaving(false);
+  };
+
+  const toggleProductActive = async (id: string, active: boolean) => {
+    await fetch(`/api/products/${id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ active }),
+    });
+    await fetchProducts();
+    showToast(active ? 'Product is now Live' : 'Product hidden from website');
   };
 
   const uploadProductImage = async (file: File) => {
@@ -410,6 +457,12 @@ export default function AdminDashboard() {
     if (!editingProduct) return;
     const num = parseFloat(value);
     setEditingProduct(prev => prev ? { ...prev, mrp: { ...(prev.mrp || {}), [packSize]: isNaN(num) ? 0 : num } } : prev);
+  };
+
+  const updateStock = (packSize: string, value: string) => {
+    if (!editingProduct) return;
+    const num = parseInt(value);
+    setEditingProduct(prev => prev ? { ...prev, stock: { ...(prev.stock || {}), [packSize]: isNaN(num) ? 0 : num } } : prev);
   };
 
   const addPackSize = () => {
@@ -1438,6 +1491,80 @@ export default function AdminDashboard() {
             </p>
           </div>
 
+          {/* South India slabs */}
+          {(['southIndiaSlabs', 'northIndiaSlabs'] as const).map(key => (
+            <div key={key} className="mt-4 rounded-2xl p-5 border border-white/[.07]"
+              style={{ background: 'rgba(15,24,10,0.8)' }}>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-sm font-bold text-white">
+                    {key === 'southIndiaSlabs' ? '🌴 South India' : '🏔 North India'} Shipping Slabs
+                  </p>
+                  <p className="text-xs text-white/30 mt-0.5">
+                    {key === 'southIndiaSlabs'
+                      ? 'TN, Kerala, AP, Telangana, Goa'
+                      : 'All other Indian states'}
+                  </p>
+                </div>
+                <button onClick={() => setDelivery(prev => {
+                  if (!prev) return prev;
+                  const slabs = prev[key] || [];
+                  return { ...prev, [key]: [...slabs, {
+                    maxGrams: (slabs.at(-1)?.maxGrams ?? 3000) + 500,
+                    charge: (slabs.at(-1)?.charge ?? 600) + 100,
+                  }]};
+                })}
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+                  style={{ background: 'rgba(212,148,42,0.10)', border: '1px dashed rgba(212,148,42,0.30)', color: 'rgba(212,148,42,0.75)' }}>
+                  + Add slab
+                </button>
+              </div>
+              <div className="grid grid-cols-[1fr_1fr_40px] gap-2 px-2 mb-2">
+                <span className="text-[0.58rem] font-bold uppercase tracking-widest text-white/25">Up to (grams)</span>
+                <span className="text-[0.58rem] font-bold uppercase tracking-widest text-white/25">Charge ₹</span>
+                <span />
+              </div>
+              <div className="space-y-2">
+                {(delivery[key] || []).map((slab, idx) => (
+                  <div key={idx} className="grid grid-cols-[1fr_1fr_40px] gap-2 items-center">
+                    <div className="relative">
+                      <input type="number" min={1} value={slab.maxGrams}
+                        onChange={e => setDelivery(prev => {
+                          if (!prev) return prev;
+                          const slabs = [...(prev[key] || [])];
+                          slabs[idx] = { ...slabs[idx], maxGrams: parseInt(e.target.value) || 0 };
+                          return { ...prev, [key]: slabs };
+                        })}
+                        className="w-full px-3 py-2 rounded-xl text-sm text-white/80 outline-none border border-white/[.08]"
+                        style={{ background: 'rgba(255,255,255,0.05)' }} />
+                      <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[0.6rem] text-white/25">g</span>
+                    </div>
+                    <div className="relative">
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-white/30">₹</span>
+                      <input type="number" min={0} value={slab.charge}
+                        onChange={e => setDelivery(prev => {
+                          if (!prev) return prev;
+                          const slabs = [...(prev[key] || [])];
+                          slabs[idx] = { ...slabs[idx], charge: parseFloat(e.target.value) || 0 };
+                          return { ...prev, [key]: slabs };
+                        })}
+                        className="w-full pl-6 pr-3 py-2 rounded-xl text-sm text-white/80 outline-none border border-white/[.08]"
+                        style={{ background: 'rgba(255,255,255,0.05)' }} />
+                    </div>
+                    <button onClick={() => setDelivery(prev => prev ? {
+                      ...prev, [key]: (prev[key] || []).filter((_, i) => i !== idx)
+                    } : prev)}
+                      disabled={(delivery[key] || []).length <= 1}
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all disabled:opacity-20"
+                      style={{ background: 'rgba(239,68,68,0.08)', color: 'rgba(239,68,68,0.5)' }}>
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+
           <div className="mt-4 p-4 rounded-xl border border-white/[.06]" style={{ background: 'rgba(255,255,255,0.03)' }}>
             <p className="text-sm font-bold uppercase tracking-[2px] mb-2" style={{ color: 'rgba(200,180,74,0.4)' }}>Live Preview</p>
             <p className="text-sm text-white/70">Delivery: <strong style={{ color: '#C8B44A' }}>₹{delivery.baseCharge}</strong></p>
@@ -1454,7 +1581,97 @@ export default function AdminDashboard() {
               <h2 className="font-display text-xl font-bold text-white">Products</h2>
               <p className="text-sm text-white/30 mt-0.5">Edit product details, prices, and images.</p>
             </div>
+            <button onClick={() => setShowAddForm(v => !v)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95"
+              style={{ background: 'linear-gradient(135deg,#5A7A3A,#4a6830)', color: '#F5F0E0', boxShadow: '0 4px 16px rgba(90,122,58,0.25)' }}>
+              + Add Product
+            </button>
           </div>
+
+          {/* Add Product Form */}
+          {showAddForm && (
+            <div className="mb-6 rounded-2xl p-5 border border-white/[.10]"
+              style={{ background: 'rgba(15,24,10,0.9)', boxShadow: '0 8px 30px rgba(0,0,0,0.4)' }}>
+              <h3 className="font-display text-base font-bold text-white mb-4">New Product</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                {[
+                  { label: 'Product ID', key: 'id', placeholder: 'e.g. ragi-malt-powder' },
+                  { label: 'Full Name', key: 'name', placeholder: 'e.g. Homemade Ragi Malt Powder' },
+                  { label: 'Short Name', key: 'shortName', placeholder: 'e.g. Ragi Malt' },
+                  { label: 'Badge (optional)', key: 'badge', placeholder: 'e.g. New, Bestseller' },
+                ].map(f => (
+                  <div key={f.key}>
+                    <label className="text-[0.6rem] font-bold uppercase tracking-widest text-white/30 mb-1 block">{f.label}</label>
+                    <input value={newProduct[f.key as keyof typeof newProduct] as string}
+                      onChange={e => setNewProduct(p => ({ ...p, [f.key]: e.target.value }))}
+                      placeholder={f.placeholder}
+                      className="w-full px-3 py-2.5 rounded-xl text-sm text-white/80 outline-none border border-white/[.08] placeholder:text-white/20"
+                      style={{ background: 'rgba(255,255,255,0.05)' }} />
+                  </div>
+                ))}
+              </div>
+              <div className="mb-3">
+                <label className="text-[0.6rem] font-bold uppercase tracking-widest text-white/30 mb-1 block">Description</label>
+                <textarea value={newProduct.description}
+                  onChange={e => setNewProduct(p => ({ ...p, description: e.target.value }))}
+                  rows={2} placeholder="Short product description…"
+                  className="w-full px-3 py-2.5 rounded-xl text-sm text-white/80 outline-none border border-white/[.08] placeholder:text-white/20 resize-none"
+                  style={{ background: 'rgba(255,255,255,0.05)' }} />
+              </div>
+              <div className="mb-3">
+                <label className="text-[0.6rem] font-bold uppercase tracking-widest text-white/30 mb-1 block">Ingredients</label>
+                <textarea value={newProduct.ingredients}
+                  onChange={e => setNewProduct(p => ({ ...p, ingredients: e.target.value }))}
+                  rows={2} placeholder="List of ingredients…"
+                  className="w-full px-3 py-2.5 rounded-xl text-sm text-white/80 outline-none border border-white/[.08] placeholder:text-white/20 resize-none"
+                  style={{ background: 'rgba(255,255,255,0.05)' }} />
+              </div>
+              {/* Prices */}
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-[0.6rem] font-bold uppercase tracking-widest text-white/30">Pack Sizes & Prices</label>
+                  <button onClick={() => setNewProduct(p => ({ ...p, prices: { ...p.prices, '': 0 } }))}
+                    className="text-xs font-bold px-2 py-1 rounded-lg"
+                    style={{ background: 'rgba(212,148,42,0.10)', color: 'rgba(212,148,42,0.7)' }}>+ Add size</button>
+                </div>
+                <div className="space-y-2">
+                  {Object.entries(newProduct.prices).map(([size, price], idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <input value={size} placeholder="Size (e.g. 250g)"
+                        onChange={e => {
+                          const updated = Object.fromEntries(Object.entries(newProduct.prices).map(([k, v], i) => [i === idx ? e.target.value : k, v]));
+                          setNewProduct(p => ({ ...p, prices: updated }));
+                        }}
+                        className="flex-1 px-3 py-2 rounded-xl text-sm text-white/80 outline-none border border-white/[.08]"
+                        style={{ background: 'rgba(255,255,255,0.05)' }} />
+                      <div className="flex-1 relative">
+                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-white/30">₹</span>
+                        <input type="number" value={price}
+                          onChange={e => {
+                            const updated = { ...newProduct.prices, [size]: parseFloat(e.target.value) || 0 };
+                            setNewProduct(p => ({ ...p, prices: updated }));
+                          }}
+                          className="w-full pl-6 pr-3 py-2 rounded-xl text-sm text-white/80 outline-none border border-white/[.08]"
+                          style={{ background: 'rgba(255,255,255,0.05)' }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <button onClick={createProduct} disabled={addingSaving || !newProduct.id || !newProduct.name}
+                  className="flex-1 py-3 rounded-xl font-bold text-sm transition-all disabled:opacity-40"
+                  style={{ background: 'linear-gradient(135deg,#5A7A3A,#4a6830)', color: '#F5F0E0' }}>
+                  {addingSaving ? 'Creating…' : 'Create Product'}
+                </button>
+                <button onClick={() => setShowAddForm(false)}
+                  className="px-5 py-3 rounded-xl font-bold text-sm text-white/40 hover:text-white/70 transition-all"
+                  style={{ background: 'rgba(255,255,255,0.05)' }}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
 
           {productsLoading && (
             <div className="flex items-center justify-center py-20">
@@ -1523,11 +1740,20 @@ export default function AdminDashboard() {
                     ))}
                   </div>
 
-                  <button onClick={() => setEditingProduct({ ...product })}
-                    className="w-full py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-[.98]"
-                    style={{ background: 'linear-gradient(135deg,#C8B44A,#D4942A)', color: '#0D1A09' }}>
-                    Edit Product →
-                  </button>
+                  <div className="flex gap-2">
+                    <button onClick={() => setEditingProduct({ ...product })}
+                      className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90 active:scale-[.98]"
+                      style={{ background: 'linear-gradient(135deg,#C8B44A,#D4942A)', color: '#0D1A09' }}>
+                      Edit →
+                    </button>
+                    <button onClick={() => toggleProductActive(product.id, !product.active)}
+                      className="px-4 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95"
+                      style={product.active
+                        ? { background: 'rgba(16,185,129,0.12)', color: '#34D399', border: '1px solid rgba(16,185,129,0.25)' }
+                        : { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                      {product.active ? '● Live' : '○ Hidden'}
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -2215,36 +2441,52 @@ export default function AdminDashboard() {
                     <label className="text-[.57rem] font-bold uppercase tracking-[2.5px]" style={{ color: 'rgba(200,180,74,0.45)' }}>Prices</label>
                     <button onClick={addPackSize} className="text-sm font-bold text-brass hover:underline">+ Add size</button>
                   </div>
-                  <div className="grid grid-cols-3 gap-1 mb-1.5">
-                    <span className="text-[0.55rem] uppercase tracking-widest text-white/25 pl-14">Size</span>
+                  <div className="grid grid-cols-[48px_1fr_1fr_1fr_32px] gap-1.5 mb-1.5 px-1">
+                    <span className="text-[0.55rem] uppercase tracking-widest text-white/25">Size</span>
                     <span className="text-[0.55rem] uppercase tracking-widest text-white/25">Selling ₹</span>
-                    <span className="text-[0.55rem] uppercase tracking-widest text-white/25">MRP ₹ (optional)</span>
+                    <span className="text-[0.55rem] uppercase tracking-widest text-white/25">MRP ₹</span>
+                    <span className="text-[0.55rem] uppercase tracking-widest text-white/25">Stock</span>
+                    <span />
                   </div>
                   <div className="space-y-2">
-                    {Object.entries(editingProduct.prices).map(([size, price]) => (
-                      <div key={size} className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-white/60 w-12 flex-shrink-0">{size}</span>
-                        <div className="flex-1 relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-white/30">₹</span>
+                    {Object.entries(editingProduct.prices).map(([size, price]) => {
+                      const stockVal = (editingProduct.stock || {})[size];
+                      const isOutOfStock = stockVal === 0;
+                      return (
+                      <div key={size} className="grid grid-cols-[48px_1fr_1fr_1fr_32px] gap-1.5 items-center">
+                        <span className="text-xs font-bold text-white/60 truncate">{size}</span>
+                        <div className="relative">
+                          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-white/30">₹</span>
                           <input type="number" value={price} onChange={e => updatePrice(size, e.target.value)}
-                            className="w-full pl-7 pr-3 py-2 border-[1.5px] border-white/[.08] rounded-xl text-sm outline-none transition-all text-white/80"
+                            className="w-full pl-6 pr-2 py-2 border-[1.5px] border-white/[.08] rounded-xl text-sm outline-none text-white/80"
                             style={{ background: 'rgba(255,255,255,0.05)' }} />
                         </div>
-                        <div className="flex-1 relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-white/20">₹</span>
-                          <input type="number" placeholder="MRP"
+                        <div className="relative">
+                          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-white/20">₹</span>
+                          <input type="number" placeholder="—"
                             value={(editingProduct.mrp || {})[size] || ''}
                             onChange={e => updateMrp(size, e.target.value)}
-                            className="w-full pl-7 pr-3 py-2 border-[1.5px] border-white/[.06] rounded-xl text-sm outline-none transition-all text-white/50"
+                            className="w-full pl-6 pr-2 py-2 border-[1.5px] border-white/[.06] rounded-xl text-sm outline-none text-white/50"
                             style={{ background: 'rgba(255,255,255,0.03)' }} />
                         </div>
+                        <div className="relative">
+                          <input type="number" min={0} placeholder="∞"
+                            value={stockVal ?? ''}
+                            onChange={e => updateStock(size, e.target.value)}
+                            className="w-full px-2 py-2 border-[1.5px] rounded-xl text-sm outline-none text-center"
+                            style={{
+                              background: isOutOfStock ? 'rgba(239,68,68,0.08)' : 'rgba(255,255,255,0.03)',
+                              borderColor: isOutOfStock ? 'rgba(239,68,68,0.25)' : 'rgba(255,255,255,0.06)',
+                              color: isOutOfStock ? 'rgba(239,68,68,0.7)' : 'rgba(255,255,255,0.50)',
+                            }} />
+                        </div>
                         <button onClick={() => removePackSize(size)}
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-sm text-red-400/40 hover:text-red-400 transition-all flex-shrink-0"
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-sm text-red-400/40 hover:text-red-400 transition-all"
                           style={{ background: 'rgba(239,68,68,0.06)' }}>
                           ✕
                         </button>
                       </div>
-                    ))}
+                    );})}
                   </div>
                 </div>
 

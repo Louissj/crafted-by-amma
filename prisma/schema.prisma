@@ -58,6 +58,8 @@ model DeliverySettings {
   karnatakFree     Boolean  @default(true)
   note             String   @default("Free delivery in Karnataka for orders \u20b9350+")
   karnatakaSlabs   Json     @default("[]") // [{ maxGrams: 500, charge: 40 }, ...]
+  southIndiaSlabs  Json     @default("[]") // weight-based slabs for South India
+  northIndiaSlabs  Json     @default("[]") // weight-based slabs for North India
   updatedAt        DateTime @updatedAt
 }
 
@@ -100,6 +102,7 @@ model Product {
   usage       Json     // [{ type: string, instructions: string }]
   prices      Json     // { "250g": 110, "500g": 190, ... }
   mrp         Json     @default("{}") // { "250g": 150, "500g": 250, ... } — optional MRP per size
+  stock       Json     @default("{}") // { "250g": 50, "500g": 20 } — null/missing = unlimited
   images      Json     @default("[]") // ["/images/..."]
   active      Boolean  @default(true)
   sortOrder   Int      @default(0)
