@@ -58,19 +58,29 @@ export default function CartPage() {
     setPincodeError('');
 
     fetch(`/api/pincode/${pin}`)
-      .then(r => r.json())
+      .then(async r => {
+        if (!r.ok) throw new Error('api_error');
+        return r.json();
+      })
       .then(data => {
-        if (data?.[0]?.Status === 'Success' && data[0].PostOffice?.length > 0) {
+        if (Array.isArray(data) && data[0]?.Status === 'Success' && data[0].PostOffice?.length > 0) {
           const state: string = data[0].PostOffice[0].State || '';
-          setPincodeState(state);
+          setPincodeState(state || 'India');
           setDeliveryZone(state.toLowerCase().includes('karnataka') ? 'karnataka' : 'india');
           setPincodeError('');
         } else {
-          setPincodeError('Pincode not found. Please check and retry.');
+          setPincodeError('Invalid pincode — please check and retry.');
           setPincodeState('');
         }
       })
-      .catch(() => setPincodeError('Could not verify pincode. Please try again.'))
+      .catch(() => {
+        // API unreachable — fall back to Karnataka range check
+        const n = parseInt(pin, 10);
+        const isKarnataka = n >= 560001 && n <= 591999;
+        setPincodeState(isKarnataka ? 'Karnataka' : 'India');
+        setDeliveryZone(isKarnataka ? 'karnataka' : 'india');
+        setPincodeError('');
+      })
       .finally(() => setPincodeLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pincode]);
