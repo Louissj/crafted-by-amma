@@ -57,6 +57,7 @@ model DeliverySettings {
   freeAboveAmt     Float    @default(350)
   karnatakFree     Boolean  @default(true)
   note             String   @default("Free delivery in Karnataka for orders \u20b9350+")
+  karnatakaSlabs   Json     @default("[]") // [{ maxGrams: 500, charge: 40 }, ...]
   updatedAt        DateTime @updatedAt
 }
 

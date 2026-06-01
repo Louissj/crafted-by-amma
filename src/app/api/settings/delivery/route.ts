@@ -36,6 +36,11 @@ export async function PUT(req: NextRequest) {
     if (typeof body.freeAboveAmt === 'number' && body.freeAboveAmt >= 0) data.freeAboveAmt = body.freeAboveAmt;
     if (typeof body.karnatakFree === 'boolean') data.karnatakFree = body.karnatakFree;
     if (typeof body.note === 'string') data.note = sanitize(body.note).slice(0, 500);
+    if (Array.isArray(body.karnatakaSlabs)) {
+      data.karnatakaSlabs = body.karnatakaSlabs
+        .filter((s: { maxGrams: number; charge: number }) => typeof s.maxGrams === 'number' && typeof s.charge === 'number')
+        .sort((a: { maxGrams: number }, b: { maxGrams: number }) => a.maxGrams - b.maxGrams);
+    }
 
     const s = await prisma.deliverySettings.upsert({
       where: { id: ID },

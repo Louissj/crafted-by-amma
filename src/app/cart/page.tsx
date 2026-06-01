@@ -10,7 +10,8 @@ import { useSampleCart } from '@/lib/useSampleCart';
 import { PRODUCTS } from '@/lib/constants';
 import { trackEvent } from '@/lib/analytics';
 
-type DeliverySettings = { baseCharge: number; outstationCharge: number; freeAboveAmt: number; karnatakFree: boolean; note: string };
+type KarnatakaSlab = { maxGrams: number; charge: number };
+type DeliverySettings = { baseCharge: number; outstationCharge: number; freeAboveAmt: number; karnatakFree: boolean; note: string; karnatakaSlabs: KarnatakaSlab[] };
 
 export default function CartPage() {
   const router = useRouter();
@@ -99,18 +100,33 @@ export default function CartPage() {
     if (deliveryZone === 'international') return 0;
     if (!pincodeState) return 0;
 
-    // Sample packs are always chargeable — each sample is 50g, never qualifies as free
-    const samplePackCount = sampleItems.reduce((sum, i) => sum + i.qty, 0);
-
     if (deliveryZone === 'karnataka') {
-      // Regular cart: 1kg packs are free; all other sizes charged per pack
-      const chargeablePacks = cart
-        .filter(item => parseKg(item.packSize) < 1)
-        .reduce((sum, item) => sum + item.count, 0);
-      return (chargeablePacks + samplePackCount) * delivery.baseCharge;
+      const slabs: KarnatakaSlab[] = delivery.karnatakaSlabs?.length
+        ? [...delivery.karnatakaSlabs].sort((a, b) => a.maxGrams - b.maxGrams)
+        : [];
+
+      // Calculate total grams — 1kg packs are FREE (excluded)
+      const totalGrams = cart.reduce((sum, item) => {
+        const kg = parseKg(item.packSize);
+        if (kg >= 1) return sum; // 1kg+ packs are free
+        return sum + Math.round(kg * 1000) * item.count;
+      }, 0);
+
+      // Sample packs: each sample = 50g per product
+      const sampleGrams = sampleItems.reduce((sum, i) => sum + 50 * i.count * i.qty, 0);
+      const chargeable = totalGrams + sampleGrams;
+
+      if (chargeable === 0) return 0;
+      if (!slabs.length) return delivery.baseCharge; // fallback
+
+      // Find matching slab
+      const slab = slabs.find(s => chargeable <= s.maxGrams) ?? slabs[slabs.length - 1];
+      return slab.charge;
     }
-    // Outside Karnataka: all packs charged
+
+    // Outside Karnataka: per-pack charge
     const totalPacks = cart.reduce((sum, item) => sum + item.count, 0);
+    const samplePackCount = sampleItems.reduce((sum, i) => sum + i.qty, 0);
     return (totalPacks + samplePackCount) * (delivery.outstationCharge ?? 120);
   }, [delivery, deliveryZone, pincodeState, cart, sampleItems]);
 

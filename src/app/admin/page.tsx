@@ -16,7 +16,8 @@ type Order = {
 };
 
 type Offer = { id: string; icon: string; text: string; active: boolean; sortOrder: number };
-type DeliverySettings = { id: string; baseCharge: number; outstationCharge: number; freeAboveAmt: number; karnatakFree: boolean; note: string };
+type KarnatakaSlab = { maxGrams: number; charge: number };
+type DeliverySettings = { id: string; baseCharge: number; outstationCharge: number; freeAboveAmt: number; karnatakFree: boolean; note: string; karnatakaSlabs: KarnatakaSlab[] };
 type AdminReview = { id: string; name: string; place: string; rating: number; text: string; approved: boolean; createdAt: string };
 type Tab = 'orders' | 'offers' | 'delivery' | 'products' | 'analytics' | 'reviews' | 'samples';
 type SampleOption = { key: string; label: string; count: number; price: number; mrp?: number };
@@ -1364,6 +1365,77 @@ export default function AdminDashboard() {
               style={{ background: 'linear-gradient(135deg,#C8B44A,#D4942A)', color: '#0D1A09', boxShadow: '0 6px 20px rgba(200,180,74,0.2)' }}>
               {deliverySaving ? 'Saving…' : 'Save Settings'}
             </button>
+          </div>
+
+          {/* Karnataka weight-based slabs */}
+          <div className="mt-6 rounded-2xl p-5 border border-white/[.07]"
+            style={{ background: 'rgba(15,24,10,0.8)' }}>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-sm font-bold text-white">Karnataka Shipping Slabs</p>
+                <p className="text-xs text-white/30 mt-0.5">Weight-based · 1kg packs always free</p>
+              </div>
+              <button onClick={() => setDelivery(prev => prev ? {
+                ...prev,
+                karnatakaSlabs: [...(prev.karnatakaSlabs || []), {
+                  maxGrams: ((prev.karnatakaSlabs || []).at(-1)?.maxGrams ?? 3000) + 500,
+                  charge: ((prev.karnatakaSlabs || []).at(-1)?.charge ?? 260) + 60
+                }]
+              } : prev)}
+                className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+                style={{ background: 'rgba(212,148,42,0.10)', border: '1px dashed rgba(212,148,42,0.30)', color: 'rgba(212,148,42,0.75)' }}>
+                + Add slab
+              </button>
+            </div>
+
+            {/* Header */}
+            <div className="grid grid-cols-[1fr_1fr_40px] gap-2 px-2 mb-2">
+              <span className="text-[0.58rem] font-bold uppercase tracking-widest text-white/25">Up to (grams)</span>
+              <span className="text-[0.58rem] font-bold uppercase tracking-widest text-white/25">Charge ₹</span>
+              <span />
+            </div>
+
+            <div className="space-y-2">
+              {(delivery.karnatakaSlabs || []).map((slab, idx) => (
+                <div key={idx} className="grid grid-cols-[1fr_1fr_40px] gap-2 items-center">
+                  <div className="relative">
+                    <input type="number" min={1} value={slab.maxGrams}
+                      onChange={e => setDelivery(prev => {
+                        if (!prev) return prev;
+                        const slabs = [...prev.karnatakaSlabs];
+                        slabs[idx] = { ...slabs[idx], maxGrams: parseInt(e.target.value) || 0 };
+                        return { ...prev, karnatakaSlabs: slabs };
+                      })}
+                      className="w-full px-3 py-2 rounded-xl text-sm text-white/80 outline-none border border-white/[.08]"
+                      style={{ background: 'rgba(255,255,255,0.05)' }} />
+                    <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[0.6rem] text-white/25">g</span>
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-white/30">₹</span>
+                    <input type="number" min={0} value={slab.charge}
+                      onChange={e => setDelivery(prev => {
+                        if (!prev) return prev;
+                        const slabs = [...prev.karnatakaSlabs];
+                        slabs[idx] = { ...slabs[idx], charge: parseFloat(e.target.value) || 0 };
+                        return { ...prev, karnatakaSlabs: slabs };
+                      })}
+                      className="w-full pl-6 pr-3 py-2 rounded-xl text-sm text-white/80 outline-none border border-white/[.08]"
+                      style={{ background: 'rgba(255,255,255,0.05)' }} />
+                  </div>
+                  <button onClick={() => setDelivery(prev => prev ? {
+                    ...prev, karnatakaSlabs: prev.karnatakaSlabs.filter((_, i) => i !== idx)
+                  } : prev)}
+                    disabled={(delivery.karnatakaSlabs || []).length <= 1}
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all disabled:opacity-20"
+                    style={{ background: 'rgba(239,68,68,0.08)', color: 'rgba(239,68,68,0.5)' }}>
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+            <p className="text-[0.6rem] text-white/20 mt-3">
+              If total weight exceeds the last slab, the last charge applies.
+            </p>
           </div>
 
           <div className="mt-4 p-4 rounded-xl border border-white/[.06]" style={{ background: 'rgba(255,255,255,0.03)' }}>
