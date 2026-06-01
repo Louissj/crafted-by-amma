@@ -43,12 +43,6 @@ export default function CartPage() {
     } catch { /* ignore */ }
   }, []);
 
-  function isKarnatakaPincode(pin: string) {
-    const n = parseInt(pin, 10);
-    // Karnataka pincodes: 560001–591999
-    return n >= 560001 && n <= 591999;
-  }
-
   useEffect(() => {
     if (deliveryZone === 'international') return;
     const pin = pincode.replace(/\D/g, '');
@@ -59,32 +53,24 @@ export default function CartPage() {
       return;
     }
 
-    // Immediately set zone from local range check — no API dependency
-    const isKarnataka = isKarnatakaPincode(pin);
-    setDeliveryZone(isKarnataka ? 'karnataka' : 'india');
-    // Set a fallback state so non-Karnataka users can proceed to checkout
-    setPincodeState(isKarnataka ? 'Karnataka' : 'India');
+    setPincodeLoading(true);
+    setPincodeState('');
     setPincodeError('');
 
-    // API call via server-side proxy (avoids CORS) — updates state name display
-    setPincodeLoading(true);
     fetch(`/api/pincode/${pin}`)
       .then(r => r.json())
       .then(data => {
         if (data?.[0]?.Status === 'Success' && data[0].PostOffice?.length > 0) {
-          const po = data[0].PostOffice[0];
-          const state = po.State || '';
-          if (state) {
-            setPincodeState(state);
-            const isKa = state.toLowerCase().includes('karnataka') || isKarnatakaPincode(pin);
-            setDeliveryZone(isKa ? 'karnataka' : 'india');
-          }
+          const state: string = data[0].PostOffice[0].State || '';
+          setPincodeState(state);
+          setDeliveryZone(state.toLowerCase().includes('karnataka') ? 'karnataka' : 'india');
+          setPincodeError('');
         } else {
           setPincodeError('Pincode not found. Please check and retry.');
           setPincodeState('');
         }
       })
-      .catch(() => { /* silent — local fallback already set */ })
+      .catch(() => setPincodeError('Could not verify pincode. Please try again.'))
       .finally(() => setPincodeLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pincode]);
