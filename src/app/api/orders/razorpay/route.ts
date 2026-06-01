@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import prisma from '@/lib/db';
 import { getClientIP, calculateCartTotal } from '@/lib/security';
+import { calcDeliveryCharge } from '@/lib/delivery';
 import { rateLimitOrder } from '@/lib/rateLimit';
 
 type CartItem = { productId: string; packSize: string; count: number };
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const cartItems: CartItem[] = body.cartItems || [];
-    const deliveryZone: string = body.deliveryZone || 'india';
+    const deliveryZone: string = body.deliveryZone || 'north-india';
 
     const dbProducts = await prisma.product.findMany({ where: { active: true } });
     const validIds = dbProducts.map(p => p.id);
@@ -45,17 +46,7 @@ export async function POST(req: NextRequest) {
     let deliveryCharge = 0;
     try {
       const ds = await prisma.deliverySettings.findUnique({ where: { id: 'singleton' } });
-      if (ds) {
-        if (deliveryZone === 'karnataka') {
-          const chargeablePacks = validItems
-            .filter(i => i.packSize !== '1kg')
-            .reduce((s, i) => s + i.count, 0);
-          deliveryCharge = chargeablePacks * ds.baseCharge;
-        } else if (deliveryZone !== 'international') {
-          const totalPacks = validItems.reduce((s, i) => s + i.count, 0);
-          deliveryCharge = totalPacks * ((ds as typeof ds & { outstationCharge: number }).outstationCharge ?? 120);
-        }
-      }
+      if (ds) deliveryCharge = calcDeliveryCharge(deliveryZone, validItems, ds as unknown as Parameters<typeof calcDeliveryCharge>[2]);
     } catch { /* use 0 */ }
 
     const grandTotal = productSubtotal + deliveryCharge;

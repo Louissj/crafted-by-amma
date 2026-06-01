@@ -5,6 +5,7 @@ import { getClientIP, sanitize, isValidPhone, validateFile, calculateCartTotal }
 import { rateLimitOrder, rateLimitApi } from '@/lib/rateLimit';
 import { uploadToS3 } from '@/lib/s3';
 import { notifyNewOrder } from '@/lib/notify';
+import { calcDeliveryCharge } from '@/lib/delivery';
 
 type CartItem = { productId: string; packSize: string; count: number };
 
@@ -73,21 +74,11 @@ export async function POST(req: NextRequest) {
     const totalCount = cartItems.reduce((s, i) => s + i.count, 0);
     const uniqueSizes = cartItems.map(i => i.packSize).filter((s, idx, arr) => arr.indexOf(s) === idx).join(',');
 
-    // Fetch delivery settings and calculate charge based on zone
+    // Fetch delivery settings and calculate weight-based charge
     let deliveryCharge = 0;
     try {
       const ds = await prisma.deliverySettings.findUnique({ where: { id: 'singleton' } });
-      if (ds) {
-        if (deliveryZone === 'international') {
-          deliveryCharge = 0; // confirmed via WhatsApp after payment
-        } else if (deliveryZone === 'karnataka') {
-          const qualifiesFree = ds.karnatakFree && productSubtotal >= ds.freeAboveAmt;
-          deliveryCharge = qualifiesFree ? 0 : ds.baseCharge;
-        } else {
-          // outstation India
-          deliveryCharge = (ds as typeof ds & { outstationCharge: number }).outstationCharge ?? 120;
-        }
-      }
+      if (ds) deliveryCharge = calcDeliveryCharge(deliveryZone, cartItems, ds as unknown as Parameters<typeof calcDeliveryCharge>[2]);
     } catch { /* use 0 if settings not found */ }
 
     const totalAmount = productSubtotal + deliveryCharge;
