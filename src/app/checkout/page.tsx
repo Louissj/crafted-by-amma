@@ -139,8 +139,9 @@ export default function CheckoutPage() {
     }
 
     const grams = cart.reduce((sum, item) => {
-      const kg = parseKgCo(item.packSize);
-      return kg >= 1 ? sum : sum + Math.round(kg) * item.count;
+      const g = parseKgCo(item.packSize); // returns grams
+      if (deliveryZone === 'karnataka' && g >= 1000) return sum; // 1kg+ free in Karnataka
+      return sum + g * item.count;
     }, 0);
 
     if (deliveryZone === 'karnataka') return grams === 0 ? 0 : slabCharge(delivery.karnatakaSlabs, grams, delivery.baseCharge);

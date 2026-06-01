@@ -457,7 +457,7 @@ export default function CartPage() {
                         <div className="flex items-center justify-between mb-1.5">
                           <div className="flex items-center gap-2">
                             <span className="text-base">🚚</span>
-                            <p className="text-xs font-bold text-forest/80">Delivery: ₹{delivery.baseCharge}/pack</p>
+                            <p className="text-xs font-bold text-forest/80">Delivery charge</p>
                           </div>
                           <span className="text-sm font-bold" style={{ color: '#B87323' }}>₹{deliveryCharge}</span>
                         </div>
@@ -632,7 +632,7 @@ export default function CartPage() {
                         style={{ background: 'rgba(90,122,58,0.08)', border: '1px solid rgba(90,122,58,0.15)' }}>
                         <span className="text-sm">🏷️</span>
                         <span className="text-sm font-bold text-sage">
-                          You save ₹{delivery?.baseCharge ?? 50} — Free delivery applied!
+                          Free delivery on 1kg packs — Karnataka
                         </span>
                       </div>
                     )}
