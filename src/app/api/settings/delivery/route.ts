@@ -11,7 +11,7 @@ const DEFAULTS = {
   outstationCharge: 120,
   freeAboveAmt: 350,
   karnatakFree: true,
-  note: 'Free delivery in Karnataka for orders ₹350+',
+  note: 'Free delivery in Karnataka for orders 1kg packs',
 };
 
 export async function GET() {

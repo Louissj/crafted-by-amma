@@ -66,7 +66,7 @@ async function main() {
       baseCharge: 50,
       freeAboveAmt: 350,
       karnatakFree: true,
-      note: 'Free delivery in Karnataka for orders ₹350+',
+      note: 'Free delivery in Karnataka for orders 1kg packs',
     },
   });
   console.log('✅ Delivery settings ready');

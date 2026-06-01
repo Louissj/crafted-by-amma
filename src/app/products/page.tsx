@@ -54,14 +54,20 @@ export default function ProductsPage() {
             boxShadow: '0 4px 24px rgba(212,148,42,0.07)',
           }}>
           <div className="flex-shrink-0 flex items-center gap-3">
-            {['Pack of 3', 'Pack of 5', 'Pack of 10'].map((label, i) => (
-              <div key={i} className="flex flex-col items-center gap-1 px-4 py-3 rounded-xl"
+            {[
+              { label: 'Pack of 3', key: 'pack-3', sub: 'Choose 3' },
+              { label: 'Pack of 5', key: 'pack-5', sub: 'Choose 5' },
+              { label: 'Pack of 10', key: 'pack-10', sub: 'All 10' },
+            ].map((opt) => (
+              <Link key={opt.key} href={`/samples?pack=${opt.key}`}
+                onClick={e => e.stopPropagation()}
+                className="flex flex-col items-center gap-1 px-4 py-3 rounded-xl no-underline transition-all hover:scale-[1.05] active:scale-95"
                 style={{ background: 'rgba(212,148,42,0.08)', border: '1px solid rgba(212,148,42,0.18)' }}>
-                <span className="font-display text-base font-bold" style={{ color: '#D4942A' }}>{label}</span>
+                <span className="font-display text-base font-bold" style={{ color: '#D4942A' }}>{opt.label}</span>
                 <span className="text-[0.58rem] font-bold uppercase tracking-wider" style={{ color: 'rgba(212,148,42,0.45)' }}>
-                  {i === 0 ? 'Choose 3' : i === 1 ? 'Choose 5' : 'All 10'}
+                  {opt.sub}
                 </span>
-              </div>
+              </Link>
             ))}
           </div>
           <div className="flex-1 text-center sm:text-left">

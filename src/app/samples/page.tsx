@@ -18,7 +18,8 @@ type SamplePack = {
 function SamplesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const preAddId = searchParams.get('product'); // product ID to auto-select
+  const preAddId = searchParams.get('product');
+  const prePackKey = searchParams.get('pack'); // e.g. 'pack-3' // product ID to auto-select
 
   const { products, loading: productsLoading } = useProducts();
   const { addSamplePack, sampleItems } = useSampleCart();
@@ -35,7 +36,16 @@ function SamplesContent() {
   useEffect(() => {
     fetch('/api/sample-packs')
       .then(r => r.json())
-      .then((data: SamplePack[]) => { if (data.length) setPack(data[0]); })
+      .then((data: SamplePack[]) => {
+        if (data.length) {
+          setPack(data[0]);
+          // Auto-select pack from URL param (e.g. ?pack=pack-3)
+          if (prePackKey) {
+            const match = data[0].options.find(o => o.key === prePackKey);
+            if (match) setSelectedOption(match);
+          }
+        }
+      })
       .catch(() => {})
       .finally(() => setPackLoading(false));
   }, []);
@@ -287,7 +297,7 @@ function SamplesContent() {
               </div>
             )}
 
-            <button onClick={handleAdd} disabled={!canAdd}
+            {/* <button onClick={handleAdd} disabled={!canAdd}
               className="w-full flex items-center justify-between px-5 py-4 rounded-2xl font-bold transition-all active:scale-[.98]"
               style={{
                 background: canAdd
@@ -304,7 +314,7 @@ function SamplesContent() {
                     : `Select ${selectedOption.count - selected.length} more product${selectedOption.count - selected.length !== 1 ? 's' : ''}`}
               </span>
               <span className="font-display text-lg">₹{selectedOption.price}</span>
-            </button>
+            </button> */}
           </div>
         </div>
       )}

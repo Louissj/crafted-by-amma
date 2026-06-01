@@ -1410,7 +1410,7 @@ export default function AdminDashboard() {
               <input value={delivery.note} onChange={e => setDelivery({ ...delivery, note: e.target.value })}
                 className="w-full px-4 py-3 border-[1.5px] border-white/[.08] rounded-xl text-smoutline-none transition-all placeholder:text-white/20"
                 style={{ background: 'rgba(255,255,255,0.06)', color: 'white' }}
-                placeholder="e.g. Free delivery in Karnataka for orders ₹350+" />
+                placeholder="e.g. Free delivery in Karnataka for orders 1kg packs" />
             </div>
 
             <button onClick={saveDelivery} disabled={deliverySaving}
