@@ -14,7 +14,7 @@ type DeliverySettings = { baseCharge: number; outstationCharge: number; freeAbov
 
 export default function CartPage() {
   const router = useRouter();
-  const { priceMap } = useProducts();
+  const { products, priceMap } = useProducts();
   const { cart, setCount, clearCart, cartTotal, totalPacks, mounted } = useCart(priceMap);
   const { sampleItems, removeSamplePack, sampleTotal, sampleCount } = useSampleCart();
   const [delivery, setDelivery] = useState<DeliverySettings | null>(null);
@@ -62,28 +62,29 @@ export default function CartPage() {
     // Immediately set zone from local range check — no API dependency
     const isKarnataka = isKarnatakaPincode(pin);
     setDeliveryZone(isKarnataka ? 'karnataka' : 'india');
-    setPincodeState(isKarnataka ? 'Karnataka' : '');
+    // Set a fallback state so non-Karnataka users can proceed to checkout
+    setPincodeState(isKarnataka ? 'Karnataka' : 'India');
     setPincodeError('');
 
-    // Best-effort API call for actual state name display only
+    // API call via server-side proxy (avoids CORS) — updates state name display
     setPincodeLoading(true);
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 5000); // 5s timeout
-    fetch(`https://api.postalpincode.in/pincode/${pin}`, { signal: controller.signal })
+    fetch(`/api/pincode/${pin}`)
       .then(r => r.json())
       .then(data => {
-        clearTimeout(timer);
         if (data?.[0]?.Status === 'Success' && data[0].PostOffice?.length > 0) {
           const po = data[0].PostOffice[0];
           const state = po.State || '';
-          setPincodeState(state);
-          // Re-confirm zone from API state name if available
-          const isKa = state.toLowerCase().includes('karnataka') || isKarnatakaPincode(pin);
-          setDeliveryZone(isKa ? 'karnataka' : 'india');
+          if (state) {
+            setPincodeState(state);
+            const isKa = state.toLowerCase().includes('karnataka') || isKarnatakaPincode(pin);
+            setDeliveryZone(isKa ? 'karnataka' : 'india');
+          }
+        } else {
+          setPincodeError('Pincode not found. Please check and retry.');
+          setPincodeState('');
         }
-        // If API says not found, keep local result — don't show error
       })
-      .catch(() => { clearTimeout(timer); /* silent — local check already ran */ })
+      .catch(() => { /* silent — local fallback already set */ })
       .finally(() => setPincodeLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pincode]);
@@ -202,7 +203,7 @@ export default function CartPage() {
 
               {/* Product groups */}
               <div className="space-y-4 mb-6">
-                {Object.values(PRODUCTS).map((product, pi) => {
+                {products.map((product, pi) => {
                   const items = cart.filter(i => i.productId === product.id);
                   if (items.length === 0) return null;
                   const productSubtotal = items.reduce(
@@ -515,7 +516,8 @@ export default function CartPage() {
                     {cart.map((item, idx) => {
                       const unitPrice = priceMap[item.productId]?.[item.packSize] || 0;
                       const lineTotal = unitPrice * item.count;
-                      const product = PRODUCTS[item.productId as keyof typeof PRODUCTS];
+                      const product = products.find(p => p.id === item.productId)
+                        || PRODUCTS[item.productId as keyof typeof PRODUCTS];
                       const hues = ['#5A7A3A','#D4942A','#7A5A3A','#3A6A7A','#7A3A5A'];
                       const color = hues[idx % hues.length];
                       return (

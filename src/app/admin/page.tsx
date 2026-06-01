@@ -513,7 +513,7 @@ export default function AdminDashboard() {
                   style={{ background: 'radial-gradient(circle,#C8B44A,transparent)', transform: 'scale(1.4)' }} />
                 <div className="relative w-[72px] h-[72px] rounded-full overflow-hidden"
                   style={{ border: '2px solid rgba(200,180,74,0.35)', boxShadow: '0 0 32px rgba(200,180,74,0.2),0 8px 24px rgba(0,0,0,0.4)' }}>
-                  <Image src="/images/logo.png" alt="Crafted by Amma" width={72} height={72} className="w-full h-full object-cover" />
+                  <Image src="/images/logo.png" alt="Crafted by Amma" width={72} height={72} className="w-full h-full object-contain bg-white" />
                 </div>
                 {/* Live indicator */}
                 <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center"
@@ -714,7 +714,7 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-xl border border-brass/30 overflow-hidden flex-shrink-0"
               style={{ boxShadow: '0 0 20px rgba(200,180,74,0.15)' }}>
-              <Image src="/images/logo.png" alt="Logo" width={40} height={40} className="w-full h-full object-cover" />
+              <Image src="/images/logo.png" alt="Logo" width={40} height={40} className="w-full h-full object-contain bg-white" />
             </div>
             <div>
               <span className="font-display text-[.85rem] font-bold text-white block leading-tight">Crafted by Amma</span>
@@ -781,7 +781,7 @@ export default function AdminDashboard() {
             {/* Mobile logo */}
             <div className="md:hidden flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg overflow-hidden border border-brass/20">
-                <Image src="/images/logo.png" alt="Logo" width={28} height={28} className="w-full h-full object-cover" />
+                <Image src="/images/logo.png" alt="Logo" width={28} height={28} className="w-full h-full object-contain bg-white" />
               </div>
               <span className="font-display text-sm font-bold text-white">Admin</span>
             </div>

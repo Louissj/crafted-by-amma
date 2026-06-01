@@ -628,7 +628,7 @@ export function Footer() {
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2.5 mb-3">
               <Image src="/images/logo.png" alt="" width={36} height={36}
-                className="rounded-full border border-brass/[.1] flex-shrink-0" />
+                className="rounded-full border border-brass/[.1] flex-shrink-0 bg-white object-contain" />
               <span className="font-display text-base font-bold text-millet">Crafted by Amma</span>
             </div>
             <p className="font-kannada text-[.82rem] text-cream-light/[.1] mb-1.5">ಅಮ್ಮನಿಂದ ಕರಕುಶಲ</p>

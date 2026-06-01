@@ -82,7 +82,7 @@ export default function Navbar() {
         {/* Brand */}
         <Link href="/" className="flex items-center gap-2.5 no-underline">
           <Image src="/images/logo.png" alt="Logo" width={40} height={40}
-            className="rounded-full border-[1.5px] border-brass/20 flex-shrink-0" />
+            className="rounded-full border-[1.5px] border-brass/20 flex-shrink-0 bg-white object-contain" />
           <div>
             <span className="font-display text-[1.0rem] font-semibold leading-tight block text-white whitespace-nowrap [text-shadow:0_1px_8px_rgba(0,0,0,.4)]">
               Crafted by Amma
@@ -174,7 +174,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between px-5 py-4 flex-shrink-0">
           <div className="flex items-center gap-2.5">
             <Image src="/images/logo.png" alt="Logo" width={36} height={36}
-              className="rounded-full border border-brass/30" />
+              className="rounded-full border border-brass/30 bg-white object-contain" />
             <span className="font-display text-base font-semibold text-white/90">Crafted by Amma</span>
           </div>
           <button onClick={close}
