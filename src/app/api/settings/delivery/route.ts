@@ -66,17 +66,18 @@ export async function PUT(req: NextRequest) {
       }
     }
     if (setClauses.length === 0) {
-      const s = await prisma.deliverySettings.findUnique({ where: { id: ID } });
-      return NextResponse.json(s);
+      const rows = await prisma.$queryRaw<Record<string, unknown>[]>`SELECT * FROM "DeliverySettings" WHERE id = ${ID} LIMIT 1`;
+      return NextResponse.json(rows[0] ?? null);
     }
     values.push(ID);
     await prisma.$executeRawUnsafe(
       `UPDATE "DeliverySettings" SET ${setClauses.join(', ')} WHERE id = $${idx}`,
       ...values
     );
-    const s = await prisma.deliverySettings.findUnique({ where: { id: ID } });
-    return NextResponse.json(s);
-  } catch {
+    const rows = await prisma.$queryRaw<Record<string, unknown>[]>`SELECT * FROM "DeliverySettings" WHERE id = ${ID} LIMIT 1`;
+    return NextResponse.json(rows[0] ?? null);
+  } catch (err) {
+    console.error('Delivery settings PUT error:', err);
     return NextResponse.json({ error: 'Failed to update delivery settings' }, { status: 500 });
   }
 }

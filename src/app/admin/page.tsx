@@ -375,11 +375,20 @@ export default function AdminDashboard() {
   const saveDelivery = async () => {
     if (!delivery) return;
     setDeliverySaving(true);
-    await fetch('/api/settings/delivery', {
-      method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(delivery),
-    });
-    setDeliverySaving(false);
-    showToast('Delivery settings saved!');
+    try {
+      const res = await fetch('/api/settings/delivery', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(delivery),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.error || 'Failed to save settings', 'error');
+        return;
+      }
+      await fetchDelivery();
+      showToast('Delivery settings saved!');
+    } finally {
+      setDeliverySaving(false);
+    }
   };
 
   const saveProduct = async () => {
@@ -1617,6 +1626,12 @@ export default function AdminDashboard() {
             <p className="text-sm text-white/70">Delivery: <strong style={{ color: '#C8B44A' }}>₹{delivery.baseCharge}</strong></p>
             {delivery.karnatakFree && <p className="text-[.88rem] text-emerald-400/60 mt-1">{delivery.note}</p>}
           </div>
+
+          <button onClick={saveDelivery} disabled={deliverySaving}
+            className="mt-4 w-full py-3.5 rounded-xl font-semibold text-sm tracking-[0.5px] disabled:opacity-40 transition-all"
+            style={{ background: 'linear-gradient(135deg,#C8B44A,#D4942A)', color: '#0D1A09', boxShadow: '0 6px 20px rgba(200,180,74,0.2)' }}>
+            {deliverySaving ? 'Saving…' : 'Save All Delivery Settings'}
+          </button>
         </motion.div>
       )}
 
