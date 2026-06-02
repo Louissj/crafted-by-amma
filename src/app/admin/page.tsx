@@ -876,36 +876,40 @@ export default function AdminDashboard() {
               </button>
             )}
 
+            {/* Sign Out — mobile header */}
+            <button onClick={handleLogout}
+              className="md:hidden flex items-center justify-center w-8 h-8 rounded-xl transition-all text-red-400/50 hover:text-red-400 active:scale-90"
+              style={{ background: 'rgba(239,68,68,0.06)' }}
+              title="Sign Out">
+              🚪
+            </button>
+
           </div>
         </header>
 
-        {/* Mobile bottom tab bar - fixed at bottom */}
-        <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex"
-          style={{ background: 'rgba(13,26,9,0.97)', borderTop: '1px solid rgba(200,180,74,0.15)', backdropFilter: 'blur(20px)' }}>
-          {NAV_ITEMS.map(item => (
-            <button key={item.id} onClick={() => setTab(item.id)}
-              className={`flex-1 py-3 flex flex-col items-center gap-0.5 transition-all relative
-                ${tab === item.id ? 'text-brass' : 'text-white/25'}`}>
-              {tab === item.id && (
-                <span className="absolute top-0 left-1/4 right-1/4 h-0.5 rounded-b-full"
-                  style={{ background: 'linear-gradient(90deg,#C8B44A,#D4942A)' }} />
-              )}
-              <span className="text-base">{item.icon}</span>
-              <span className="text-sm font-semibold capitalize tracking-wide">{item.label}</span>
-              {item.id === 'orders' && stats.pending > 0 && (
-                <span className="absolute top-1 right-[calc(50%-14px)] w-3.5 h-3.5 rounded-full text-[.6rem] font-bold flex items-center justify-center text-white"
-                  style={{ background: '#D4942A' }}>
-                  {stats.pending}
-                </span>
-              )}
-            </button>
-          ))}
-          {/* Sign Out button on mobile */}
-          <button onClick={handleLogout}
-            className="flex-1 py-3 flex flex-col items-center gap-0.5 transition-all text-red-400/60 hover:text-red-400 active:scale-95">
-            <span className="text-base">🚪</span>
-            <span className="text-sm font-semibold tracking-wide">Sign Out</span>
-          </button>
+        {/* Mobile bottom tab bar - scrollable */}
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 overflow-x-auto"
+          style={{ background: 'rgba(13,26,9,0.97)', borderTop: '1px solid rgba(200,180,74,0.15)', backdropFilter: 'blur(20px)', scrollbarWidth: 'none' }}>
+          <div className="flex min-w-max px-1">
+            {NAV_ITEMS.map(item => (
+              <button key={item.id} onClick={() => setTab(item.id)}
+                className={`relative flex flex-col items-center justify-center gap-0.5 py-2.5 px-3 transition-all min-w-[60px]
+                  ${tab === item.id ? 'text-brass' : 'text-white/30'}`}>
+                {tab === item.id && (
+                  <span className="absolute top-0 left-1/4 right-1/4 h-0.5 rounded-b-full"
+                    style={{ background: 'linear-gradient(90deg,#C8B44A,#D4942A)' }} />
+                )}
+                <span className="text-lg leading-none">{item.icon}</span>
+                <span className="text-[.6rem] font-semibold tracking-wide leading-tight">{item.label}</span>
+                {item.id === 'orders' && stats.pending > 0 && (
+                  <span className="absolute top-1.5 right-2 w-3.5 h-3.5 rounded-full text-[.55rem] font-bold flex items-center justify-center text-white"
+                    style={{ background: '#D4942A' }}>
+                    {stats.pending}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* ── PAGE CONTENT ── */}
