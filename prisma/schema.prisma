@@ -57,9 +57,10 @@ model DeliverySettings {
   freeAboveAmt     Float    @default(350)
   karnatakFree     Boolean  @default(true)
   note             String   @default("Free delivery in Karnataka for orders \u20b9350+")
-  karnatakaSlabs   Json     @default("[]") // [{ maxGrams: 500, charge: 40 }, ...]
-  southIndiaSlabs  Json     @default("[]") // weight-based slabs for South India
-  northIndiaSlabs  Json     @default("[]") // weight-based slabs for North India
+  karnatakaSlabs   Json     @default("[]")
+  southIndiaSlabs  Json     @default("[]")
+  northIndiaSlabs  Json     @default("[]")
+  launchMode       Boolean  @default(true) // true = show launch page, false = normal site
   updatedAt        DateTime @updatedAt
 }
 

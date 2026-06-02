@@ -321,7 +321,7 @@ export function ProductModal({
                       )}
                     </div>
                     <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
-                      <span className="font-display text-sm font-bold" style={{ color: '#D4942A' }}>₹{price}</span>
+                      <span className="font-display text-base font-bold" style={{ color: '#D4942A' }}>₹{price}</span>
                       {mrpMapModal[size] && mrpMapModal[size] > price && (
                         <>
                           <span className="line-through text-xs" style={{ color: 'rgba(235,225,200,0.22)' }}>₹{mrpMapModal[size]}</span>
@@ -572,7 +572,7 @@ export function ProductCard({
                     )}
                   </div>
                   <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
-                    <span className="font-display text-sm font-bold" style={{ color: outOfStock ? 'rgba(235,225,200,0.25)' : '#D4942A' }}>₹{price}</span>
+                    <span className="font-display text-base font-bold" style={{ color: outOfStock ? 'rgba(235,225,200,0.25)' : '#D4942A' }}>₹{price}</span>
                     {mrpMap[size] && mrpMap[size] > price && !outOfStock && (
                       <>
                         <span className="line-through text-xs" style={{ color: 'rgba(235,225,200,0.22)' }}>₹{mrpMap[size]}</span>

@@ -80,7 +80,7 @@ export default function Navbar() {
         ${scrolled ? 'bg-forest/95 backdrop-blur-lg shadow-[0_2px_12px_rgba(0,0,0,.20)]' : 'bg-gradient-to-b from-black/50 to-transparent'}`}>
 
         {/* Brand */}
-        <Link href="/" className="flex items-center gap-2.5 no-underline">
+        <Link href="/home" className="flex items-center gap-2.5 no-underline">
           <Image src="/images/logo.png" alt="Logo" width={40} height={40}
             className="rounded-full border-[1.5px] border-brass/20 flex-shrink-0 bg-white object-contain" />
           <div>

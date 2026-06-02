@@ -110,37 +110,25 @@ export default function CartPage() {
     return 1;
   }
 
-  const deliveryCharge = useMemo(() => {
-    if (!delivery) return 0;
-    if (deliveryZone === 'international') return 0;
-    if (!pincodeState) return 0;
+  // Computed every render — guarantees instant update when cart changes
+  function calcSlabCharge(slabs: DeliverySlab[], grams: number, fallback: number): number {
+    if (!slabs?.length) return fallback;
+    const sorted = [...slabs].sort((a, b) => a.maxGrams - b.maxGrams);
+    return (sorted.find(s => grams <= s.maxGrams) ?? sorted[sorted.length - 1]).charge;
+  }
 
-    // Helper: weight-based slab lookup
-    function slabCharge(slabs: DeliverySlab[], grams: number, fallback: number): number {
-      if (!slabs?.length) return fallback;
-      const sorted = [...slabs].sort((a, b) => a.maxGrams - b.maxGrams);
-      return (sorted.find(s => grams <= s.maxGrams) ?? sorted[sorted.length - 1]).charge;
-    }
+  const chargeableGrams = !delivery || !pincodeState || deliveryZone === 'international' ? 0
+    : cart.reduce((sum, item) => {
+        const kg = parseKg(item.packSize);
+        return kg >= 1 ? sum : sum + Math.round(kg * 1000) * item.count;
+      }, 0) + sampleItems.reduce((sum, i) => sum + 50 * i.count * i.qty, 0);
 
-    // Total chargeable grams: 1kg+ packs FREE, samples = 50g each
-    const chargeableGrams = cart.reduce((sum, item) => {
-      const kg = parseKg(item.packSize);
-      return kg >= 1 ? sum : sum + Math.round(kg * 1000) * item.count;
-    }, 0) + sampleItems.reduce((sum, i) => sum + 50 * i.count * i.qty, 0);
-
-    if (deliveryZone === 'karnataka') {
-      if (chargeableGrams === 0) return 0;
-      return slabCharge(delivery.karnatakaSlabs, chargeableGrams, delivery.baseCharge);
-    }
-    if (deliveryZone === 'south-india') {
-      return slabCharge(delivery.southIndiaSlabs, chargeableGrams, delivery.outstationCharge);
-    }
-    if (deliveryZone === 'north-india') {
-      return slabCharge(delivery.northIndiaSlabs, chargeableGrams, delivery.outstationCharge);
-    }
-    // international: no fixed charge
-    return 0;
-  }, [delivery, deliveryZone, pincodeState, cart, sampleItems]);
+  const deliveryCharge = (() => {
+    if (!delivery || !pincodeState || deliveryZone === 'international') return 0;
+    if (deliveryZone === 'karnataka') return chargeableGrams === 0 ? 0 : calcSlabCharge(delivery.karnatakaSlabs, chargeableGrams, delivery.baseCharge);
+    if (deliveryZone === 'south-india') return calcSlabCharge(delivery.southIndiaSlabs, chargeableGrams, delivery.outstationCharge);
+    return calcSlabCharge(delivery.northIndiaSlabs, chargeableGrams, delivery.outstationCharge);
+  })();
 
   const grandTotal = cartTotal + sampleTotal + deliveryCharge;
 
@@ -224,6 +212,48 @@ export default function CartPage() {
           {/* Cart items */}
           {(cart.length > 0 || sampleItems.length > 0) && (
             <motion.div key="cart" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+
+              {/* Sample pack cards */}
+              {sampleItems.length > 0 && (
+                <div className="space-y-3 mb-4">
+                  {sampleItems.map(item => (
+                    <div key={item.packKey}
+                      className="bg-white rounded-2xl overflow-hidden border border-forest/[.04]"
+                      style={{ boxShadow: '0 4px 20px rgba(26,42,20,0.06)' }}>
+                      <div className="px-5 py-3.5 flex items-center gap-3 border-b border-forest/[.04]"
+                        style={{ background: 'linear-gradient(135deg,rgba(212,148,42,0.06),transparent)' }}>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">🧪</span>
+                            <h3 className="font-display text-sm font-bold text-forest">{item.label}</h3>
+                          </div>
+                          <p className="text-xs text-forest/50 mt-0.5">
+                            {item.selectedProducts.length} products selected · Sample pack
+                          </p>
+                        </div>
+                        <div className="text-right flex items-center gap-3">
+                          <span className="text-sm font-bold text-sage">₹{item.price}</span>
+                          <button onClick={() => removeSamplePack(item.packKey)}
+                            className="w-7 h-7 rounded-full flex items-center justify-center text-xs text-forest/20 hover:text-red-400 hover:bg-red-50 transition-all">
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                      <div className="px-5 py-3 flex flex-wrap gap-1.5">
+                        {item.selectedProducts.map(id => {
+                          const p = products.find(pr => pr.id === id);
+                          return p ? (
+                            <span key={id} className="text-xs px-2 py-0.5 rounded-full font-medium"
+                              style={{ background: 'rgba(212,148,42,0.08)', color: 'rgba(26,42,20,0.6)', border: '1px solid rgba(212,148,42,0.15)' }}>
+                              {p.shortName}
+                            </span>
+                          ) : null;
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {/* Product groups */}
               <div className="space-y-4 mb-6">

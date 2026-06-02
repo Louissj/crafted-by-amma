@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/lib/useCart';
 import { useProducts } from '@/lib/useProducts';
+import { useSampleCart } from '@/lib/useSampleCart';
 import { trackEvent } from '@/lib/analytics';
 
 type DeliverySlab = { maxGrams: number; charge: number };
@@ -48,6 +49,7 @@ const inputErrCls = "w-full px-4 py-3.5 border-[1.5px] border-red-400/60 rounded
 export default function CheckoutPage() {
   const { products, priceMap } = useProducts();
   const { cart, cartTotal, totalPacks, clearCart, mounted } = useCart(priceMap);
+  const { sampleItems, sampleTotal, clearSampleCart } = useSampleCart();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ name: '', phone: '', city: '', address: '', notes: '' });
   const [fieldErrors, setFieldErrors] = useState({ name: '', phone: '', city: '', address: '', pincode: '' });
@@ -128,28 +130,28 @@ export default function CheckoutPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pincode]);
 
-  const deliveryCharge = useMemo(() => {
-    if (!delivery) return 0;
-    if (deliveryZone === 'international') return 0;
+  function coSlabCharge(slabs: DeliverySlab[], grams: number, fallback: number) {
+    if (!slabs?.length) return fallback;
+    const sorted = [...slabs].sort((a, b) => a.maxGrams - b.maxGrams);
+    return (sorted.find(s => grams <= s.maxGrams) ?? sorted[sorted.length - 1]).charge;
+  }
 
-    function slabCharge(slabs: DeliverySlab[], grams: number, fallback: number) {
-      if (!slabs?.length) return fallback;
-      const sorted = [...slabs].sort((a, b) => a.maxGrams - b.maxGrams);
-      return (sorted.find(s => grams <= s.maxGrams) ?? sorted[sorted.length - 1]).charge;
-    }
+  const coGrams = !delivery || deliveryZone === 'international' ? 0
+    : cart.reduce((sum, item) => {
+        const g = parseKgCo(item.packSize);
+        if (deliveryZone === 'karnataka' && g >= 1000) return sum;
+        return sum + g * item.count;
+      }, 0)
+      + sampleItems.reduce((sum, i) => sum + 50 * i.count * i.qty, 0); // each sample = 50g
 
-    const grams = cart.reduce((sum, item) => {
-      const g = parseKgCo(item.packSize); // returns grams
-      if (deliveryZone === 'karnataka' && g >= 1000) return sum; // 1kg+ free in Karnataka
-      return sum + g * item.count;
-    }, 0);
+  const deliveryCharge = (() => {
+    if (!delivery || deliveryZone === 'international') return 0;
+    if (deliveryZone === 'karnataka') return coGrams === 0 ? 0 : coSlabCharge(delivery.karnatakaSlabs, coGrams, delivery.baseCharge);
+    if (deliveryZone === 'south-india') return coSlabCharge(delivery.southIndiaSlabs, coGrams, delivery.outstationCharge);
+    return coSlabCharge(delivery.northIndiaSlabs, coGrams, delivery.outstationCharge);
+  })();
 
-    if (deliveryZone === 'karnataka') return grams === 0 ? 0 : slabCharge(delivery.karnatakaSlabs, grams, delivery.baseCharge);
-    if (deliveryZone === 'south-india') return slabCharge(delivery.southIndiaSlabs, grams, delivery.outstationCharge);
-    return slabCharge(delivery.northIndiaSlabs, grams, delivery.outstationCharge);
-  }, [delivery, deliveryZone, cart]);
-
-  const grandTotal = cartTotal + deliveryCharge;
+  const grandTotal = cartTotal + sampleTotal + deliveryCharge;
 
   function validateField(field: keyof typeof fieldErrors, value: string): string {
     if (field === 'name') return value.trim().length < 2 ? 'Enter your full name' : '';
@@ -236,6 +238,7 @@ export default function CheckoutPage() {
             const verifyData = await verifyRes.json();
             if (verifyRes.ok) {
               clearCart();
+              clearSampleCart();
               setOrderId(verifyData.orderId || '');
             } else {
               setError(verifyData.error || 'Payment verification failed. Please contact support.');
@@ -329,7 +332,7 @@ export default function CheckoutPage() {
         <h2 className="font-display text-2xl font-bold text-forest mb-2">Your cart is empty</h2>
         <p className="text-sm text-forest/50 mb-7">Add products to your cart before checking out.</p>
         <div className="flex gap-3">
-          <Link href="/#prods"
+          <Link href="/products"
             className="px-6 py-3.5 rounded-2xl font-bold text-sm no-underline text-forest transition-all"
             style={{ background: 'linear-gradient(135deg,#D4942A,#B87323)', boxShadow: '0 6px 20px rgba(212,148,42,0.2)' }}>
             Browse Products

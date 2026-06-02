@@ -103,6 +103,10 @@ export default function AdminDashboard() {
     prices: { '250g': 0 } as Record<string, number>,
   });
 
+  // Launch mode state
+  const [launchMode, setLaunchMode] = useState<boolean | null>(null);
+  const [launchSaving, setLaunchSaving] = useState(false);
+
   // Sample packs state
   const [samplePack, setSamplePack] = useState<SamplePackData | null>(null);
   const [samplePackLoading, setSamplePackLoading] = useState(false);
@@ -229,7 +233,10 @@ export default function AdminDashboard() {
     if (!loggedIn) return;
     if (tab === 'orders') fetchOrders();
     if (tab === 'offers') fetchOffers();
-    if (tab === 'delivery') fetchDelivery();
+    if (tab === 'delivery') {
+      fetchDelivery();
+      fetch('/api/settings/launch').then(r => r.json()).then(d => setLaunchMode(d.launchMode)).catch(() => {});
+    }
     if (tab === 'products') fetchProducts();
     if (tab === 'analytics') fetchAnalytics();
     if (tab === 'reviews') fetchReviews();
@@ -1373,6 +1380,46 @@ export default function AdminDashboard() {
           <div className="mb-6">
             <h2 className="font-display text-xl font-bold text-white">Delivery Settings</h2>
             <p className="text-sm text-white/30 mt-0.5">Control shipping charges shown during checkout.</p>
+          </div>
+
+          {/* Launch Mode Toggle */}
+          <div className="mb-6 rounded-2xl p-5 border"
+            style={{
+              background: launchMode ? 'rgba(212,148,42,0.07)' : 'rgba(16,185,129,0.06)',
+              borderColor: launchMode ? 'rgba(212,148,42,0.25)' : 'rgba(16,185,129,0.20)',
+            }}>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-bold text-white">
+                  {launchMode ? '🚀 VIP Launch Page is LIVE' : '🌐 Website is OPEN'}
+                </p>
+                <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                  {launchMode
+                    ? 'Visitors see the VIP launch screen. Click below to open the site.'
+                    : 'Site is live. Visitors land directly on the homepage.'}
+                </p>
+              </div>
+              <button
+                disabled={launchSaving || launchMode === null}
+                onClick={async () => {
+                  setLaunchSaving(true);
+                  const next = !launchMode;
+                  await fetch('/api/settings/launch', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ launchMode: next }),
+                  });
+                  setLaunchMode(next);
+                  setLaunchSaving(false);
+                  showToast(next ? 'VIP Launch page enabled' : 'Website is now open!');
+                }}
+                className="px-5 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-40 flex-shrink-0"
+                style={launchMode
+                  ? { background: 'rgba(16,185,129,0.15)', color: '#34D399', border: '1px solid rgba(16,185,129,0.30)' }
+                  : { background: 'rgba(212,148,42,0.12)', color: '#D4942A', border: '1px solid rgba(212,148,42,0.30)' }}>
+                {launchSaving ? '…' : launchMode ? 'Open Site →' : 'Enable Launch Page'}
+              </button>
+            </div>
           </div>
 
           <div className="rounded-2xl p-6 border border-white/[.07] space-y-5"

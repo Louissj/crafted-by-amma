@@ -297,24 +297,19 @@ function SamplesContent() {
               </div>
             )}
 
-            {/* <button onClick={handleAdd} disabled={!canAdd}
-              className="w-full flex items-center justify-between px-5 py-4 rounded-2xl font-bold transition-all active:scale-[.98]"
-              style={{
-                background: canAdd
-                  ? 'linear-gradient(135deg,#5A7A3A,#4a6830)'
-                  : 'rgba(255,255,255,0.05)',
-                border: `1.5px solid ${canAdd ? 'rgba(90,122,58,0.55)' : 'rgba(255,255,255,0.08)'}`,
-                boxShadow: canAdd ? '0 8px 28px rgba(90,122,58,0.22)' : 'none',
-                color: canAdd ? '#F5F0E0' : 'rgba(235,225,200,0.25)',
-                cursor: canAdd ? 'pointer' : 'not-allowed',
-              }}>
-              <span className="text-sm tracking-wide">
-                {canAdd
-                    ? `Add ${selectedOption.label} to Cart`
-                    : `Select ${selectedOption.count - selected.length} more product${selectedOption.count - selected.length !== 1 ? 's' : ''}`}
-              </span>
-              <span className="font-display text-lg">₹{selectedOption.price}</span>
-            </button> */}
+            {canAdd && (
+              <button onClick={handleAdd}
+                className="w-full flex items-center justify-between px-5 py-4 rounded-2xl font-bold transition-all active:scale-[.98]"
+                style={{
+                  background: 'linear-gradient(135deg,#5A7A3A,#4a6830)',
+                  border: '1.5px solid rgba(90,122,58,0.55)',
+                  boxShadow: '0 8px 28px rgba(90,122,58,0.22)',
+                  color: '#F5F0E0',
+                }}>
+                <span className="text-sm tracking-wide">Add {selectedOption.label} to Cart</span>
+                <span className="font-display text-lg">₹{selectedOption.price}</span>
+              </button>
+            )}
           </div>
         </div>
       )}
