@@ -120,7 +120,8 @@ export default function CartPage() {
   const chargeableGrams = !delivery || !pincodeState || deliveryZone === 'international' ? 0
     : cart.reduce((sum, item) => {
         const kg = parseKg(item.packSize);
-        return kg >= 1 ? sum : sum + Math.round(kg * 1000) * item.count;
+        if (deliveryZone === 'karnataka' && kg >= 1) return sum; // 1kg+ free only in Karnataka
+        return sum + Math.round(kg * 1000) * item.count;
       }, 0) + sampleItems.reduce((sum, i) => sum + 50 * i.count * i.qty, 0);
 
   const deliveryCharge = (() => {
