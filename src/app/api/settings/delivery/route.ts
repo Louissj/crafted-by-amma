@@ -3,6 +3,8 @@ import prisma from '@/lib/db';
 import { getAuthUser } from '@/lib/auth';
 import { sanitize } from '@/lib/security';
 
+export const dynamic = 'force-dynamic';
+
 const ID = 'singleton';
 
 const DEFAULTS = {

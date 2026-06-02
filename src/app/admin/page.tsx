@@ -1390,9 +1390,16 @@ export default function AdminDashboard() {
       {/* ── DELIVERY TAB ── */}
       {tab === 'delivery' && delivery && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="p-4 md:p-6 max-w-lg">
-          <div className="mb-6">
-            <h2 className="font-display text-xl font-bold text-white">Delivery Settings</h2>
-            <p className="text-sm text-white/30 mt-0.5">Control shipping charges shown during checkout.</p>
+          <div className="mb-6 flex items-center justify-between gap-4">
+            <div>
+              <h2 className="font-display text-xl font-bold text-white">Delivery Settings</h2>
+              <p className="text-sm text-white/30 mt-0.5">Control shipping charges shown during checkout.</p>
+            </div>
+            <button onClick={fetchDelivery}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 flex-shrink-0"
+              style={{ background: 'rgba(200,180,74,0.08)', border: '1px solid rgba(200,180,74,0.2)', color: 'rgba(200,180,74,0.7)' }}>
+              ↻ Refresh
+            </button>
           </div>
 
           {/* Launch Mode Toggle */}
