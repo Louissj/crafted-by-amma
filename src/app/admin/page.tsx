@@ -1389,21 +1389,30 @@ export default function AdminDashboard() {
 
       {/* ── DELIVERY TAB ── */}
       {tab === 'delivery' && delivery && (
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="p-4 md:p-6 max-w-lg">
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="p-4 md:p-6">
+
+          {/* Header */}
           <div className="mb-6 flex items-center justify-between gap-4">
             <div>
               <h2 className="font-display text-xl font-bold text-white">Delivery Settings</h2>
-              <p className="text-sm text-white/30 mt-0.5">Control shipping charges shown during checkout.</p>
+              <p className="text-sm text-white/30 mt-0.5">Weight-based shipping slabs per region.</p>
             </div>
-            <button onClick={fetchDelivery}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 flex-shrink-0"
-              style={{ background: 'rgba(200,180,74,0.08)', border: '1px solid rgba(200,180,74,0.2)', color: 'rgba(200,180,74,0.7)' }}>
-              ↻ Refresh
-            </button>
+            <div className="flex items-center gap-2">
+              <button onClick={fetchDelivery}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95"
+                style={{ background: 'rgba(200,180,74,0.08)', border: '1px solid rgba(200,180,74,0.2)', color: 'rgba(200,180,74,0.7)' }}>
+                ↻ Refresh
+              </button>
+              <button onClick={saveDelivery} disabled={deliverySaving}
+                className="px-4 py-1.5 rounded-xl text-xs font-bold disabled:opacity-40 transition-all active:scale-95"
+                style={{ background: 'linear-gradient(135deg,#C8B44A,#D4942A)', color: '#0D1A09' }}>
+                {deliverySaving ? 'Saving…' : 'Save All'}
+              </button>
+            </div>
           </div>
 
           {/* Launch Mode Toggle */}
-          <div className="mb-6 rounded-2xl p-5 border"
+          <div className="mb-6 rounded-2xl p-4 border max-w-lg"
             style={{
               background: launchMode ? 'rgba(212,148,42,0.07)' : 'rgba(16,185,129,0.06)',
               borderColor: launchMode ? 'rgba(212,148,42,0.25)' : 'rgba(16,185,129,0.20)',
@@ -1414,9 +1423,7 @@ export default function AdminDashboard() {
                   {launchMode ? '🚀 VIP Launch Page is LIVE' : '🌐 Website is OPEN'}
                 </p>
                 <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                  {launchMode
-                    ? 'Visitors see the VIP launch screen. Click below to open the site.'
-                    : 'Site is live. Visitors land directly on the homepage.'}
+                  {launchMode ? 'Visitors see the VIP launch screen.' : 'Visitors land directly on the homepage.'}
                 </p>
               </div>
               <button
@@ -1433,7 +1440,7 @@ export default function AdminDashboard() {
                   setLaunchSaving(false);
                   showToast(next ? 'VIP Launch page enabled' : 'Website is now open!');
                 }}
-                className="px-5 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-40 flex-shrink-0"
+                className="px-4 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-40 flex-shrink-0"
                 style={launchMode
                   ? { background: 'rgba(16,185,129,0.15)', color: '#34D399', border: '1px solid rgba(16,185,129,0.30)' }
                   : { background: 'rgba(212,148,42,0.12)', color: '#D4942A', border: '1px solid rgba(212,148,42,0.30)' }}>
@@ -1442,204 +1449,82 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="rounded-2xl p-6 border border-white/[.07] space-y-5"
-            style={{ background: 'rgba(15,24,10,0.8)', boxShadow: '0 8px 30px rgba(0,0,0,0.3)' }}>
-            {[
-              { label: 'Karnataka Rate per kg (₹)', key: 'baseCharge', hint: 'Charge per kg for Karnataka orders · rounded up · 1kg packs always free' },
-              { label: 'Outstation India Charge (₹)', key: 'outstationCharge', hint: 'Applied for all non-Karnataka Indian orders (auto-detected by pincode)' },
-              { label: 'Free Delivery Above (₹)', key: 'freeAboveAmt', hint: 'Karnataka orders above this amount get free delivery' },
-            ].map(field => (
-              <div key={field.key}>
-                <label className="block text-sm font-bold uppercase tracking-[2px] mb-1.5" style={{ color: 'rgba(200,180,74,0.5)' }}>{field.label}</label>
-                <input type="number" min={0}
-                  value={delivery[field.key as keyof DeliverySettings] as number}
-                  onChange={e => setDelivery({ ...delivery, [field.key]: parseFloat(e.target.value) || 0 })}
-                  className="w-full px-4 py-3 border-[1.5px] border-white/[.08] rounded-xl text-smoutline-none transition-all"
-                  style={{ background: 'rgba(255,255,255,0.06)', color: 'white' }} />
-                <p className="text-sm text-white/25 mt-1">{field.hint}</p>
-              </div>
-            ))}
-
-            <div className="flex items-center justify-between p-4 rounded-xl border-[1.5px]" style={{ borderColor: 'rgba(200,180,74,0.15)', background: 'rgba(200,180,74,0.04)' }}>
-              <div>
-                <p className="text-sm font-semibold text-white/80">Free delivery in Karnataka</p>
-                <p className="text-[.85rem] text-white/30 mt-0.5">When order meets the free delivery threshold</p>
-              </div>
-              <button type="button" onClick={() => setDelivery({ ...delivery, karnatakFree: !delivery.karnatakFree })}
-                className={`w-12 h-6 rounded-full transition-all relative flex-shrink-0`}
-                style={{ background: delivery.karnatakFree ? 'linear-gradient(135deg,#C8B44A,#D4942A)' : 'rgba(255,255,255,0.1)', boxShadow: delivery.karnatakFree ? '0 2px 8px rgba(200,180,74,0.3)' : 'none' }}>
-                <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-all ${delivery.karnatakFree ? 'right-0.5' : 'left-0.5'}`} />
-              </button>
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold uppercase tracking-[2px] mb-1.5" style={{ color: 'rgba(200,180,74,0.5)' }}>Customer-facing Note</label>
-              <input value={delivery.note} onChange={e => setDelivery({ ...delivery, note: e.target.value })}
-                className="w-full px-4 py-3 border-[1.5px] border-white/[.08] rounded-xl text-smoutline-none transition-all placeholder:text-white/20"
-                style={{ background: 'rgba(255,255,255,0.06)', color: 'white' }}
-                placeholder="e.g. Free delivery in Karnataka for orders 1kg packs" />
-            </div>
-
-            <button onClick={saveDelivery} disabled={deliverySaving}
-              className="w-full py-3.5 rounded-xl font-semibold text-smtracking-[0.5px] disabled:opacity-40 transition-all"
-              style={{ background: 'linear-gradient(135deg,#C8B44A,#D4942A)', color: '#0D1A09', boxShadow: '0 6px 20px rgba(200,180,74,0.2)' }}>
-              {deliverySaving ? 'Saving…' : 'Save Settings'}
-            </button>
-          </div>
-
-          {/* Karnataka weight-based slabs */}
-          <div className="mt-6 rounded-2xl p-5 border border-white/[.07]"
-            style={{ background: 'rgba(15,24,10,0.8)' }}>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-sm font-bold text-white">Karnataka Shipping Slabs</p>
-                <p className="text-xs text-white/30 mt-0.5">Weight-based · 1kg packs always free</p>
-              </div>
-              <button onClick={() => setDelivery(prev => prev ? {
-                ...prev,
-                karnatakaSlabs: [...(prev.karnatakaSlabs || []), {
-                  maxGrams: ((prev.karnatakaSlabs || []).at(-1)?.maxGrams ?? 3000) + 500,
-                  charge: ((prev.karnatakaSlabs || []).at(-1)?.charge ?? 260) + 60
-                }]
-              } : prev)}
-                className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
-                style={{ background: 'rgba(212,148,42,0.10)', border: '1px dashed rgba(212,148,42,0.30)', color: 'rgba(212,148,42,0.75)' }}>
-                + Add slab
-              </button>
-            </div>
-
-            {/* Header */}
-            <div className="grid grid-cols-[1fr_1fr_40px] gap-2 px-2 mb-2">
-              <span className="text-[0.58rem] font-bold uppercase tracking-widest text-white/25">Up to (grams)</span>
-              <span className="text-[0.58rem] font-bold uppercase tracking-widest text-white/25">Charge ₹</span>
-              <span />
-            </div>
-
-            <div className="space-y-2">
-              {(delivery.karnatakaSlabs || []).map((slab, idx) => (
-                <div key={idx} className="grid grid-cols-[1fr_1fr_40px] gap-2 items-center">
-                  <div className="relative">
-                    <input type="number" min={1} value={slab.maxGrams}
-                      onChange={e => setDelivery(prev => {
-                        if (!prev) return prev;
-                        const slabs = [...prev.karnatakaSlabs];
-                        slabs[idx] = { ...slabs[idx], maxGrams: parseInt(e.target.value) || 0 };
-                        return { ...prev, karnatakaSlabs: slabs };
-                      })}
-                      className="w-full px-3 py-2 rounded-xl text-sm text-white/80 outline-none border border-white/[.08]"
-                      style={{ background: 'rgba(255,255,255,0.05)' }} />
-                    <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[0.6rem] text-white/25">g</span>
+          {/* Slab sections — full width grid layout */}
+          {([
+            { key: 'karnatakaSlabs',  label: 'Karnataka',   icon: '🌿', sub: 'Weight-based · 1kg packs free' },
+            { key: 'southIndiaSlabs', label: 'South India', icon: '🌴', sub: 'TN, Kerala, AP, Telangana, Goa' },
+            { key: 'northIndiaSlabs', label: 'North India', icon: '🏔', sub: 'All other Indian states' },
+          ] as const).map(region => {
+            const slabs = (delivery[region.key] || []) as DeliverySlab[];
+            return (
+              <div key={region.key} className="mb-6 rounded-2xl p-5 border border-white/[.07]"
+                style={{ background: 'rgba(15,24,10,0.8)' }}>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <p className="text-sm font-bold text-white">{region.icon} {region.label} Shipping Slabs</p>
+                    <p className="text-xs text-white/30 mt-0.5">{region.sub} · {slabs.length} slabs</p>
                   </div>
-                  <div className="relative">
-                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-white/30">₹</span>
-                    <input type="number" min={0} value={slab.charge}
-                      onChange={e => setDelivery(prev => {
-                        if (!prev) return prev;
-                        const slabs = [...prev.karnatakaSlabs];
-                        slabs[idx] = { ...slabs[idx], charge: parseFloat(e.target.value) || 0 };
-                        return { ...prev, karnatakaSlabs: slabs };
-                      })}
-                      className="w-full pl-6 pr-3 py-2 rounded-xl text-sm text-white/80 outline-none border border-white/[.08]"
-                      style={{ background: 'rgba(255,255,255,0.05)' }} />
-                  </div>
-                  <button onClick={() => setDelivery(prev => prev ? {
-                    ...prev, karnatakaSlabs: prev.karnatakaSlabs.filter((_, i) => i !== idx)
-                  } : prev)}
-                    disabled={(delivery.karnatakaSlabs || []).length <= 1}
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all disabled:opacity-20"
-                    style={{ background: 'rgba(239,68,68,0.08)', color: 'rgba(239,68,68,0.5)' }}>
-                    ✕
+                  <button onClick={() => setDelivery(prev => {
+                    if (!prev) return prev;
+                    const s = (prev[region.key] || []) as DeliverySlab[];
+                    return { ...prev, [region.key]: [...s, {
+                      maxGrams: (s.at(-1)?.maxGrams ?? 0) + 500,
+                      charge: (s.at(-1)?.charge ?? 0) + 100,
+                    }]};
+                  })}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+                    style={{ background: 'rgba(212,148,42,0.10)', border: '1px dashed rgba(212,148,42,0.30)', color: 'rgba(212,148,42,0.75)' }}>
+                    + Add
                   </button>
                 </div>
-              ))}
-            </div>
-            <p className="text-[0.6rem] text-white/20 mt-3">
-              If total weight exceeds the last slab, the last charge applies.
-            </p>
-          </div>
 
-          {/* South India slabs */}
-          {(['southIndiaSlabs', 'northIndiaSlabs'] as const).map(key => (
-            <div key={key} className="mt-4 rounded-2xl p-5 border border-white/[.07]"
-              style={{ background: 'rgba(15,24,10,0.8)' }}>
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <p className="text-sm font-bold text-white">
-                    {key === 'southIndiaSlabs' ? '🌴 South India' : '🏔 North India'} Shipping Slabs
-                  </p>
-                  <p className="text-xs text-white/30 mt-0.5">
-                    {key === 'southIndiaSlabs'
-                      ? 'TN, Kerala, AP, Telangana, Goa'
-                      : 'All other Indian states'}
-                  </p>
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2">
+                  {slabs.map((slab, idx) => {
+                    const prevMax = idx === 0 ? 0 : slabs[idx - 1].maxGrams;
+                    const rangeLabel = idx === 0
+                      ? `0 – ${slab.maxGrams}g`
+                      : `${prevMax + 1} – ${slab.maxGrams}g`;
+                    return (
+                      <div key={idx} className="relative rounded-xl p-2.5 border border-white/[.07] group"
+                        style={{ background: 'rgba(255,255,255,0.04)' }}>
+                        {/* Delete */}
+                        <button
+                          onClick={() => setDelivery(prev => prev ? {
+                            ...prev, [region.key]: slabs.filter((_, i) => i !== idx)
+                          } : prev)}
+                          disabled={slabs.length <= 1}
+                          className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[.55rem] items-center justify-center hidden group-hover:flex disabled:hidden transition-all"
+                          style={{ background: 'rgba(239,68,68,0.8)', color: 'white' }}>
+                          ✕
+                        </button>
+                        {/* Weight range label */}
+                        <p className="text-[.58rem] text-white/30 leading-tight mb-1.5 truncate">{rangeLabel}</p>
+                        {/* Charge input */}
+                        <div className="relative">
+                          <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[.6rem] text-white/30">₹</span>
+                          <input
+                            type="number" min={0} value={slab.charge}
+                            onChange={e => setDelivery(prev => {
+                              if (!prev) return prev;
+                              const updated = [...(prev[region.key] || [])] as DeliverySlab[];
+                              updated[idx] = { ...updated[idx], charge: parseFloat(e.target.value) || 0 };
+                              return { ...prev, [region.key]: updated };
+                            })}
+                            className="w-full pl-4 pr-1 py-1 rounded-lg text-xs text-white/90 outline-none border border-white/[.08] font-semibold"
+                            style={{ background: 'rgba(255,255,255,0.06)' }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-                <button onClick={() => setDelivery(prev => {
-                  if (!prev) return prev;
-                  const slabs = prev[key] || [];
-                  return { ...prev, [key]: [...slabs, {
-                    maxGrams: (slabs.at(-1)?.maxGrams ?? 3000) + 500,
-                    charge: (slabs.at(-1)?.charge ?? 600) + 100,
-                  }]};
-                })}
-                  className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
-                  style={{ background: 'rgba(212,148,42,0.10)', border: '1px dashed rgba(212,148,42,0.30)', color: 'rgba(212,148,42,0.75)' }}>
-                  + Add slab
-                </button>
+                <p className="text-[0.58rem] text-white/20 mt-3">Hover a card to delete · exceeding last slab uses last charge</p>
               </div>
-              <div className="grid grid-cols-[1fr_1fr_40px] gap-2 px-2 mb-2">
-                <span className="text-[0.58rem] font-bold uppercase tracking-widest text-white/25">Up to (grams)</span>
-                <span className="text-[0.58rem] font-bold uppercase tracking-widest text-white/25">Charge ₹</span>
-                <span />
-              </div>
-              <div className="space-y-2">
-                {(delivery[key] || []).map((slab, idx) => (
-                  <div key={idx} className="grid grid-cols-[1fr_1fr_40px] gap-2 items-center">
-                    <div className="relative">
-                      <input type="number" min={1} value={slab.maxGrams}
-                        onChange={e => setDelivery(prev => {
-                          if (!prev) return prev;
-                          const slabs = [...(prev[key] || [])];
-                          slabs[idx] = { ...slabs[idx], maxGrams: parseInt(e.target.value) || 0 };
-                          return { ...prev, [key]: slabs };
-                        })}
-                        className="w-full px-3 py-2 rounded-xl text-sm text-white/80 outline-none border border-white/[.08]"
-                        style={{ background: 'rgba(255,255,255,0.05)' }} />
-                      <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[0.6rem] text-white/25">g</span>
-                    </div>
-                    <div className="relative">
-                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-white/30">₹</span>
-                      <input type="number" min={0} value={slab.charge}
-                        onChange={e => setDelivery(prev => {
-                          if (!prev) return prev;
-                          const slabs = [...(prev[key] || [])];
-                          slabs[idx] = { ...slabs[idx], charge: parseFloat(e.target.value) || 0 };
-                          return { ...prev, [key]: slabs };
-                        })}
-                        className="w-full pl-6 pr-3 py-2 rounded-xl text-sm text-white/80 outline-none border border-white/[.08]"
-                        style={{ background: 'rgba(255,255,255,0.05)' }} />
-                    </div>
-                    <button onClick={() => setDelivery(prev => prev ? {
-                      ...prev, [key]: (prev[key] || []).filter((_, i) => i !== idx)
-                    } : prev)}
-                      disabled={(delivery[key] || []).length <= 1}
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all disabled:opacity-20"
-                      style={{ background: 'rgba(239,68,68,0.08)', color: 'rgba(239,68,68,0.5)' }}>
-                      ✕
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-
-          <div className="mt-4 p-4 rounded-xl border border-white/[.06]" style={{ background: 'rgba(255,255,255,0.03)' }}>
-            <p className="text-sm font-bold uppercase tracking-[2px] mb-2" style={{ color: 'rgba(200,180,74,0.4)' }}>Live Preview</p>
-            <p className="text-sm text-white/70">Delivery: <strong style={{ color: '#C8B44A' }}>₹{delivery.baseCharge}</strong></p>
-            {delivery.karnatakFree && <p className="text-[.88rem] text-emerald-400/60 mt-1">{delivery.note}</p>}
-          </div>
+            );
+          })}
 
           <button onClick={saveDelivery} disabled={deliverySaving}
-            className="mt-4 w-full py-3.5 rounded-xl font-semibold text-sm tracking-[0.5px] disabled:opacity-40 transition-all"
+            className="w-full max-w-xs py-3 rounded-xl font-semibold text-sm disabled:opacity-40 transition-all"
             style={{ background: 'linear-gradient(135deg,#C8B44A,#D4942A)', color: '#0D1A09', boxShadow: '0 6px 20px rgba(200,180,74,0.2)' }}>
             {deliverySaving ? 'Saving…' : 'Save All Delivery Settings'}
           </button>

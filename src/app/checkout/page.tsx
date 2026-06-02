@@ -146,7 +146,8 @@ export default function CheckoutPage() {
 
   const deliveryCharge = (() => {
     if (!delivery || deliveryZone === 'international') return 0;
-    if (deliveryZone === 'karnataka') return coGrams === 0 ? 0 : Math.ceil(coGrams / 1000) * (delivery.baseCharge || 60);
+    if (coGrams === 0) return 0;
+    if (deliveryZone === 'karnataka') return coSlabCharge(delivery.karnatakaSlabs, coGrams, delivery.baseCharge || 60);
     if (deliveryZone === 'south-india') return coSlabCharge(delivery.southIndiaSlabs, coGrams, delivery.outstationCharge);
     return coSlabCharge(delivery.northIndiaSlabs, coGrams, delivery.outstationCharge);
   })();

@@ -55,9 +55,10 @@ export function calcDeliveryCharge(
     return sum + g * item.count;
   }, 0);
 
+  if (chargeableGrams === 0) return 0;
+
   if (zone === 'karnataka') {
-    // Per-kg rate: baseCharge = ₹/kg, round up to nearest kg, 1kg packs already excluded
-    return chargeableGrams === 0 ? 0 : Math.ceil(chargeableGrams / 1000) * (ds.baseCharge || 60);
+    return slabCharge(ds.karnatakaSlabs, chargeableGrams, ds.baseCharge || 60);
   }
   if (zone === 'south-india') {
     return slabCharge(ds.southIndiaSlabs, chargeableGrams, ds.outstationCharge);
