@@ -116,6 +116,7 @@ const GENERATIONS = [
 export default function About() {
   const [lang, setLang] = useState<'en' | 'kn'>('en');
   const [imgIdx, setImgIdx] = useState(0);
+  const [expanded, setExpanded] = useState(false);
   const c = lang === 'en' ? ENGLISH : KANNADA;
 
   useEffect(() => {
@@ -211,19 +212,25 @@ export default function About() {
           </div>
         </RevealSection>
 
-        {/* Body paragraphs */}
-        <div className="space-y-4 mb-7">
-          {c.paragraphs.map((para, i) => (
-            <RevealSection key={i} delay={i * 70}>
-              <p className="text-base sm:text-lg leading-[1.95]" style={{ color: 'rgba(255,255,255,1)', textShadow: '0 1px 12px rgba(0,0,0,0.7)' }}>
+        {/* First paragraph — always visible */}
+        <RevealSection delay={70}>
+          <p className="text-base sm:text-lg leading-[1.95] mb-4" style={{ color: 'rgba(255,255,255,1)', textShadow: '0 1px 12px rgba(0,0,0,0.7)' }}>
+            {c.paragraphs[0]}
+          </p>
+        </RevealSection>
+
+        {/* Expandable rest of story */}
+        <div className="overflow-hidden transition-all duration-700 ease-in-out"
+          style={{ maxHeight: expanded ? '1200px' : '0px', opacity: expanded ? 1 : 0, transition: 'max-height 0.7s ease-in-out, opacity 0.5s ease-in-out' }}>
+          <div className="space-y-4 mb-7 pt-2">
+            {c.paragraphs.slice(1).map((para, i) => (
+              <p key={i} className="text-base sm:text-lg leading-[1.95]" style={{ color: 'rgba(255,255,255,1)', textShadow: '0 1px 12px rgba(0,0,0,0.7)' }}>
                 {para}
               </p>
-            </RevealSection>
-          ))}
-        </div>
+            ))}
+          </div>
 
-        {/* Pull quote card */}
-        <RevealSection delay={160}>
+          {/* Pull quote card */}
           <div className="relative rounded-2xl p-5 md:p-6 mb-6 overflow-hidden"
             style={{ background: 'linear-gradient(135deg,rgba(200,180,74,0.16),rgba(200,180,74,0.06))', border: '1px solid rgba(200,180,74,0.35)', backdropFilter: 'blur(6px)' }}>
             <div className="absolute top-0 right-0 w-24 h-24 pointer-events-none"
@@ -232,20 +239,33 @@ export default function About() {
               &ldquo;{c.pullquote}&rdquo;
             </p>
           </div>
-        </RevealSection>
 
-        {/* Closing + welcome */}
-        <RevealSection delay={200}>
+          {/* Closing + welcome */}
           <p className="text-base sm:text-lg leading-[1.9] mb-5" style={{ color: 'rgba(255,255,255,1)', textShadow: '0 1px 12px rgba(0,0,0,0.7)' }}>
             {c.closing}
           </p>
-          <div className="flex items-center gap-3">
-            <div className="h-px flex-1" style={{ background: 'linear-gradient(to right, rgba(200,180,74,0.3), transparent)' }} />
-          </div>
-          <div className="mt-5 space-y-1">
+          <div className="h-px mb-5" style={{ background: 'linear-gradient(to right, rgba(200,180,74,0.3), transparent)' }} />
+          <div className="space-y-1 mb-6">
             <p className="font-display font-medium text-base sm:text-lg" style={{ color: 'rgba(255,248,220,1)', textShadow: '0 1px 12px rgba(0,0,0,0.7)' }}>{c.welcome1}</p>
             <p className="font-display font-semibold text-lg sm:text-xl" style={{ background: 'linear-gradient(90deg,#C8B44A,#E8D46A)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{c.welcome2}</p>
           </div>
+        </div>
+
+        {/* Read More / Read Less toggle */}
+        <RevealSection delay={120}>
+          <button onClick={() => setExpanded(v => !v)}
+            className="group flex items-center gap-2.5 mt-2 mb-4 transition-all active:scale-95"
+            style={{ color: 'rgba(200,180,74,0.85)' }}>
+            <span className="text-sm font-bold tracking-[2px] uppercase">
+              {expanded ? 'Read Less' : 'Read Our Full Story'}
+            </span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+              className="transition-transform duration-300"
+              style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </button>
         </RevealSection>
 
         {/* Slideshow dots — control the background photo */}

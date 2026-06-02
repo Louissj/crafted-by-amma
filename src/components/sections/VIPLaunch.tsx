@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
@@ -30,17 +30,59 @@ const CONFETTI = [
 
 type Phase = 'idle' | 'charging' | 'confetti' | 'burst' | 'flash';
 
+const LAUNCH_LINES = [
+  { text: 'Initializing Craft Protocol...', sub: 'System check complete ✓'          },
+  { text: 'Heritage Verified · 80 Years',   sub: 'Authenticity confirmed ✓'         },
+  { text: 'Loading Amma\'s Kitchen...',      sub: 'All ingredients online ✓'         },
+  { text: 'All Systems Go 🚀',               sub: 'Launch sequence confirmed'        },
+];
+
 export default function VIPLaunch() {
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>('idle');
+  const [lineIdx, setLineIdx] = useState(-1);
+  const [typedText, setTypedText] = useState('');
+  const [subVisible, setSubVisible] = useState(false);
+  const typeRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const STEP = 2400;
+  const TYPE_SPEED = 38;
+
+  useEffect(() => {
+    if (lineIdx < 0 || lineIdx >= LAUNCH_LINES.length) { setTypedText(''); setSubVisible(false); return; }
+    const fullText = LAUNCH_LINES[lineIdx].text;
+    setTypedText('');
+    setSubVisible(false);
+    let i = 0;
+    if (typeRef.current) clearInterval(typeRef.current);
+    typeRef.current = setInterval(() => {
+      i++;
+      setTypedText(fullText.slice(0, i));
+      if (i >= fullText.length) {
+        clearInterval(typeRef.current!);
+        setTimeout(() => setSubVisible(true), 150);
+      }
+    }, TYPE_SPEED);
+    return () => { if (typeRef.current) clearInterval(typeRef.current); };
+  }, [lineIdx]);
 
   const handleLaunch = () => {
     if (phase !== 'idle') return;
     setPhase('charging');
-    setTimeout(() => setPhase('confetti'), 500);
-    setTimeout(() => setPhase('burst'),    900);
-    setTimeout(() => setPhase('flash'),    1400);
-    setTimeout(() => router.push('/home'), 2000);
+
+    // After charging, show lines one by one (each stays STEP ms, then replaced)
+    setTimeout(() => {
+      setPhase('confetti');
+      LAUNCH_LINES.forEach((_, i) => {
+        setTimeout(() => setLineIdx(i), i * STEP);
+      });
+    }, 500);
+
+    const totalLines = LAUNCH_LINES.length * STEP;
+    const HOLD = 1200; // extra pause after last line before burst
+    setTimeout(() => { setLineIdx(-1); setPhase('burst'); }, 500 + totalLines + HOLD);
+    setTimeout(() => setPhase('flash'),    500 + totalLines + HOLD + 600);
+    setTimeout(() => router.push('/home'), 500 + totalLines + HOLD + 1200);
   };
 
   return (
@@ -91,6 +133,27 @@ export default function VIPLaunch() {
         @keyframes btn-charge-glow {
           0%   { box-shadow: 0 0 20px 4px rgba(212,148,42,0.4); }
           100% { box-shadow: 0 0 80px 30px rgba(255,220,80,0.8), 0 0 160px 60px rgba(212,148,42,0.5); }
+        }
+        @keyframes line-in {
+          0%   { opacity: 0; transform: translateY(32px); filter: blur(6px); }
+          100% { opacity: 1; transform: translateY(0);    filter: blur(0); }
+        }
+        @keyframes sub-in {
+          0%   { opacity: 0; transform: translateY(10px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes cursor-blink {
+          0%, 100% { opacity: 1; }
+          50%       { opacity: 0; }
+        }
+        @keyframes text-glow-pulse {
+          0%, 100% { text-shadow: 0 2px 30px rgba(0,0,0,0.9), 0 0 20px rgba(212,148,42,0.15); }
+          50%       { text-shadow: 0 2px 30px rgba(0,0,0,0.9), 0 0 50px rgba(212,148,42,0.45); }
+        }
+        @keyframes checkmark-pop {
+          0%   { transform: scale(0) rotate(-15deg); opacity: 0; }
+          60%  { transform: scale(1.3) rotate(5deg);  opacity: 1; }
+          100% { transform: scale(1) rotate(0deg);   opacity: 1; }
         }
         @keyframes screen-shake {
           0%, 100% { transform: translate(0,0) rotate(0deg); }
@@ -254,12 +317,64 @@ export default function VIPLaunch() {
           </div>
         ))}
 
+        {/* ── Launch text overlay — one line at a time, typewriter ── */}
+        {phase === 'confetti' && lineIdx >= 0 && lineIdx < LAUNCH_LINES.length && (
+          <div className="absolute inset-0 z-[6] flex flex-col items-center justify-center pointer-events-none px-8">
+            <div key={lineIdx} className="flex flex-col items-center gap-4 text-center"
+              style={{ animation: 'line-in 0.45s ease-out forwards' }}>
+
+              {/* Line number badge */}
+              <div style={{
+                fontFamily: 'monospace', fontSize: '0.65rem',
+                color: 'rgba(74,222,128,0.55)', letterSpacing: '3px',
+                animation: 'sub-in 0.3s ease-out forwards',
+              }}>
+                {`[ STEP ${lineIdx + 1} / ${LAUNCH_LINES.length} ]`}
+              </div>
+
+              {/* Typewriter main text */}
+              <p className="font-display font-black leading-tight"
+                style={{
+                  fontSize: 'clamp(1.7rem,6.5vw,3rem)',
+                  color: lineIdx === LAUNCH_LINES.length - 1 ? '#FFE060' : 'rgba(255,248,220,0.97)',
+                  letterSpacing: '-0.02em',
+                  minHeight: '1.2em',
+                  animation: 'text-glow-pulse 2s ease-in-out infinite',
+                }}>
+                {typedText}
+                {/* Blinking cursor */}
+                {typedText.length < LAUNCH_LINES[lineIdx].text.length && (
+                  <span style={{ animation: 'cursor-blink 0.6s step-end infinite', color: '#D4942A' }}>|</span>
+                )}
+                {/* Checkmark after typing done */}
+                {subVisible && lineIdx < LAUNCH_LINES.length - 1 && (
+                  <span style={{ marginLeft: 10, fontSize: '0.7em', color: 'rgba(74,222,128,0.9)', animation: 'checkmark-pop 0.35s ease-out forwards', display: 'inline-block' }}>✓</span>
+                )}
+              </p>
+
+              {/* Sub text — appears after typing completes */}
+              {subVisible && (
+                <p style={{
+                  fontFamily: 'monospace',
+                  fontSize: 'clamp(0.68rem,1.8vw,0.85rem)',
+                  color: 'rgba(74,222,128,0.75)',
+                  letterSpacing: '0.08em',
+                  textShadow: '0 0 14px rgba(74,222,128,0.35)',
+                  animation: 'sub-in 0.4s ease-out forwards',
+                }}>
+                  {LAUNCH_LINES[lineIdx].sub}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Main content */}
         <div className="relative z-[5] flex flex-col items-center text-center px-6"
           style={{
             maxWidth: 540,
-            animation: phase === 'burst' || phase === 'flash'
-              ? 'content-launch-slow 0.7s ease-in forwards'
+            animation: phase === 'confetti' || phase === 'burst' || phase === 'flash'
+              ? 'content-launch-slow 0.6s ease-in forwards'
               : 'none',
           }}>
 
