@@ -20,10 +20,10 @@ export async function GET() {
     const rows = await prisma.$queryRaw<Record<string, unknown>[]>`
       SELECT * FROM "DeliverySettings" WHERE id = ${ID} LIMIT 1
     `;
-    if (rows.length > 0) return NextResponse.json(rows[0]);
-    // Create with defaults if not found
+    const headers = { 'Cache-Control': 'no-store' };
+    if (rows.length > 0) return NextResponse.json(rows[0], { headers });
     const s = await prisma.deliverySettings.create({ data: DEFAULTS });
-    return NextResponse.json(s);
+    return NextResponse.json(s, { headers });
   } catch {
     return NextResponse.json({ error: 'Failed to fetch delivery settings' }, { status: 500 });
   }
@@ -35,45 +35,34 @@ export async function PUT(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const data: Record<string, unknown> = {};
+
+    const sortSlabs = (arr: unknown) =>
+      Array.isArray(arr)
+        ? arr
+            .filter((s: { maxGrams: unknown; charge: unknown }) => typeof s.maxGrams === 'number' && typeof s.charge === 'number')
+            .sort((a: { maxGrams: number }, b: { maxGrams: number }) => a.maxGrams - b.maxGrams)
+        : undefined;
+
+    // Build update payload — only include fields that were actually sent
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data: Record<string, any> = {};
     if (typeof body.baseCharge === 'number' && body.baseCharge >= 0) data.baseCharge = body.baseCharge;
     if (typeof body.outstationCharge === 'number' && body.outstationCharge >= 0) data.outstationCharge = body.outstationCharge;
     if (typeof body.freeAboveAmt === 'number' && body.freeAboveAmt >= 0) data.freeAboveAmt = body.freeAboveAmt;
     if (typeof body.karnatakFree === 'boolean') data.karnatakFree = body.karnatakFree;
     if (typeof body.note === 'string') data.note = sanitize(body.note).slice(0, 500);
-    const sortSlabs = (arr: unknown) =>
-      Array.isArray(arr)
-        ? arr
-            .filter((s: { maxGrams: number; charge: number }) => typeof s.maxGrams === 'number' && typeof s.charge === 'number')
-            .sort((a: { maxGrams: number }, b: { maxGrams: number }) => a.maxGrams - b.maxGrams)
-        : undefined;
-
     if (Array.isArray(body.karnatakaSlabs))  data.karnatakaSlabs  = sortSlabs(body.karnatakaSlabs);
     if (Array.isArray(body.southIndiaSlabs)) data.southIndiaSlabs = sortSlabs(body.southIndiaSlabs);
     if (Array.isArray(body.northIndiaSlabs)) data.northIndiaSlabs = sortSlabs(body.northIndiaSlabs);
 
-    // Use raw SQL to bypass any Prisma client regeneration issues with new JSON columns
-    const setClauses: string[] = [];
-    const values: unknown[] = [];
-    let idx = 1;
-    for (const [key, val] of Object.entries(data)) {
-      if (['karnatakaSlabs','southIndiaSlabs','northIndiaSlabs'].includes(key)) {
-        setClauses.push(`"${key}" = $${idx++}::jsonb`);
-        values.push(JSON.stringify(val));
-      } else {
-        setClauses.push(`"${key}" = $${idx++}`);
-        values.push(val);
-      }
-    }
-    if (setClauses.length === 0) {
+    if (Object.keys(data).length === 0) {
       const rows = await prisma.$queryRaw<Record<string, unknown>[]>`SELECT * FROM "DeliverySettings" WHERE id = ${ID} LIMIT 1`;
       return NextResponse.json(rows[0] ?? null);
     }
-    values.push(ID);
-    await prisma.$executeRawUnsafe(
-      `UPDATE "DeliverySettings" SET ${setClauses.join(', ')} WHERE id = $${idx}`,
-      ...values
-    );
+
+    await prisma.deliverySettings.update({ where: { id: ID }, data });
+
+    // Always read back with raw SQL so JSON columns are returned correctly
     const rows = await prisma.$queryRaw<Record<string, unknown>[]>`SELECT * FROM "DeliverySettings" WHERE id = ${ID} LIMIT 1`;
     return NextResponse.json(rows[0] ?? null);
   } catch (err) {

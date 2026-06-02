@@ -189,7 +189,7 @@ export default function AdminDashboard() {
   }, []);
 
   const fetchDelivery = useCallback(async () => {
-    const res = await fetch('/api/settings/delivery');
+    const res = await fetch('/api/settings/delivery', { cache: 'no-store' });
     setDelivery(await res.json());
   }, []);
 
