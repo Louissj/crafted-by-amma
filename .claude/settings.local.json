@@ -26,7 +26,9 @@
       "Bash(node --env-file=.env -e \"require\\('child_process'\\).execSync\\('npx tsx prisma/seed-karnataka-slabs.ts', {stdio: 'inherit', env: {...process.env}}\\)\")",
       "Bash(node --env-file=.env -e \"require\\('child_process'\\).execSync\\('npx tsx prisma/seed-india-slabs.ts', {stdio: 'inherit', env: {...process.env}}\\)\")",
       "Bash(node --env-file=.env -e \"require\\('child_process'\\).execSync\\('npx tsx prisma/check-prices.ts', {stdio: 'inherit', env: {...process.env}}\\)\")",
-      "Bash(node --env-file=.env -e \"require\\('child_process'\\).execSync\\('npx tsx prisma/seed-launch.ts', {stdio: 'inherit', env: {...process.env}}\\)\")"
+      "Bash(node --env-file=.env -e \"require\\('child_process'\\).execSync\\('npx tsx prisma/seed-launch.ts', {stdio: 'inherit', env: {...process.env}}\\)\")",
+      "Bash(node --env-file=.env -e \"require\\('child_process'\\).execSync\\('npx tsx prisma/update-karnataka-slabs.ts', {stdio: 'inherit', env: {...process.env}}\\)\")",
+      "Bash(node --env-file=.env -e \"require\\('child_process'\\).execSync\\('npx tsx prisma/check-slabs.ts', {stdio: 'inherit', env: {...process.env}}\\)\")"
     ]
   }
 }

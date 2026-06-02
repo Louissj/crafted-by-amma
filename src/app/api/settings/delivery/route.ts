@@ -16,8 +16,13 @@ const DEFAULTS = {
 
 export async function GET() {
   try {
-    let s = await prisma.deliverySettings.findUnique({ where: { id: ID } });
-    if (!s) s = await prisma.deliverySettings.create({ data: DEFAULTS });
+    // Use raw SQL to ensure new JSON columns (slabs, launchMode) are always returned
+    const rows = await prisma.$queryRaw<Record<string, unknown>[]>`
+      SELECT * FROM "DeliverySettings" WHERE id = ${ID} LIMIT 1
+    `;
+    if (rows.length > 0) return NextResponse.json(rows[0]);
+    // Create with defaults if not found
+    const s = await prisma.deliverySettings.create({ data: DEFAULTS });
     return NextResponse.json(s);
   } catch {
     return NextResponse.json({ error: 'Failed to fetch delivery settings' }, { status: 500 });
