@@ -125,7 +125,8 @@ export default function CartPage() {
 
   const deliveryCharge = (() => {
     if (!delivery || !pincodeState || deliveryZone === 'international') return 0;
-    if (deliveryZone === 'karnataka') return chargeableGrams === 0 ? 0 : calcSlabCharge(delivery.karnatakaSlabs, chargeableGrams, delivery.baseCharge);
+    // Karnataka: per-kg rate (baseCharge = ₹/kg, round up), 1kg packs free
+    if (deliveryZone === 'karnataka') return chargeableGrams === 0 ? 0 : Math.ceil(chargeableGrams / 1000) * (delivery.baseCharge || 60);
     if (deliveryZone === 'south-india') return calcSlabCharge(delivery.southIndiaSlabs, chargeableGrams, delivery.outstationCharge);
     return calcSlabCharge(delivery.northIndiaSlabs, chargeableGrams, delivery.outstationCharge);
   })();

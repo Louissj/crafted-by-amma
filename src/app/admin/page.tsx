@@ -1425,7 +1425,7 @@ export default function AdminDashboard() {
           <div className="rounded-2xl p-6 border border-white/[.07] space-y-5"
             style={{ background: 'rgba(15,24,10,0.8)', boxShadow: '0 8px 30px rgba(0,0,0,0.3)' }}>
             {[
-              { label: 'Karnataka Delivery Charge (₹)', key: 'baseCharge', hint: 'Applied when Karnataka order is below free delivery threshold' },
+              { label: 'Karnataka Rate per kg (₹)', key: 'baseCharge', hint: 'Charge per kg for Karnataka orders · rounded up · 1kg packs always free' },
               { label: 'Outstation India Charge (₹)', key: 'outstationCharge', hint: 'Applied for all non-Karnataka Indian orders (auto-detected by pincode)' },
               { label: 'Free Delivery Above (₹)', key: 'freeAboveAmt', hint: 'Karnataka orders above this amount get free delivery' },
             ].map(field => (
