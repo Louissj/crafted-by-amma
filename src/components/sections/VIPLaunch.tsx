@@ -37,7 +37,7 @@ const LAUNCH_LINES = [
   { text: 'All Systems Go 🚀',               sub: 'Launch sequence confirmed'        },
 ];
 
-export default function VIPLaunch() {
+export default function VIPLaunch({ onDismiss }: { onDismiss?: () => void }) {
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>('idle');
   const [lineIdx, setLineIdx] = useState(-1);
@@ -82,7 +82,7 @@ export default function VIPLaunch() {
     const HOLD = 1200; // extra pause after last line before burst
     setTimeout(() => { setLineIdx(-1); setPhase('burst'); }, 500 + totalLines + HOLD);
     setTimeout(() => setPhase('flash'),    500 + totalLines + HOLD + 600);
-    setTimeout(() => router.push('/home'), 500 + totalLines + HOLD + 1200);
+    setTimeout(() => { if (onDismiss) onDismiss(); else router.push('/'); }, 500 + totalLines + HOLD + 1200);
   };
 
   return (
