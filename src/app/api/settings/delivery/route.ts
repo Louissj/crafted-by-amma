@@ -36,17 +36,40 @@ export async function PUT(req: NextRequest) {
     if (typeof body.freeAboveAmt === 'number' && body.freeAboveAmt >= 0) data.freeAboveAmt = body.freeAboveAmt;
     if (typeof body.karnatakFree === 'boolean') data.karnatakFree = body.karnatakFree;
     if (typeof body.note === 'string') data.note = sanitize(body.note).slice(0, 500);
-    if (Array.isArray(body.karnatakaSlabs)) {
-      data.karnatakaSlabs = body.karnatakaSlabs
-        .filter((s: { maxGrams: number; charge: number }) => typeof s.maxGrams === 'number' && typeof s.charge === 'number')
-        .sort((a: { maxGrams: number }, b: { maxGrams: number }) => a.maxGrams - b.maxGrams);
-    }
+    const sortSlabs = (arr: unknown) =>
+      Array.isArray(arr)
+        ? arr
+            .filter((s: { maxGrams: number; charge: number }) => typeof s.maxGrams === 'number' && typeof s.charge === 'number')
+            .sort((a: { maxGrams: number }, b: { maxGrams: number }) => a.maxGrams - b.maxGrams)
+        : undefined;
 
-    const s = await prisma.deliverySettings.upsert({
-      where: { id: ID },
-      create: { ...DEFAULTS, ...data },
-      update: data,
-    });
+    if (Array.isArray(body.karnatakaSlabs))  data.karnatakaSlabs  = sortSlabs(body.karnatakaSlabs);
+    if (Array.isArray(body.southIndiaSlabs)) data.southIndiaSlabs = sortSlabs(body.southIndiaSlabs);
+    if (Array.isArray(body.northIndiaSlabs)) data.northIndiaSlabs = sortSlabs(body.northIndiaSlabs);
+
+    // Use raw SQL to bypass any Prisma client regeneration issues with new JSON columns
+    const setClauses: string[] = [];
+    const values: unknown[] = [];
+    let idx = 1;
+    for (const [key, val] of Object.entries(data)) {
+      if (['karnatakaSlabs','southIndiaSlabs','northIndiaSlabs'].includes(key)) {
+        setClauses.push(`"${key}" = $${idx++}::jsonb`);
+        values.push(JSON.stringify(val));
+      } else {
+        setClauses.push(`"${key}" = $${idx++}`);
+        values.push(val);
+      }
+    }
+    if (setClauses.length === 0) {
+      const s = await prisma.deliverySettings.findUnique({ where: { id: ID } });
+      return NextResponse.json(s);
+    }
+    values.push(ID);
+    await prisma.$executeRawUnsafe(
+      `UPDATE "DeliverySettings" SET ${setClauses.join(', ')} WHERE id = $${idx}`,
+      ...values
+    );
+    const s = await prisma.deliverySettings.findUnique({ where: { id: ID } });
     return NextResponse.json(s);
   } catch {
     return NextResponse.json({ error: 'Failed to update delivery settings' }, { status: 500 });
