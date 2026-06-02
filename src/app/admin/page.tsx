@@ -196,7 +196,7 @@ export default function AdminDashboard() {
   const fetchProducts = useCallback(async () => {
     setProductsLoading(true);
     try {
-      const res = await fetch('/api/products');
+      const res = await fetch('/api/products?admin=true');
       const data = await res.json();
       setProducts(Array.isArray(data) ? data : []);
     } finally {

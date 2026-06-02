@@ -3,14 +3,16 @@ import prisma from '@/lib/db';
 import { getAuthUser } from '@/lib/auth';
 import { sanitize } from '@/lib/security';
 
-// GET /api/products — public returns active only; admin (authenticated) returns all
-export async function GET() {
+// GET /api/products — public returns active only; ?admin=true + valid session returns all
+export async function GET(req: NextRequest) {
   try {
-    let isAdmin = false;
-    try { isAdmin = !!(await getAuthUser()); } catch { /* unauthenticated */ }
+    let includeAll = false;
+    if (req.nextUrl.searchParams.get('admin') === 'true') {
+      try { includeAll = !!(await getAuthUser()); } catch { /* unauthenticated */ }
+    }
 
     const products = await prisma.product.findMany({
-      where: isAdmin ? {} : { active: true },
+      where: includeAll ? {} : { active: true },
       orderBy: { sortOrder: 'asc' },
     });
     return NextResponse.json(products);
