@@ -1246,9 +1246,9 @@ export default function AdminDashboard() {
                     ${offer.active ? 'border-brass/20' : 'border-white/[.06] opacity-50'}`}
                   style={{ background: offer.active ? 'rgba(200,180,74,0.06)' : 'rgba(255,255,255,0.03)' }}>
                   <span className="text-xl flex-shrink-0">{offer.icon}</span>
-                  <span className="flex-1 text-smtext-white/80">{offer.text}</span>
+                  <span className="flex-1 text-sm text-white/80">{offer.text}</span>
                   <button onClick={() => toggleOffer(offer.id, !offer.active)}
-                    className={`px-3 py-1 rounded-full text-smfont-semibold transition-all
+                    className={`px-3 py-1 rounded-full text-sm font-semibold transition-all
                       ${offer.active ? 'text-emerald-400' : 'text-white/30'}`}
                     style={{ background: offer.active ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.06)' }}>
                     {offer.active ? 'Live' : 'Hidden'}
