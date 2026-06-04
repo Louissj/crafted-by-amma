@@ -42,9 +42,9 @@ export type QuantityOption = '250g' | '500g' | '1kg' | '2kg';
 export const QUANTITY_OPTIONS: QuantityOption[] = ['250g', '500g', '1kg', '2kg'];
 
 export const CONTACT = {
-  phone1: '7411895085',
+  phone1: '7899858581',
   phone2: '9483707934',
-  whatsapp: '917411895085',
+  whatsapp: '917899858581',
   instagram: 'https://www.instagram.com/craftedbyamma/',
   location: 'Mysuru, Karnataka',
 };
