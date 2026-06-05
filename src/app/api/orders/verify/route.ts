@@ -73,10 +73,12 @@ export async function POST(req: NextRequest) {
     const uniqueSizes = uniqueSizesArr.join(',') || 'sample';
     const isKarnataka = deliveryZone === 'karnataka';
 
+    const sampleGrams = validSamples.reduce((s: number, i: SampleCartItem) => s + 50 * i.count * i.qty, 0);
+
     let deliveryCharge = 0;
     try {
       const ds = await prisma.deliverySettings.findUnique({ where: { id: 'singleton' } });
-      if (ds) deliveryCharge = calcDeliveryCharge(deliveryZone, validItems, ds as unknown as Parameters<typeof calcDeliveryCharge>[2]);
+      if (ds) deliveryCharge = calcDeliveryCharge(deliveryZone, validItems, ds as unknown as Parameters<typeof calcDeliveryCharge>[2], sampleGrams);
     } catch { /* use 0 */ }
 
     const totalAmount = productSubtotal + sampleSubtotal + deliveryCharge;

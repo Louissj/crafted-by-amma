@@ -48,10 +48,12 @@ export async function POST(req: NextRequest) {
     const productSubtotal = calculateCartTotal(validItems, priceMap);
     const sampleSubtotal = validSamples.reduce((s, i) => s + i.price * i.qty, 0);
 
+    const sampleGrams = validSamples.reduce((s, i) => s + 50 * i.count * i.qty, 0);
+
     let deliveryCharge = 0;
     try {
       const ds = await prisma.deliverySettings.findUnique({ where: { id: 'singleton' } });
-      if (ds) deliveryCharge = calcDeliveryCharge(deliveryZone, validItems, ds as unknown as Parameters<typeof calcDeliveryCharge>[2]);
+      if (ds) deliveryCharge = calcDeliveryCharge(deliveryZone, validItems, ds as unknown as Parameters<typeof calcDeliveryCharge>[2], sampleGrams);
     } catch { /* use 0 */ }
 
     const grandTotal = productSubtotal + sampleSubtotal + deliveryCharge;

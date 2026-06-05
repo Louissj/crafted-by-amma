@@ -44,7 +44,8 @@ export function getDeliveryZoneFromState(state: string): 'karnataka' | 'south-in
 export function calcDeliveryCharge(
   zone: string,
   items: CartItem[],
-  ds: DeliverySettings
+  ds: DeliverySettings,
+  extraGrams = 0  // e.g. weight from sample packs (50g per product)
 ): number {
   if (zone === 'international') return 0;
 
@@ -53,7 +54,7 @@ export function calcDeliveryCharge(
     const g = parseGrams(item.packSize);
     if (zone === 'karnataka' && g >= 1000) return sum; // 1kg free in Karnataka
     return sum + g * item.count;
-  }, 0);
+  }, 0) + extraGrams;
 
   if (chargeableGrams === 0) return 0;
 
