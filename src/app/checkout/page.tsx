@@ -190,7 +190,7 @@ export default function CheckoutPage() {
       const res = await fetch('/api/orders/razorpay', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cartItems: cart, deliveryZone }),
+        body: JSON.stringify({ cartItems: cart, sampleItems, deliveryZone }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -234,6 +234,7 @@ export default function CheckoutPage() {
                 deliveryZone,
                 notes: form.notes,
                 cartItems: cart,
+                sampleItems,
               }),
             });
             const verifyData = await verifyRes.json();
@@ -448,9 +449,20 @@ export default function CheckoutPage() {
                       </div>
                     );
                   })}
+                  {sampleItems.map(item => (
+                    <div key={item.packKey} className="flex items-center justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-white leading-tight">🧪 {item.label}</p>
+                        <p className="text-xs text-white/50 mt-0.5">
+                          {item.count} products · qty {item.qty} × ₹{item.price}
+                        </p>
+                      </div>
+                      <span className="text-sm font-bold text-white flex-shrink-0">₹{item.price * item.qty}</span>
+                    </div>
+                  ))}
                   <div className="border-t border-white/10 pt-3 flex justify-between items-center">
                     <span className="text-sm font-semibold text-white/70">Subtotal</span>
-                    <span className="text-lg font-bold" style={{ color: '#D4942A' }}>₹{cartTotal}</span>
+                    <span className="text-lg font-bold" style={{ color: '#D4942A' }}>₹{cartTotal + sampleTotal}</span>
                   </div>
                 </div>
               </div>
@@ -653,7 +665,7 @@ export default function CheckoutPage() {
                   style={{ background: 'linear-gradient(135deg,#1A2A14,#243318)' }}>
                   <div>
                     <p className="text-xs font-bold tracking-[2px] uppercase" style={{ color: 'rgba(212,148,42,0.6)' }}>Order Summary</p>
-                    <p className="text-sm text-white/60 mt-0.5">{totalPacks} pack{totalPacks !== 1 ? 's' : ''} · {cart.length} item{cart.length !== 1 ? 's' : ''}</p>
+                    <p className="text-sm text-white/60 mt-0.5">{totalPacks} pack{totalPacks !== 1 ? 's' : ''} · {cart.length + sampleItems.length} item{cart.length + sampleItems.length !== 1 ? 's' : ''}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-white/40 mb-0.5">Total</p>
@@ -678,13 +690,32 @@ export default function CheckoutPage() {
                       </div>
                     );
                   })}
+                  {sampleItems.map(item => (
+                    <div key={item.packKey} className="flex items-center gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-forest leading-tight">🧪 {item.label}</p>
+                        <p className="text-xs text-forest/50 mt-0.5">
+                          {item.count} products · qty {item.qty} × ₹{item.price}
+                        </p>
+                      </div>
+                      <span className="text-sm font-bold text-forest flex-shrink-0">₹{item.price * item.qty}</span>
+                    </div>
+                  ))}
                 </div>
 
                 <div className="px-5 pt-3 pb-4 space-y-2.5 border-t border-dashed border-forest/10 mt-2">
+                  {cart.length > 0 && (
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-forest/60">Products subtotal</span>
                     <span className="font-semibold text-forest">₹{cartTotal}</span>
                   </div>
+                  )}
+                  {sampleItems.length > 0 && (
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-forest/60">Sample packs</span>
+                    <span className="font-semibold text-forest">₹{sampleTotal}</span>
+                  </div>
+                  )}
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-forest/60">Delivery charge</span>
                     {deliveryZone === 'international' ? (

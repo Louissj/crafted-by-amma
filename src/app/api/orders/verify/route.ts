@@ -6,13 +6,14 @@ import { calcDeliveryCharge } from '@/lib/delivery';
 import { notifyNewOrder } from '@/lib/notify';
 
 type CartItem = { productId: string; packSize: string; count: number };
+type SampleCartItem = { packKey: string; label: string; count: number; price: number; qty: number; selectedProducts: string[] };
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const {
       razorpayOrderId, razorpayPaymentId, razorpaySignature,
-      name, phone, city, address, pincode, deliveryZone, notes, cartItems,
+      name, phone, city, address, pincode, deliveryZone, notes, cartItems, sampleItems,
     } = body;
 
     if (!razorpayOrderId || !razorpayPaymentId || !razorpaySignature) {
@@ -57,14 +58,19 @@ export async function POST(req: NextRequest) {
       Number.isInteger(item.count) && item.count >= 1 && item.count <= 10
     );
 
-    if (validItems.length === 0) {
+    const validSamples: SampleCartItem[] = (sampleItems || []).filter(
+      (i: SampleCartItem) => i.price > 0 && i.qty >= 1
+    );
+
+    if (validItems.length === 0 && validSamples.length === 0) {
       return NextResponse.json({ error: 'Invalid cart' }, { status: 400 });
     }
 
     const productSubtotal = calculateCartTotal(validItems, priceMap);
-    const totalCount = validItems.reduce((s, i) => s + i.count, 0);
+    const sampleSubtotal = validSamples.reduce((s: number, i: SampleCartItem) => s + i.price * i.qty, 0);
+    const totalCount = validItems.reduce((s, i) => s + i.count, 0) + validSamples.reduce((s, i) => s + i.qty, 0);
     const uniqueSizesArr = validItems.map(i => i.packSize).filter((s, idx, arr) => arr.indexOf(s) === idx);
-    const uniqueSizes = uniqueSizesArr.join(',');
+    const uniqueSizes = uniqueSizesArr.join(',') || 'sample';
     const isKarnataka = deliveryZone === 'karnataka';
 
     let deliveryCharge = 0;
@@ -73,19 +79,24 @@ export async function POST(req: NextRequest) {
       if (ds) deliveryCharge = calcDeliveryCharge(deliveryZone, validItems, ds as unknown as Parameters<typeof calcDeliveryCharge>[2]);
     } catch { /* use 0 */ }
 
-    const totalAmount = productSubtotal + deliveryCharge;
+    const totalAmount = productSubtotal + sampleSubtotal + deliveryCharge;
+
+    const allProducts = [
+      ...validItems,
+      ...validSamples.map(i => ({ productId: `[Sample] ${i.label}`, packSize: `${i.count} products`, count: i.qty })),
+    ];
 
     const order = await prisma.order.create({
       data: {
         name: cleanName,
         phone: cleanPhone,
-        products: validItems,
+        products: allProducts,
         quantity: uniqueSizes,
         city: cleanCity,
         address: cleanAddress,
         pincode: cleanPincode || null,
         notes: cleanNotes || null,
-        paymentScreenshot: razorpayPaymentId, // stores Razorpay payment ID
+        paymentScreenshot: razorpayPaymentId,
         paymentMethod: 'razorpay',
         totalAmount,
         deliveryCharge,
@@ -95,7 +106,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const productNames = validItems.map(i => `${i.productId} ${i.packSize}×${i.count}`).join('\n');
+    const productNames = [
+      ...validItems.map(i => `${i.productId} ${i.packSize}×${i.count}`),
+      ...validSamples.map(i => `[Sample] ${i.label} ×${i.qty}`),
+    ].join('\n');
     notifyNewOrder({
       orderId: order.id,
       name: cleanName,

@@ -6,6 +6,7 @@ import { calcDeliveryCharge } from '@/lib/delivery';
 import { rateLimitOrder } from '@/lib/rateLimit';
 
 type CartItem = { productId: string; packSize: string; count: number };
+type SampleCartItem = { packKey: string; label: string; count: number; price: number; qty: number; selectedProducts: string[] };
 
 export async function POST(req: NextRequest) {
   const razorpay = new Razorpay({
@@ -21,6 +22,7 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const cartItems: CartItem[] = body.cartItems || [];
+    const sampleItems: SampleCartItem[] = body.sampleItems || [];
     const deliveryZone: string = body.deliveryZone || 'north-india';
 
     const dbProducts = await prisma.product.findMany({ where: { active: true } });
@@ -37,11 +39,14 @@ export async function POST(req: NextRequest) {
       Number.isInteger(item.count) && item.count >= 1 && item.count <= 10
     );
 
-    if (validItems.length === 0) {
+    const validSamples = sampleItems.filter(i => i.price > 0 && i.qty >= 1);
+
+    if (validItems.length === 0 && validSamples.length === 0) {
       return NextResponse.json({ error: 'Cart is empty or invalid' }, { status: 400 });
     }
 
     const productSubtotal = calculateCartTotal(validItems, priceMap);
+    const sampleSubtotal = validSamples.reduce((s, i) => s + i.price * i.qty, 0);
 
     let deliveryCharge = 0;
     try {
@@ -49,7 +54,7 @@ export async function POST(req: NextRequest) {
       if (ds) deliveryCharge = calcDeliveryCharge(deliveryZone, validItems, ds as unknown as Parameters<typeof calcDeliveryCharge>[2]);
     } catch { /* use 0 */ }
 
-    const grandTotal = productSubtotal + deliveryCharge;
+    const grandTotal = productSubtotal + sampleSubtotal + deliveryCharge;
 
     const order = await razorpay.orders.create({
       amount: grandTotal * 100, // paise

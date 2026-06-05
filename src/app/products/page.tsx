@@ -126,7 +126,7 @@ export default function ProductsPage() {
 
       {/* Sticky mini cart bar */}
       <div className={`fixed bottom-0 left-0 right-0 z-[1000] px-4 pb-4 md:pb-5 transition-all duration-400
-        ${totalPacks > 0 ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'}`}>
+        ${totalPacks > 0 || sampleCount > 0 ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'}`}>
         <div className="max-w-md mx-auto">
           <Link href="/cart"
             className="flex items-center gap-4 px-5 py-3.5 rounded-2xl no-underline transition-all hover:scale-[1.02]"
@@ -139,14 +139,16 @@ export default function ProductsPage() {
               <span className="text-base">🛒</span>
               <div>
                 <span className="text-xs font-bold uppercase tracking-[2px] block" style={{ color: 'rgba(212,148,42,0.55)' }}>
-                  {totalPacks} pack{totalPacks !== 1 ? 's' : ''} in cart
+                  {totalPacks > 0 && `${totalPacks} pack${totalPacks !== 1 ? 's' : ''}`}
+                  {totalPacks > 0 && sampleCount > 0 && ' · '}
+                  {sampleCount > 0 && `${sampleCount} sample${sampleCount !== 1 ? 's' : ''}`}
                 </span>
                 <span className="font-display text-sm font-bold" style={{ color: 'rgba(235,225,200,0.85)' }}>View Cart</span>
               </div>
             </div>
             <div className="flex-1" />
             <div className="text-right">
-              <span className="font-display text-lg font-bold" style={{ color: '#D4942A' }}>₹{cartTotal}</span>
+              <span className="font-display text-lg font-bold" style={{ color: '#D4942A' }}>₹{cartTotal + sampleTotal}</span>
               <span className="text-xs block" style={{ color: 'rgba(235,225,200,0.30)' }}>excl. delivery</span>
             </div>
             <span style={{ color: '#D4942A' }}>→</span>

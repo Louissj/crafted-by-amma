@@ -2577,13 +2577,17 @@ export default function AdminDashboard() {
                   <div className="p-4 space-y-1.5">
                     {(() => {
                       const items = parseCartItems(selected.products);
-                      if (items.length > 0) return items.map((item, i) => (
-                        <div key={i} className="flex justify-between text-sm">
-                          <span className="text-white/60">{PRODUCTS[item.productId as keyof typeof PRODUCTS]?.shortName || item.productId}
-                            <span className="text-white/30 text-sm"> · {item.packSize} × {item.count}</span>
-                          </span>
-                        </div>
-                      ));
+                      if (items.length > 0) return items.map((item, i) => {
+                        const isSample = item.productId.startsWith('[Sample]');
+                        return (
+                          <div key={i} className="flex justify-between text-sm items-start gap-2">
+                            <span className={isSample ? 'text-amber-400/80' : 'text-white/60'}>
+                              {isSample ? '🧪 ' : ''}{PRODUCTS[item.productId as keyof typeof PRODUCTS]?.shortName || item.productId}
+                              <span className="text-white/30 text-sm"> · {item.packSize} × {item.count}</span>
+                            </span>
+                          </div>
+                        );
+                      });
                       return <p className="text-sm text-white/50">{getProductNames(selected.products)}</p>;
                     })()}
 
