@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { getAuthUser } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
 import { getClientIP, sanitize, isValidPhone, validateFile, calculateCartTotal } from '@/lib/security';
 import { rateLimitOrder, rateLimitApi } from '@/lib/rateLimit';
 import { uploadToS3 } from '@/lib/s3';

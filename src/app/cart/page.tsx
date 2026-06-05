@@ -381,7 +381,7 @@ export default function CartPage() {
                         placeholder="e.g. 560001"
                         inputMode="numeric"
                         maxLength={6}
-                        className="w-full pl-4 pr-16 py-3 border-[1.5px] rounded-xl text-sm outline-none transition-all text-forest font-medium
+                        className="w-full pl-4 pr-16 py-3 border-[1.5px] rounded-xl text-base outline-none transition-all text-forest font-medium
                           disabled:opacity-40 disabled:bg-forest/[.02] disabled:cursor-not-allowed
                           placeholder:text-forest/45 placeholder:font-normal
                           focus:ring-3 focus:ring-sage/[.08]"

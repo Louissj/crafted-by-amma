@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(_req: NextRequest, { params }: { params: { pin: string } }) {
   const pin = params.pin.replace(/\D/g, '');
   if (pin.length !== 6) return NextResponse.json({ error: 'Invalid' }, { status: 400 });

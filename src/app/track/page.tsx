@@ -17,12 +17,12 @@ type TrackOrder = {
 const STATUS_FLOW = ['pending', 'verified', 'confirmed', 'shipped', 'delivered'] as const;
 
 const STATUS_META: Record<string, { label: string; color: string; bg: string; icon: string; desc: string }> = {
-  pending:   { label: 'Pending',   color: '#D4942A', bg: 'rgba(212,148,42,0.1)',  icon: '⏳', desc: 'Order received, awaiting verification' },
-  verified:  { label: 'Verified',  color: '#5A7A3A', bg: 'rgba(90,122,58,0.1)',   icon: '✅', desc: 'Payment verified by our team' },
-  confirmed: { label: 'Confirmed', color: '#5A7A3A', bg: 'rgba(90,122,58,0.1)',   icon: '📋', desc: 'Order confirmed & being prepared' },
+  pending:   { label: 'Pending',   color: '#D4942A', bg: 'rgba(212,148,42,0.1)',  icon: '⏳', desc: 'Order received! We\'ll verify your payment shortly.' },
+  verified:  { label: 'Verified',  color: '#5A7A3A', bg: 'rgba(90,122,58,0.1)',   icon: '✅', desc: 'Payment verified — thank you!' },
+  confirmed: { label: 'Confirmed', color: '#5A7A3A', bg: 'rgba(90,122,58,0.1)',   icon: '👩‍🍳', desc: 'Order confirmed & being prepared!' },
   shipped:   { label: 'Shipped',   color: '#3B82F6', bg: 'rgba(59,130,246,0.1)',  icon: '🚚', desc: 'On the way to you!' },
-  delivered: { label: 'Delivered', color: '#10B981', bg: 'rgba(16,185,129,0.1)',  icon: '🎉', desc: 'Delivered successfully' },
-  cancelled: { label: 'Cancelled', color: '#EF4444', bg: 'rgba(239,68,68,0.1)',   icon: '✕', desc: 'Order was cancelled' },
+  delivered: { label: 'Delivered', color: '#10B981', bg: 'rgba(16,185,129,0.1)',  icon: '🎉', desc: 'Delivered! Enjoy your order.' },
+  cancelled: { label: 'Cancelled', color: '#EF4444', bg: 'rgba(239,68,68,0.1)',   icon: '✕',  desc: 'Order was cancelled' },
 };
 
 function resolveProducts(raw: unknown): unknown[] {
@@ -61,26 +61,37 @@ function StatusTimeline({ status }: { status: string }) {
           return (
             <div key={s} className="flex items-center flex-1 last:flex-none">
               <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
-                <motion.div
-                  initial={false}
-                  animate={done
-                    ? { background: '#5A7A3A', boxShadow: '0 2px 8px rgba(90,122,58,0.3)' }
-                    : current
-                    ? { background: '#1A2A14', boxShadow: '0 0 0 3px rgba(26,42,20,0.12), 0 4px 12px rgba(26,42,20,0.2)' }
-                    : { background: 'rgba(26,42,20,0.07)', boxShadow: 'none' }}
-                  className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center transition-all">
-                  {done && <span className="text-white text-[.55rem] font-bold">✓</span>}
-                  {current && <span className="w-2 h-2 bg-brass rounded-full block" />}
-                </motion.div>
+                <div className="relative">
+                  {/* Pulse ring for current step */}
+                  {current && (
+                    <span className="absolute inset-0 rounded-full animate-ping"
+                      style={{ background: 'rgba(212,148,42,0.25)' }} />
+                  )}
+                  <motion.div
+                    initial={false}
+                    animate={done
+                      ? { background: '#5A7A3A', boxShadow: '0 2px 8px rgba(90,122,58,0.3)' }
+                      : current
+                      ? { background: '#D4942A', boxShadow: '0 0 0 3px rgba(212,148,42,0.2), 0 4px 12px rgba(212,148,42,0.3)' }
+                      : { background: 'rgba(26,42,20,0.07)', boxShadow: 'none' }}
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all relative z-10">
+                    {done && (
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 6L9 17l-5-5" />
+                      </svg>
+                    )}
+                    {current && <span className="text-sm leading-none">{meta.icon}</span>}
+                  </motion.div>
+                </div>
                 <span className={`text-[.48rem] font-bold leading-tight text-center w-9 sm:w-12 ${
-                  done || current ? 'text-forest' : 'text-forest/25'
+                  current ? 'text-brass' : done ? 'text-forest' : 'text-forest/25'
                 }`}>{meta.label}</span>
               </div>
               {i < STATUS_FLOW.length - 1 && (
                 <motion.div
                   initial={false}
                   animate={{ background: done ? '#5A7A3A' : 'rgba(26,42,20,0.08)' }}
-                  className="flex-1 h-0.5 mx-0.5 mb-4 rounded-full transition-all duration-500" />
+                  className="flex-1 h-0.5 mx-0.5 mb-5 rounded-full transition-all duration-500" />
               )}
             </div>
           );
@@ -264,7 +275,7 @@ export default function TrackPage() {
           <div className="flex gap-2.5">
             <input value={phone} onChange={e => setPhone(e.target.value)} type="tel"
               placeholder="+91 XXXXX XXXXX"
-              className="flex-1 px-4 py-3.5 border-[1.5px] border-forest/[.07] rounded-2xl text-sm bg-white outline-none focus:border-sage/60 focus:ring-3 focus:ring-sage/[.06] transition-all placeholder:text-forest/25 text-forest"
+              className="flex-1 px-4 py-3.5 border-[1.5px] border-forest/[.07] rounded-2xl text-base bg-white outline-none focus:border-sage/60 focus:ring-3 focus:ring-sage/[.06] transition-all placeholder:text-forest/25 text-forest"
               style={{ boxShadow: '0 2px 8px rgba(26,42,20,0.04)' }} />
             <button type="submit" disabled={loading || !phone.trim()}
               className="px-6 py-3.5 rounded-2xl font-bold text-sm text-forest disabled:opacity-40 transition-all hover:shadow-lg active:scale-[.98] flex-shrink-0"

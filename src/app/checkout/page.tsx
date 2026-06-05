@@ -43,8 +43,8 @@ function InputField({ label, error, children }: { label: string; error?: string;
   );
 }
 
-const inputCls = "w-full px-4 py-3.5 border-[1.5px] border-forest/[.10] rounded-xl text-sm bg-white outline-none focus:border-sage focus:ring-2 focus:ring-sage/10 transition-all placeholder:text-forest/50 text-forest font-medium";
-const inputErrCls = "w-full px-4 py-3.5 border-[1.5px] border-red-400/60 rounded-xl text-sm bg-red-50/30 outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition-all placeholder:text-forest/50 text-forest font-medium";
+const inputCls = "w-full px-4 py-3.5 border-[1.5px] border-forest/[.10] rounded-xl text-base bg-white outline-none focus:border-sage focus:ring-2 focus:ring-sage/10 transition-all placeholder:text-forest/50 text-forest font-medium";
+const inputErrCls = "w-full px-4 py-3.5 border-[1.5px] border-red-400/60 rounded-xl text-base bg-red-50/30 outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition-all placeholder:text-forest/50 text-forest font-medium";
 
 export default function CheckoutPage() {
   const { products, priceMap } = useProducts();

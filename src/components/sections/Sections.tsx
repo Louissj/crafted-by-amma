@@ -250,7 +250,7 @@ function ReviewModal({ onClose }: { onClose: () => void }) {
                         onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
                         placeholder={placeholder}
                         required
-                        className="w-full px-3.5 py-2.5 rounded-xl text-[.82rem] outline-none placeholder:opacity-30 transition-all"
+                        className="w-full px-3.5 py-2.5 rounded-xl text-base outline-none placeholder:opacity-30 transition-all"
                         style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', color: 'rgba(235,225,200,0.9)' }}
                       />
                     </div>
@@ -265,7 +265,7 @@ function ReviewModal({ onClose }: { onClose: () => void }) {
                     onChange={e => setForm(f => ({ ...f, text: e.target.value }))}
                     placeholder="Tell other families what you loved — the taste, quality, or how it helped…"
                     required rows={4}
-                    className="w-full px-3.5 py-3 rounded-xl text-[.82rem] outline-none resize-none placeholder:opacity-25 transition-all leading-relaxed"
+                    className="w-full px-3.5 py-3 rounded-xl text-base outline-none resize-none placeholder:opacity-25 transition-all leading-relaxed"
                     style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', color: 'rgba(235,225,200,0.9)' }}
                   />
                 </div>

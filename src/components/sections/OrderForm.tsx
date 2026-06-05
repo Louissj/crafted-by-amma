@@ -266,13 +266,13 @@ export default function OrderForm() {
                       <div>
                         <label className="block text-xs font-semibold tracking-[2px] uppercase text-forest mb-1">Full Name *</label>
                         <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-                          className="w-full px-3 py-2.5 border-[1.5px] border-forest/[.06] rounded-xl text-sm bg-white outline-none focus:border-sage focus:ring-2 focus:ring-sage/[.06] transition-all"
+                          className="w-full px-3 py-2.5 border-[1.5px] border-forest/[.06] rounded-xl text-base bg-white outline-none focus:border-sage focus:ring-2 focus:ring-sage/[.06] transition-all"
                           placeholder="Your name" />
                       </div>
                       <div>
                         <label className="block text-xs font-semibold tracking-[2px] uppercase text-forest mb-1">WhatsApp Number *</label>
                         <input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })}
-                          className="w-full px-3 py-2.5 border-[1.5px] border-forest/[.06] rounded-xl text-sm bg-white outline-none focus:border-sage focus:ring-2 focus:ring-sage/[.06] transition-all"
+                          className="w-full px-3 py-2.5 border-[1.5px] border-forest/[.06] rounded-xl text-base bg-white outline-none focus:border-sage focus:ring-2 focus:ring-sage/[.06] transition-all"
                           placeholder="+91 XXXXX XXXXX" />
                       </div>
                     </div>
@@ -302,7 +302,7 @@ export default function OrderForm() {
                           value={pincode}
                           onChange={e => { setPincode(e.target.value.replace(/\D/g, '').slice(0, 6)); setPincodeState(''); }}
                           disabled={deliveryZone === 'international'}
-                          className={`w-full px-3 py-2.5 border-[1.5px] rounded-xl text-sm outline-none transition-all pr-32
+                          className={`w-full px-3 py-2.5 border-[1.5px] rounded-xl text-base outline-none transition-all pr-32
                             ${deliveryZone === 'international'
                               ? 'bg-blue-50 border-blue-200 text-blue-400 cursor-not-allowed'
                               : 'bg-white border-forest/[.06] focus:border-sage focus:ring-2 focus:ring-sage/[.06]'}`}
@@ -328,7 +328,7 @@ export default function OrderForm() {
                       <div>
                         <label className="block text-xs font-semibold tracking-[2px] uppercase text-forest mb-1">City *</label>
                         <input value={form.city} onChange={e => setForm({ ...form, city: e.target.value })}
-                          className="w-full px-3 py-2.5 border-[1.5px] border-forest/[.06] rounded-xl text-sm bg-white outline-none focus:border-sage focus:ring-2 focus:ring-sage/[.06] transition-all"
+                          className="w-full px-3 py-2.5 border-[1.5px] border-forest/[.06] rounded-xl text-base bg-white outline-none focus:border-sage focus:ring-2 focus:ring-sage/[.06] transition-all"
                           placeholder="Mysuru, Bengaluru…" />
                       </div>
                       <div className="flex flex-col justify-end">
@@ -351,7 +351,7 @@ export default function OrderForm() {
                     <div className="mb-3">
                       <label className="block text-xs font-semibold tracking-[2px] uppercase text-forest mb-1">Full Address *</label>
                       <textarea value={form.address} onChange={e => setForm({ ...form, address: e.target.value })}
-                        className="w-full px-3 py-2.5 border-[1.5px] border-forest/[.06] rounded-xl text-sm bg-white outline-none focus:border-sage focus:ring-2 focus:ring-sage/[.06] transition-all resize-y min-h-[70px]"
+                        className="w-full px-3 py-2.5 border-[1.5px] border-forest/[.06] rounded-xl text-base bg-white outline-none focus:border-sage focus:ring-2 focus:ring-sage/[.06] transition-all resize-y min-h-[70px]"
                         placeholder="House/Flat no., Street, Area" />
                     </div>
 

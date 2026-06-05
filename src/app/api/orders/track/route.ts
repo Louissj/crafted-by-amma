@@ -3,6 +3,8 @@ import prisma from '@/lib/db';
 import { getClientIP, isValidPhone } from '@/lib/security';
 import { rateLimitTrack } from '@/lib/rateLimit';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   const ip = getClientIP(req);
   const { allowed } = rateLimitTrack(ip);

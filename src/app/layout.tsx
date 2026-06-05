@@ -1,7 +1,13 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import PageTracker from '@/components/ui/PageTracker';
 import FloatingButtons from '@/components/ui/FloatingButtons';
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
 
 export const metadata: Metadata = {
   title: 'Crafted by Amma — Homemade Millet Products | Mysuru',

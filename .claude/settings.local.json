@@ -31,7 +31,8 @@
       "Bash(node --env-file=.env -e \"require\\('child_process'\\).execSync\\('npx tsx prisma/check-slabs.ts', {stdio: 'inherit', env: {...process.env}}\\)\")",
       "Bash(node --env-file=.env -e \"require\\('child_process'\\).execSync\\('npx tsx prisma/extend-all-slabs.ts', {stdio: 'inherit', env: {...process.env}}\\)\")",
       "Bash(npx ts-node --project tsconfig.json -e ' *)",
-      "Bash(npx ts-node *)"
+      "Bash(npx ts-node *)",
+      "Bash(git checkout *)"
     ]
   }
 }
