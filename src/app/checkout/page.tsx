@@ -818,6 +818,30 @@ export default function CheckoutPage() {
                 </button>
               </div>
               <p className="text-xs text-forest/50 text-center mt-3">UPI payment powered by Razorpay · 100% secure</p>
+
+              {/* FSSAI Trust Badge */}
+              <div className="mt-4 flex items-center justify-center gap-3 px-4 py-3 rounded-2xl"
+                style={{ background: 'linear-gradient(135deg,rgba(26,42,20,0.04),rgba(26,42,20,0.02))', border: '1px solid rgba(26,42,20,0.07)' }}>
+                {/* FSSAI Logo SVG */}
+                <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
+                  style={{ background: '#1B6B2F' }}>
+                  <svg width="28" height="18" viewBox="0 0 120 76" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="120" height="76" rx="4" fill="#1B6B2F"/>
+                    <text x="60" y="38" textAnchor="middle" dominantBaseline="middle"
+                      fontFamily="Arial, sans-serif" fontWeight="900" fontSize="26" fill="white" letterSpacing="1">
+                      FSSAI
+                    </text>
+                    <text x="60" y="60" textAnchor="middle" dominantBaseline="middle"
+                      fontFamily="Arial, sans-serif" fontWeight="400" fontSize="9" fill="rgba(255,255,255,0.75)" letterSpacing="0.5">
+                      FOOD SAFETY
+                    </text>
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-[.58rem] font-bold tracking-[2px] uppercase text-forest/40 mb-0.5">FSSAI Licensed · Food Safety Certified</p>
+                  <p className="font-mono font-bold text-sm text-forest/80 tracking-wide">Lic. No. 21226197000270</p>
+                </div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

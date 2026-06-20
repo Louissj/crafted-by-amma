@@ -14,7 +14,7 @@ type TrackOrder = {
   isKarnataka: boolean; city: string; count: number; createdAt: string;
 };
 
-const STATUS_FLOW = ['pending', 'verified', 'confirmed', 'shipped', 'delivered'] as const;
+const STATUS_FLOW = ['pending', 'verified', 'confirmed', 'shipped'] as const;
 
 const STATUS_META: Record<string, { label: string; color: string; bg: string; icon: string; desc: string }> = {
   pending:   { label: 'Pending',   color: '#D4942A', bg: 'rgba(212,148,42,0.1)',  icon: '⏳', desc: 'Order received! We\'ll verify your payment shortly.' },

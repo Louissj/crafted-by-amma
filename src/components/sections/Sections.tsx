@@ -645,14 +645,21 @@ export function Footer() {
               </address>
             </div>
             {/* FSSAI */}
-            <div className="mb-3 flex items-center gap-2">
-              <span className="text-[0.6rem] font-bold tracking-[1.5px] uppercase px-2 py-1 rounded"
-                style={{ background: 'rgba(212,148,42,0.08)', border: '1px solid rgba(212,148,42,0.15)', color: 'rgba(212,148,42,0.50)' }}>
-                FSSAI
-              </span>
-              <span className="text-[0.65rem] font-mono" style={{ color: 'rgba(235,225,200,0.22)' }}>
-                21226197000270
-              </span>
+            <div className="mb-3 px-3.5 py-3 rounded-2xl relative overflow-hidden"
+              style={{ background: 'linear-gradient(135deg,rgba(212,148,42,0.10),rgba(212,148,42,0.04))', border: '1px solid rgba(212,148,42,0.22)' }}>
+              {/* decorative corner lines */}
+              <span className="absolute top-1.5 left-1.5 w-3 h-3 border-t border-l rounded-tl" style={{ borderColor: 'rgba(212,148,42,0.30)' }} />
+              <span className="absolute top-1.5 right-1.5 w-3 h-3 border-t border-r rounded-tr" style={{ borderColor: 'rgba(212,148,42,0.30)' }} />
+              <span className="absolute bottom-1.5 left-1.5 w-3 h-3 border-b border-l rounded-bl" style={{ borderColor: 'rgba(212,148,42,0.30)' }} />
+              <span className="absolute bottom-1.5 right-1.5 w-3 h-3 border-b border-r rounded-br" style={{ borderColor: 'rgba(212,148,42,0.30)' }} />
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="text-[.5rem] font-black tracking-[3px] uppercase" style={{ color: 'rgba(212,148,42,0.45)' }}>Food Safety Certified</span>
+                <span className="text-[10px]">🛡️</span>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-[0.58rem] font-bold tracking-[2px] uppercase" style={{ color: 'rgba(212,148,42,0.55)' }}>FSSAI</span>
+                <span className="font-mono font-bold text-base tracking-wider" style={{ color: '#D4942A' }}>21226197000270</span>
+              </div>
             </div>
 
             <div className="flex gap-2 mb-1">
@@ -726,7 +733,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-cream-light/[.03] pt-4 flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-cream-light/[.08]">
           <span>© 2026 Crafted by Amma · ಅಮ್ಮನಿಂದ ಕರಕುಶಲ</span>
-          <span style={{ color: 'rgba(235,225,200,0.08)' }}>FSSAI Lic. No. 21226197000270</span>
+          <span style={{ color: 'rgba(235,225,200,0.30)' }}>FSSAI Lic. No. 21226197000270</span>
           <a href="https://maps.google.com/?q=#234+7th+Cross+G+Block+Ramakrishna+Nagar+Mysore+570023" target="_blank"
             className="no-underline text-cream-light/[.08] hover:text-sage/40 transition-colors">
             📍 #234, G Block, Ramakrishna Nagar, Mysore – 570023
