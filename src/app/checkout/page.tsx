@@ -80,7 +80,6 @@ export default function CheckoutPage() {
         const { pincode: p, deliveryZone: z } = JSON.parse(saved);
         if (p) setPincode(p);
         if (z) setDeliveryZone(z);
-        sessionStorage.removeItem('amma_delivery');
       }
     } catch { /* ignore */ }
 
@@ -129,6 +128,10 @@ export default function CheckoutPage() {
       .finally(() => setPincodeLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pincode]);
+
+  useEffect(() => {
+    try { sessionStorage.setItem('amma_delivery', JSON.stringify({ pincode, deliveryZone })); } catch { /* ignore */ }
+  }, [pincode, deliveryZone]);
 
   function coSlabCharge(slabs: DeliverySlab[], grams: number, fallback: number) {
     if (!slabs?.length) return fallback;
