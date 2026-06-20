@@ -326,7 +326,7 @@ export default function CheckoutPage() {
   }
 
   /* ── Empty cart ── */
-  if (cart.length === 0) {
+  if (cart.length === 0 && sampleItems.length === 0) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-4 text-center"
         style={{ background: 'radial-gradient(ellipse at 20% 0%, rgba(26,42,20,0.07) 0%, #F0EDE6 50%)' }}>
@@ -425,7 +425,7 @@ export default function CheckoutPage() {
                 <div className="px-5 py-3.5 flex items-center justify-between border-b border-white/10">
                   <div>
                     <p className="text-sm font-bold text-white">🌾 Your Order</p>
-                    <p className="text-xs text-white/50 mt-0.5">{totalPacks} pack{totalPacks !== 1 ? 's' : ''} · {cart.length} item{cart.length !== 1 ? 's' : ''}</p>
+                    <p className="text-xs text-white/50 mt-0.5">{totalPacks} pack{totalPacks !== 1 ? 's' : ''} · {cart.length + sampleItems.length} item{cart.length + sampleItems.length !== 1 ? 's' : ''}</p>
                   </div>
                   <Link href="/cart" className="text-xs font-semibold no-underline px-3 py-1.5 rounded-lg transition-all"
                     style={{ color: '#D4942A', background: 'rgba(212,148,42,0.12)', border: '1px solid rgba(212,148,42,0.2)' }}>
