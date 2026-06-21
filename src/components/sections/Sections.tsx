@@ -397,7 +397,7 @@ export function Testimonials() {
 
       {/* ── Horizontal scroll ── */}
       <RevealSection>
-        <div className="overflow-x-auto md:overflow-visible" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
+        <div className="overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
           <div className="flex gap-3 sm:gap-4 px-4 sm:px-6 md:px-8 pb-3 w-max md:w-full md:justify-center" style={{ scrollSnapType: 'x mandatory' }}>
             {reviews.map((r, i) => (
               <div key={r.id}
