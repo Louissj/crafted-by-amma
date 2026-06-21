@@ -162,7 +162,7 @@ export default function Hero() {
             <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#D4942A', boxShadow: '0 0 6px rgba(212,148,42,0.8)', animation: 'pulse 1.8s ease-in-out infinite' }} />
             <p className="text-[0.72rem] sm:text-sm font-semibold tracking-[1px]"
               style={{ color: 'rgba(235,225,200,0.75)' }}>
-              <span className="font-black" style={{ color: '#D4942A' }}>UP TO 20% OFF</span>
+              <span className="font-black" style={{ color: '#D4942A' }}>10% OFF on all products</span>
               {' · '}
               <span className="hidden sm:inline">Millet Powders, Masala Powders &amp; Chutney Pudi · </span>
               <span className="underline underline-offset-2" style={{ color: 'rgba(212,148,42,0.85)' }}>Shop Now →</span>

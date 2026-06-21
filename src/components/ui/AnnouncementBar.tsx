@@ -30,7 +30,7 @@ export default function AnnouncementBar() {
             style={{ color: 'rgba(235,225,200,0.80)' }}>
             <span className="font-black tracking-[2px]"
               style={{ color: '#D4942A', fontSize: '0.85rem' }}>
-              UP TO 20% OFF
+              10% OFF on all products
             </span>
             {' · '}
             <span className="hidden sm:inline">Millet Powders, Masala Powders &amp; Chutney Pudi</span>
