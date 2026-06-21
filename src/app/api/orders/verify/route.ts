@@ -83,9 +83,18 @@ export async function POST(req: NextRequest) {
 
     const totalAmount = productSubtotal + sampleSubtotal + deliveryCharge;
 
+    const allProductNames = await prisma.product.findMany({ select: { id: true, shortName: true } });
+    const productNameMap: Record<string, string> = Object.fromEntries(allProductNames.map(p => [p.id, p.shortName]));
+
     const allProducts = [
       ...validItems,
-      ...validSamples.map(i => ({ productId: `[Sample] ${i.label}`, packSize: `${i.count} products`, count: i.qty })),
+      ...validSamples.map(i => ({
+        productId: `[Sample] ${i.label}`,
+        packSize: i.selectedProducts?.length
+          ? i.selectedProducts.map(id => productNameMap[id] || id).join(', ')
+          : `${i.count} products`,
+        count: i.qty,
+      })),
     ];
 
     const order = await prisma.order.create({
@@ -110,7 +119,7 @@ export async function POST(req: NextRequest) {
 
     const productNames = [
       ...validItems.map(i => `${i.productId} ${i.packSize}×${i.count}`),
-      ...validSamples.map(i => `[Sample] ${i.label} ×${i.qty}`),
+      ...validSamples.map(i => `[Sample] ${i.label} (${i.selectedProducts?.map(id => productNameMap[id] || id).join(', ') || `${i.count} products`}) ×${i.qty}`),
     ].join('\n');
     notifyNewOrder({
       orderId: order.id,
