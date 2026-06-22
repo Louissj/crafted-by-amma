@@ -233,6 +233,13 @@ export default function AdminDashboard() {
     if (loggedIn) fetchProducts();
   }, [loggedIn, fetchProducts]);
 
+  // Lock background scroll when any modal/panel is open
+  useEffect(() => {
+    const anyModalOpen = !!selected || !!selectedCustomer || !!editingProduct;
+    document.body.style.overflow = anyModalOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [selected, selectedCustomer, editingProduct]);
+
   useEffect(() => {
     if (!loggedIn) return;
     if (tab === 'orders') fetchOrders();
