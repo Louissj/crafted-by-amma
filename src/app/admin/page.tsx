@@ -230,6 +230,10 @@ export default function AdminDashboard() {
   }, []);
 
   useEffect(() => {
+    if (loggedIn) fetchProducts();
+  }, [loggedIn, fetchProducts]);
+
+  useEffect(() => {
     if (!loggedIn) return;
     if (tab === 'orders') fetchOrders();
     if (tab === 'offers') fetchOffers();
@@ -330,15 +334,20 @@ export default function AdminDashboard() {
     return [];
   };
 
+  const resolveShortName = (id: string): string =>
+    products.find(p => p.id === id)?.shortName
+    || PRODUCTS[id as keyof typeof PRODUCTS]?.shortName
+    || id;
+
   const getProductNames = (raw: unknown): string => {
     try {
       const arr = resolveProducts(raw);
       if (arr.length === 0) return '—';
       if (typeof arr[0] === 'object' && arr[0] !== null)
         return (arr as CartItem[]).map(i =>
-          `${PRODUCTS[i.productId as keyof typeof PRODUCTS]?.shortName || i.productId} ${i.packSize}×${i.count}`
+          `${resolveShortName(i.productId)} ${i.packSize}×${i.count}`
         ).join(', ');
-      return (arr as string[]).map(id => PRODUCTS[id as keyof typeof PRODUCTS]?.shortName || id).join(', ');
+      return (arr as string[]).map(resolveShortName).join(', ');
     } catch { return '—'; }
   };
 
@@ -803,7 +812,7 @@ export default function AdminDashboard() {
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {NAV_ITEMS.map(item => (
-            <button key={item.id} onClick={() => setTab(item.id)}
+            <button key={item.id} onClick={() => { setTab(item.id); setSelected(null); }}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left transition-all group
                 ${tab === item.id
                   ? 'text-forest font-bold shadow-lg'
@@ -865,7 +874,7 @@ export default function AdminDashboard() {
             <div className="flex-1" />
 
             {stats.pending > 0 && (
-              <button onClick={() => setTab('orders')}
+              <button onClick={() => { setTab('orders'); setSelected(null); }}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold border transition-all"
                 style={{ color: '#D4942A', borderColor: 'rgba(212,148,42,0.3)', background: 'rgba(212,148,42,0.1)' }}>
                 <span className="relative flex h-1.5 w-1.5">
@@ -892,7 +901,7 @@ export default function AdminDashboard() {
           style={{ background: 'rgba(13,26,9,0.97)', borderTop: '1px solid rgba(200,180,74,0.15)', backdropFilter: 'blur(20px)', scrollbarWidth: 'none' }}>
           <div className="flex min-w-max px-1">
             {NAV_ITEMS.map(item => (
-              <button key={item.id} onClick={() => setTab(item.id)}
+              <button key={item.id} onClick={() => { setTab(item.id); setSelected(null); }}
                 className={`relative flex flex-col items-center justify-center gap-0.5 py-2.5 px-3 transition-all min-w-[60px]
                   ${tab === item.id ? 'text-brass' : 'text-white/30'}`}>
                 {tab === item.id && (
@@ -2529,23 +2538,6 @@ export default function AdminDashboard() {
               </div>
 
               <div className="p-4 md:p-6 space-y-4 md:space-y-5">
-                {/* Payment screenshot */}
-                {selected.paymentScreenshot ? (
-                  <div className="rounded-xl overflow-hidden border border-white/[.08]">
-                    <div className="px-3 py-2 flex items-center gap-2 border-b border-white/[.06]"
-                      style={{ background: 'rgba(16,185,129,0.08)' }}>
-                      <span className="text-sm">✅</span>
-                      <p className="text-sm font-bold uppercase tracking-[2px] text-emerald-400/60">Payment Screenshot</p>
-                    </div>
-                    <img src={selected.paymentScreenshot} alt="Payment" className="w-full max-h-64 object-contain" style={{ background: 'rgba(255,255,255,0.04)' }} />
-                  </div>
-                ) : (
-                  <div className="p-3.5 rounded-xl border-2 border-dashed border-red-500/20 flex items-center gap-2" style={{ background: 'rgba(239,68,68,0.06)' }}>
-                    <span>⚠️</span>
-                    <p className="text-sm text-red-400 font-semibold">No payment screenshot uploaded</p>
-                  </div>
-                )}
-
                 {/* Customer info */}
                 <div className="grid grid-cols-2 gap-3">
                   {[
@@ -2582,7 +2574,7 @@ export default function AdminDashboard() {
                         return (
                           <div key={i} className="flex justify-between text-sm items-start gap-2">
                             <span className={isSample ? 'text-amber-400/80' : 'text-white/60'}>
-                              {isSample ? '🧪 ' : ''}{PRODUCTS[item.productId as keyof typeof PRODUCTS]?.shortName || item.productId}
+                              {isSample ? '🧪 ' : ''}{isSample ? item.productId : resolveShortName(item.productId)}
                               <span className="text-white/30 text-sm"> · {item.packSize} × {item.count}</span>
                             </span>
                           </div>
