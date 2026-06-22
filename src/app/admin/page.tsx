@@ -624,14 +624,14 @@ export default function AdminDashboard() {
                   Username
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-smpointer-events-none" style={{ color: 'rgba(200,180,74,0.35)' }}>
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm pointer-events-none" style={{ color: 'rgba(200,180,74,0.35)' }}>
                     👤
                   </span>
                   <input
                     value={username} onChange={e => setUsername(e.target.value)}
                     placeholder="Enter your username"
                     autoComplete="username"
-                    className="w-full pl-10 pr-4 py-3.5 rounded-2xl text-smoutline-none transition-all duration-200"
+                    className="w-full pl-10 pr-4 py-3.5 rounded-2xl text-sm outline-none transition-all duration-200"
                     style={{
                       background: 'rgba(255,255,255,0.04)',
                       border: '1.5px solid rgba(255,255,255,0.09)',
@@ -658,7 +658,7 @@ export default function AdminDashboard() {
                   Password
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-smpointer-events-none" style={{ color: 'rgba(200,180,74,0.35)' }}>
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm pointer-events-none" style={{ color: 'rgba(200,180,74,0.35)' }}>
                     🔑
                   </span>
                   <input
@@ -666,7 +666,7 @@ export default function AdminDashboard() {
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
                     autoComplete="current-password"
-                    className="w-full pl-10 pr-12 py-3.5 rounded-2xl text-smoutline-none transition-all duration-200"
+                    className="w-full pl-10 pr-12 py-3.5 rounded-2xl text-sm outline-none transition-all duration-200"
                     style={{
                       background: 'rgba(255,255,255,0.04)',
                       border: '1.5px solid rgba(255,255,255,0.09)',
@@ -685,7 +685,7 @@ export default function AdminDashboard() {
                     }}
                   />
                   <button type="button" onClick={() => setShowPassword(p => !p)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-smtransition-opacity hover:opacity-80"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-sm transition-opacity hover:opacity-80"
                     style={{ color: 'rgba(200,180,74,0.4)', lineHeight: 1 }}>
                     {showPassword ? '🙈' : '👁️'}
                   </button>
@@ -707,7 +707,7 @@ export default function AdminDashboard() {
               {/* Submit */}
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.4 }}>
                 <button type="submit" disabled={loggingIn || !username || !password}
-                  className="w-full py-4 rounded-2xl font-bold text-smtracking-[0.5px] transition-all duration-200 mt-1 relative overflow-hidden group"
+                  className="w-full py-4 rounded-2xl font-bold text-sm tracking-[0.5px] transition-all duration-200 mt-1 relative overflow-hidden group"
                   style={{
                     background: loggingIn ? 'rgba(200,180,74,0.4)' : 'linear-gradient(135deg,#C8B44A 0%,#B09838 50%,#D4942A 100%)',
                     color: '#0A1208',
@@ -887,7 +887,7 @@ export default function AdminDashboard() {
 
             {/* Sign Out — mobile header */}
             <button onClick={handleLogout}
-              className="md:hidden flex items-center justify-center w-8 h-8 rounded-xl transition-all text-red-400/50 hover:text-red-400 active:scale-90"
+              className="md:hidden flex items-center justify-center w-8 h-8 rounded-xl transition-all text-red-400/70 hover:text-red-400 active:scale-90"
               style={{ background: 'rgba(239,68,68,0.06)' }}
               title="Sign Out">
               🚪
@@ -965,7 +965,7 @@ export default function AdminDashboard() {
               const meta = s === 'all' ? null : STATUS_META[s];
               return (
                 <button key={s} onClick={() => setFilter(s)}
-                  className={`px-3.5 py-1.5 rounded-full text-smfont-semibold transition-all border flex-shrink-0 ${
+                  className={`px-3.5 py-1.5 rounded-full text-sm font-semibold transition-all border flex-shrink-0 ${
                     filter === s
                       ? 'text-white border-transparent shadow-md'
                       : 'text-white/30 border-white/[.08] hover:border-white/20 hover:text-white/50'
@@ -980,7 +980,7 @@ export default function AdminDashboard() {
           {/* Mobile order cards */}
           <div className="md:hidden px-4 pb-8 space-y-3">
             {orders.length === 0 && (
-              <div className="py-16 text-center text-white/20 text-smrounded-2xl border border-white/[.06]" style={{ background: 'rgba(255,255,255,0.03)' }}>No orders found</div>
+              <div className="py-16 text-center text-white/20 text-sm rounded-2xl border border-white/[.06]" style={{ background: 'rgba(255,255,255,0.03)' }}>No orders found</div>
             )}
             {orders.map((order, idx) => (
               <motion.div key={order.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
@@ -1006,7 +1006,7 @@ export default function AdminDashboard() {
                           <StatusBadge status={order.status} size="xs" />
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-smtext-brass/40">#{order.id.slice(-6).toUpperCase()}</span>
+                          <span className="font-mono text-sm text-brass/40">#{order.id.slice(-6).toUpperCase()}</span>
                           <span className="text-white/20 text-[.88rem]">·</span>
                           <span className="text-sm text-white/30 truncate">{order.city}</span>
                         </div>
@@ -1028,7 +1028,7 @@ export default function AdminDashboard() {
                         <div className="mt-2.5 pl-12" onClick={e => e.stopPropagation()}>
                           <select value={order.status} onChange={e => { e.stopPropagation(); updateStatus(order.id, e.target.value, order); }}
                             disabled={loading}
-                            className="w-full text-smborder border-white/20 rounded-lg px-3 py-2 outline-none cursor-pointer disabled:opacity-50"
+                            className="w-full text-sm border border-white/20 rounded-lg px-3 py-2 outline-none cursor-pointer disabled:opacity-50"
                             style={{ background: '#1A2A14', color: '#E8DEB0', minWidth: 120 }}>
                             {opts.map(s => <option key={s.value} value={s.value} style={{ background: '#1A2A14', color: '#E8DEB0' }}>{s.label}</option>)}
                           </select>
@@ -1087,8 +1087,8 @@ export default function AdminDashboard() {
                           {(() => {
                             const flow = ['pending', 'verified', 'confirmed', 'shipped', 'delivered'];
                             const currentIdx = flow.indexOf(order.status);
-                            if (order.status === 'cancelled') return <span className="text-[.85rem] text-red-400/50 italic">Cancelled</span>;
-                            if (order.status === 'delivered') return <span className="text-[.85rem] text-emerald-400/50 italic">Delivered</span>;
+                            if (order.status === 'cancelled') return <span className="text-[.85rem] text-red-400/80 italic">Cancelled</span>;
+                            if (order.status === 'delivered') return <span className="text-[.85rem] text-emerald-400/80 italic">Delivered</span>;
                             const forward = flow.slice(currentIdx);
                             const opts = [...forward, 'cancelled'].map(v => ORDER_STATUSES.find(s => s.value === v)!).filter(Boolean);
                             return (
@@ -1144,7 +1144,7 @@ export default function AdminDashboard() {
                   {/* Header row */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-smflex-shrink-0"
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
                         style={{ background: 'linear-gradient(135deg,rgba(90,122,58,0.4),rgba(200,180,74,0.2))', color: 'rgba(200,180,74,0.9)' }}>
                         {r.name.charAt(0).toUpperCase()}
                       </div>
@@ -1230,12 +1230,12 @@ export default function AdminDashboard() {
                   maxLength={4} />
                 <input value={newOfferText} onChange={e => setNewOfferText(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && addOffer()}
-                  className="flex-1 px-3 py-2.5 border-[1.5px] border-white/[.08] rounded-xl text-smoutline-none transition-all placeholder:text-white/20"
+                  className="flex-1 px-3 py-2.5 border-[1.5px] border-white/[.08] rounded-xl text-sm outline-none transition-all placeholder:text-white/20"
                   style={{ background: 'rgba(255,255,255,0.06)', color: 'white' }}
                   placeholder="e.g. Free delivery on orders above ₹350" />
               </div>
               <button onClick={addOffer} disabled={offersLoading || !newOfferText.trim()}
-                className="w-full py-2.5 rounded-xl text-smfont-semibold disabled:opacity-40 transition-all"
+                className="w-full py-2.5 rounded-xl text-sm font-semibold disabled:opacity-40 transition-all"
                 style={{ background: 'linear-gradient(135deg,#C8B44A,#D4942A)', color: '#0D1A09', fontWeight: 700 }}>
                 Add Offer
               </button>
@@ -1244,7 +1244,7 @@ export default function AdminDashboard() {
 
           <div className="space-y-2">
             {offers.length === 0 && (
-              <div className="text-center py-12 text-white/20 text-smrounded-2xl border border-white/[.06]" style={{ background: 'rgba(255,255,255,0.03)' }}>
+              <div className="text-center py-12 text-white/20 text-sm rounded-2xl border border-white/[.06]" style={{ background: 'rgba(255,255,255,0.03)' }}>
                 No offers yet. Add your first one above.
               </div>
             )}
@@ -1263,7 +1263,7 @@ export default function AdminDashboard() {
                     {offer.active ? 'Live' : 'Hidden'}
                   </button>
                   <button onClick={() => deleteOffer(offer.id)}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center text-smtext-red-400/40 hover:text-red-400 transition-all"
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-sm text-red-400/70 hover:text-red-400 transition-all"
                     style={{ background: 'rgba(239,68,68,0.06)' }}>
                     ✕
                   </button>
@@ -2076,7 +2076,7 @@ export default function AdminDashboard() {
                     )}
 
                     {analyticsStats.productPerformance.length === 0 && (
-                      <div className="py-12 text-center text-smtext-white/20 rounded-2xl border border-white/[.06]" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                      <div className="py-12 text-center text-sm text-white/20 rounded-2xl border border-white/[.06]" style={{ background: 'rgba(255,255,255,0.02)' }}>
                         No product sales yet
                       </div>
                     )}
@@ -2088,7 +2088,7 @@ export default function AdminDashboard() {
               <div className="rounded-2xl overflow-hidden border border-white/[.07]" style={{ background: 'rgba(15,24,10,0.8)', boxShadow: '0 8px 30px rgba(0,0,0,0.3)' }}>
                 <div className="px-5 py-4 border-b border-white/[.06] flex items-center justify-between" style={{ background: 'rgba(200,180,74,0.04)' }}>
                   <p className="text-sm font-bold tracking-[2.5px] uppercase" style={{ color: 'rgba(200,180,74,0.4)' }}>Customer Details</p>
-                  <div className="flex gap-4 text-smtext-white/30">
+                  <div className="flex gap-4 text-sm text-white/30">
                     <span>Total: <span style={{ color: '#C8B44A' }} className="font-bold">{analyticsStats.customers.total}</span></span>
                     <span>Repeat buyers: <span className="font-bold text-emerald-400">{analyticsStats.customers.repeat}</span></span>
                   </div>
@@ -2096,18 +2096,18 @@ export default function AdminDashboard() {
                 {/* Mobile customer cards */}
                 <div className="md:hidden divide-y divide-white/[.04]">
                   {analyticsStats.customers.list.length === 0 && (
-                    <div className="px-5 py-10 text-center text-smtext-white/20">No customers yet</div>
+                    <div className="px-5 py-10 text-center text-sm text-white/20">No customers yet</div>
                   )}
                   {analyticsStats.customers.list.map(c => (
                     <div key={c.phone} onClick={() => openCustomer(c)}
                       className="px-4 py-3.5 flex items-center gap-3 cursor-pointer hover:bg-white/[.03] transition-colors active:bg-white/[.05]">
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-smflex-shrink-0"
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0"
                         style={{ background: 'linear-gradient(135deg,rgba(200,180,74,0.2),rgba(200,180,74,0.08))', color: '#C8B44A' }}>
                         {c.name.charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 mb-0.5">
-                          <span className="font-semibold text-smtext-white/80 truncate">{c.name}</span>
+                          <span className="font-semibold text-sm text-white/80 truncate">{c.name}</span>
                           {c.orders > 1 && <span className="text-[.85rem] px-1 py-0.5 rounded-full font-bold flex-shrink-0" style={{ background: 'rgba(16,185,129,0.15)', color: '#34D399' }}>★</span>}
                         </div>
                         <div className="text-sm text-white/30 truncate">{c.phone} · {c.city}</div>
@@ -2134,7 +2134,7 @@ export default function AdminDashboard() {
                         <tr key={c.phone} onClick={() => openCustomer(c)}
                           className={`cursor-pointer transition-colors hover:bg-white/[.03] ${i < analyticsStats.customers.list.length - 1 ? 'border-b border-white/[.04]' : ''}`}>
                           <td className="px-4 py-3">
-                            <div className="font-semibold text-smtext-white/80">{c.name}</div>
+                            <div className="font-semibold text-sm text-white/80">{c.name}</div>
                             {c.orders > 1 && (
                               <span className="text-[.88rem] px-1.5 py-0.5 rounded-full font-bold"
                                 style={{ background: 'rgba(16,185,129,0.15)', color: '#34D399' }}>
@@ -2145,16 +2145,16 @@ export default function AdminDashboard() {
                           <td className="px-4 py-3">
                             <a href={`tel:${c.phone}`} className="text-sm text-blue-400 no-underline hover:underline">{c.phone}</a>
                             <a href={`https://wa.me/91${c.phone.replace(/[^0-9]/g, '').slice(-10)}`} target="_blank"
-                              className="ml-2 text-smtext-green-400 no-underline hover:underline">WA</a>
+                              className="ml-2 text-sm text-green-400 no-underline hover:underline">WA</a>
                           </td>
-                          <td className="px-4 py-3 text-smtext-white/40 capitalize">{c.city}</td>
+                          <td className="px-4 py-3 text-sm text-white/40 capitalize">{c.city}</td>
                           <td className="px-4 py-3 text-sm font-bold text-white/50">{c.orders}</td>
                           <td className="px-4 py-3 text-sm font-bold" style={{ color: '#C8B44A' }}>₹{Math.round(c.spent).toLocaleString()}</td>
-                          <td className="px-4 py-3 text-smtext-white/30">{new Date(c.lastOrder).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</td>
+                          <td className="px-4 py-3 text-sm text-white/30">{new Date(c.lastOrder).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</td>
                         </tr>
                       ))}
                       {analyticsStats.customers.list.length === 0 && (
-                        <tr><td colSpan={6} className="px-4 py-10 text-center text-smtext-white/20">No customers yet</td></tr>
+                        <tr><td colSpan={6} className="px-4 py-10 text-center text-sm text-white/20">No customers yet</td></tr>
                       )}
                     </tbody>
                   </table>
@@ -2163,7 +2163,7 @@ export default function AdminDashboard() {
 
             </div>
           ) : (
-            <div className="text-center py-16 text-smtext-white/20">Failed to load analytics.</div>
+            <div className="text-center py-16 text-sm text-white/20">Failed to load analytics.</div>
           )}
         </motion.div>
       )}
@@ -2231,7 +2231,7 @@ export default function AdminDashboard() {
                     <div className="w-6 h-6 rounded-full border-2 border-white/10 border-t-brass animate-spin" />
                   </div>
                 ) : customerOrders.length === 0 ? (
-                  <div className="text-center py-10 text-smtext-white/20">No orders found</div>
+                  <div className="text-center py-10 text-sm text-white/20">No orders found</div>
                 ) : (
                   customerOrders.map(order => {
                     const meta = STATUS_META[order.status] ?? { label: order.status, color: '#999', bg: 'rgba(136,136,136,0.1)', icon: '•' };
@@ -2282,7 +2282,7 @@ export default function AdminDashboard() {
               <div className="p-4 flex-shrink-0 border-t border-white/[.06]">
                 <a href={`https://wa.me/91${selectedCustomer.phone.replace(/[^0-9]/g, '').slice(-10)}?text=${encodeURIComponent(`Hi ${selectedCustomer.name}! Thank you for ordering from Crafted by Amma 🌾`)}`}
                   target="_blank"
-                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-smfont-semibold text-white no-underline transition-all hover:shadow-lg"
+                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold text-white no-underline transition-all hover:shadow-lg"
                   style={{ background: 'linear-gradient(135deg,#25D366,#1da851)', boxShadow: '0 4px 16px rgba(37,211,102,0.2)' }}>
                   💬 Message on WhatsApp
                 </a>
@@ -2362,7 +2362,7 @@ export default function AdminDashboard() {
                           className={`w-16 h-16 object-cover rounded-xl border-2 transition-all
                             ${i === 0 ? 'border-brass/40' : 'border-white/[.08]'}`} />
                         <button onClick={() => removeProductImage(img)}
-                          className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-smflex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-md">
+                          className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-md">
                           ✕
                         </button>
                       </div>
@@ -2389,13 +2389,13 @@ export default function AdminDashboard() {
                     {field.multiline ? (
                       <textarea value={editingProduct[field.key as keyof DbProduct] as string}
                         onChange={e => setEditingProduct(p => p ? { ...p, [field.key]: e.target.value } : p)}
-                        className="w-full px-3 py-2.5 border-[1.5px] border-white/[.08] rounded-xl text-smoutline-none transition-all resize-y min-h-[70px] text-white/80"
+                        className="w-full px-3 py-2.5 border-[1.5px] border-white/[.08] rounded-xl text-sm outline-none transition-all resize-y min-h-[70px] text-white/80"
                         style={{ background: 'rgba(255,255,255,0.05)' }}
                       />
                     ) : (
                       <input value={editingProduct[field.key as keyof DbProduct] as string}
                         onChange={e => setEditingProduct(p => p ? { ...p, [field.key]: e.target.value } : p)}
-                        className="w-full px-3 py-2.5 border-[1.5px] border-white/[.08] rounded-xl text-smoutline-none transition-all text-white/80"
+                        className="w-full px-3 py-2.5 border-[1.5px] border-white/[.08] rounded-xl text-sm outline-none transition-all text-white/80"
                         style={{ background: 'rgba(255,255,255,0.05)' }}
                       />
                     )}
@@ -2448,7 +2448,7 @@ export default function AdminDashboard() {
                             }} />
                         </div>
                         <button onClick={() => removePackSize(size)}
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-sm text-red-400/40 hover:text-red-400 transition-all"
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-sm text-red-400/70 hover:text-red-400 transition-all"
                           style={{ background: 'rgba(239,68,68,0.06)' }}>
                           ✕
                         </button>
@@ -2469,7 +2469,7 @@ export default function AdminDashboard() {
                             updated[i] = { ...updated[i], type: e.target.value };
                             setEditingProduct(p => p ? { ...p, usage: updated } : p);
                           }}
-                          className="w-full px-2.5 py-1.5 border border-white/[.07] rounded-lg text-smoutline-none text-white/70 placeholder:text-white/20"
+                          className="w-full px-2.5 py-1.5 border border-white/[.07] rounded-lg text-sm outline-none text-white/70 placeholder:text-white/20"
                           style={{ background: 'rgba(255,255,255,0.04)' }} />
                         <textarea value={step.instructions} placeholder="Instructions"
                           onChange={e => {
@@ -2477,7 +2477,7 @@ export default function AdminDashboard() {
                             updated[i] = { ...updated[i], instructions: e.target.value };
                             setEditingProduct(p => p ? { ...p, usage: updated } : p);
                           }}
-                          className="w-full px-2.5 py-1.5 border border-white/[.07] rounded-lg text-smoutline-none resize-none min-h-[52px] text-white/70 placeholder:text-white/20"
+                          className="w-full px-2.5 py-1.5 border border-white/[.07] rounded-lg text-sm outline-none resize-none min-h-[52px] text-white/70 placeholder:text-white/20"
                           style={{ background: 'rgba(255,255,255,0.04)' }} />
                       </div>
                     ))}
@@ -2485,7 +2485,7 @@ export default function AdminDashboard() {
                 </div>
 
                 <button onClick={saveProduct} disabled={productSaving}
-                  className="w-full py-3.5 rounded-2xl font-bold text-smdisabled:opacity-40 transition-all hover:opacity-90"
+                  className="w-full py-3.5 rounded-2xl font-bold text-sm disabled:opacity-40 transition-all hover:opacity-90"
                   style={{ background: 'linear-gradient(135deg,#C8B44A,#D4942A)', color: '#0D1A09', boxShadow: '0 6px 20px rgba(200,180,74,0.2)' }}>
                   {productSaving ? 'Saving…' : 'Save Product'}
                 </button>
@@ -2520,7 +2520,7 @@ export default function AdminDashboard() {
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <h2 className="font-display text-lg font-bold text-white">Order Details</h2>
-                    <span className="font-mono text-smpx-2 py-0.5 rounded-md" style={{ color: 'rgba(200,180,74,0.5)', background: 'rgba(200,180,74,0.08)' }}>
+                    <span className="font-mono text-sm px-2 py-0.5 rounded-md" style={{ color: 'rgba(200,180,74,0.5)', background: 'rgba(200,180,74,0.08)' }}>
                       #{selected.id.slice(-8).toUpperCase()}
                     </span>
                   </div>
@@ -2585,11 +2585,11 @@ export default function AdminDashboard() {
 
                     {selected.totalAmount != null && (
                       <div className="border-t border-white/[.06] pt-3 mt-3 space-y-1">
-                        <div className="flex justify-between text-smtext-white/35">
+                        <div className="flex justify-between text-sm text-white/35">
                           <span>Products</span>
                           <span>₹{((selected.totalAmount ?? 0) - (selected.deliveryCharge ?? 0)).toFixed(0)}</span>
                         </div>
-                        <div className="flex justify-between text-smtext-white/35">
+                        <div className="flex justify-between text-sm text-white/35">
                           <span>Delivery</span>
                           <span>{selected.deliveryCharge === 0 ? 'Free' : `₹${selected.deliveryCharge ?? 0}`}</span>
                         </div>
@@ -2616,7 +2616,7 @@ export default function AdminDashboard() {
                         {opts.slice(1).map(s => (
                           <button key={s.value} onClick={() => { updateStatus(selected.id, s.value, selected); setSelected({ ...selected, status: s.value }); }}
                             disabled={loading}
-                            className="px-4 py-2 rounded-xl text-smfont-semibold border-2 transition-all disabled:opacity-40"
+                            className="px-4 py-2 rounded-xl text-sm font-semibold border-2 transition-all disabled:opacity-40"
                             style={s.value === 'cancelled'
                               ? { borderColor: 'rgba(239,68,68,0.3)', color: '#EF4444', background: 'rgba(239,68,68,0.08)' }
                               : { borderColor: 'rgba(90,122,58,0.3)', color: '#5A7A3A', background: 'rgba(90,122,58,0.08)' }}>
@@ -2631,7 +2631,7 @@ export default function AdminDashboard() {
                 {/* WhatsApp */}
                 <a href={`https://wa.me/${selected.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi ${selected.name}! Your order from Crafted by Amma has been confirmed. Thank you! 🌾`)}`}
                   target="_blank"
-                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-smfont-semibold text-white no-underline transition-all hover:shadow-lg"
+                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold text-white no-underline transition-all hover:shadow-lg"
                   style={{ background: 'linear-gradient(135deg, #25D366, #1da851)', boxShadow: '0 4px 16px rgba(37,211,102,0.25)' }}>
                   <span>💬</span> Message on WhatsApp
                 </a>
