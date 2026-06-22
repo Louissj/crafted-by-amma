@@ -2179,7 +2179,7 @@ export default function AdminDashboard() {
               initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 280 }}
               className="w-full md:w-[480px] md:h-full flex flex-col rounded-t-3xl md:rounded-none overflow-hidden"
-              style={{ background: '#080F06', boxShadow: '-8px 0 60px rgba(0,0,0,0.5)', maxHeight: '90vh', borderLeft: '1px solid rgba(200,180,74,0.1)' }}
+              style={{ background: '#080F06', boxShadow: '-8px 0 60px rgba(0,0,0,0.5)', maxHeight: '85dvh', borderLeft: '1px solid rgba(200,180,74,0.1)' }}
               onClick={e => e.stopPropagation()}>
 
               {/* Header */}
@@ -2279,7 +2279,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* WhatsApp CTA */}
-              <div className="p-4 flex-shrink-0 border-t border-white/[.06]">
+              <div className="p-4 flex-shrink-0 border-t border-white/[.06]" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 1rem)' }}>
                 <a href={`https://wa.me/91${selectedCustomer.phone.replace(/[^0-9]/g, '').slice(-10)}?text=${encodeURIComponent(`Hi ${selectedCustomer.name}! Thank you for ordering from Crafted by Amma 🌾`)}`}
                   target="_blank"
                   className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold text-white no-underline transition-all hover:shadow-lg"
@@ -2302,7 +2302,7 @@ export default function AdminDashboard() {
 
             <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 40 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="w-full sm:max-w-xl rounded-t-[24px] sm:rounded-[24px] max-h-[92vh] overflow-y-auto"
+              className="w-full sm:max-w-xl rounded-t-[24px] sm:rounded-[24px] max-h-[85dvh] overflow-y-auto"
               style={{ background: '#080F06', boxShadow: '0 32px 80px rgba(0,0,0,0.6)', border: '1px solid rgba(200,180,74,0.1)' }}
               onClick={e => e.stopPropagation()}>
 
@@ -2326,7 +2326,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div className="p-5 space-y-5">
+              <div className="p-5 space-y-5" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 1.25rem)' }}>
 
                 {/* Images */}
                 <div>
@@ -2506,7 +2506,7 @@ export default function AdminDashboard() {
             <motion.div
               initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 40 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="rounded-t-[24px] md:rounded-[24px] w-full md:max-w-lg max-h-[90vh] overflow-y-auto"
+              className="rounded-t-[24px] md:rounded-[24px] w-full md:max-w-lg max-h-[85dvh] overflow-y-auto"
               style={{ background: '#080F06', boxShadow: '0 -8px 40px rgba(0,0,0,0.5), 0 32px 80px rgba(0,0,0,0.6)', border: '1px solid rgba(200,180,74,0.1)' }}
               onClick={e => e.stopPropagation()}>
               {/* drag handle on mobile */}
@@ -2537,7 +2537,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div className="p-4 md:p-6 space-y-4 md:space-y-5">
+              <div className="p-4 md:p-6 space-y-4 md:space-y-5" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 1rem)' }}>
                 {/* Customer info */}
                 <div className="grid grid-cols-2 gap-3">
                   {[
