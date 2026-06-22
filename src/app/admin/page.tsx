@@ -992,7 +992,7 @@ export default function AdminDashboard() {
                   {/* Left status stripe */}
                   <div className="w-1 flex-shrink-0 rounded-l-2xl"
                     style={{ background: STATUS_META[order.status]?.color || '#888' }} />
-                  <div className="flex-1 px-4 py-3.5">
+                  <div className="flex-1 min-w-0 px-4 py-3.5">
                     {/* Top row: avatar + info + amount */}
                     <div className="flex items-center gap-3">
                       {/* Avatar */}
