@@ -812,7 +812,7 @@ export default function AdminDashboard() {
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {NAV_ITEMS.map(item => (
-            <button key={item.id} onClick={() => { setTab(item.id); setSelected(null); }}
+            <button key={item.id} onClick={() => { setTab(item.id); setSelected(null); setSelectedCustomer(null); setEditingProduct(null); }}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left transition-all group
                 ${tab === item.id
                   ? 'text-forest font-bold shadow-lg'
@@ -874,7 +874,7 @@ export default function AdminDashboard() {
             <div className="flex-1" />
 
             {stats.pending > 0 && (
-              <button onClick={() => { setTab('orders'); setSelected(null); }}
+              <button onClick={() => { setTab('orders'); setSelected(null); setSelectedCustomer(null); setEditingProduct(null); }}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold border transition-all"
                 style={{ color: '#D4942A', borderColor: 'rgba(212,148,42,0.3)', background: 'rgba(212,148,42,0.1)' }}>
                 <span className="relative flex h-1.5 w-1.5">
@@ -901,7 +901,7 @@ export default function AdminDashboard() {
           style={{ background: 'rgba(13,26,9,0.97)', borderTop: '1px solid rgba(200,180,74,0.15)', backdropFilter: 'blur(20px)', scrollbarWidth: 'none' }}>
           <div className="flex min-w-max px-1">
             {NAV_ITEMS.map(item => (
-              <button key={item.id} onClick={() => { setTab(item.id); setSelected(null); }}
+              <button key={item.id} onClick={() => { setTab(item.id); setSelected(null); setSelectedCustomer(null); setEditingProduct(null); }}
                 className={`relative flex flex-col items-center justify-center gap-0.5 py-2.5 px-3 transition-all min-w-[60px]
                   ${tab === item.id ? 'text-brass' : 'text-white/30'}`}>
                 {tab === item.id && (
