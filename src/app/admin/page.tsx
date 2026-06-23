@@ -11,7 +11,7 @@ type Order = {
   id: string; name: string; phone: string;
   products: unknown;
   quantity: string;
-  city: string; address: string; paymentScreenshot: string | null; notes: string | null;
+  city: string; address: string; pincode: string | null; paymentScreenshot: string | null; notes: string | null;
   status: string; totalAmount: number | null; deliveryCharge: number | null; isKarnataka: boolean; createdAt: string; paymentMethod: string | null;
 };
 
@@ -2551,6 +2551,7 @@ export default function AdminDashboard() {
                     { label: 'Name', value: selected.name },
                     { label: 'Phone', value: selected.phone, link: `tel:${selected.phone}` },
                     { label: 'City', value: `${selected.city}${selected.isKarnataka ? ' 🏠 KA' : ''}` },
+                    { label: 'Pincode', value: selected.pincode || '—' },
                     { label: 'Address', value: selected.address },
                   ].map(f => (
                     <div key={f.label} className={`p-3 rounded-xl border border-white/[.07] ${f.label === 'Address' ? 'col-span-2' : ''}`} style={{ background: 'rgba(255,255,255,0.04)' }}>
