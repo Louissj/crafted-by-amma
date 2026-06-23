@@ -80,6 +80,8 @@ export default function AdminDashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [filter, setFilter] = useState('all');
   const [selected, setSelected] = useState<Order | null>(null);
+  const [notesDraft, setNotesDraft] = useState('');
+  const [notesSaving, setNotesSaving] = useState(false);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({ total: 0, pending: 0, confirmed: 0, revenue: 0 });
 
@@ -232,6 +234,27 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (loggedIn) fetchProducts();
   }, [loggedIn, fetchProducts]);
+
+  useEffect(() => {
+    setNotesDraft(selected?.notes || '');
+  }, [selected?.id]);
+
+  const saveNotes = async () => {
+    if (!selected) return;
+    setNotesSaving(true);
+    try {
+      await fetch(`/api/orders/${selected.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: notesDraft }),
+      });
+      setSelected(prev => prev ? { ...prev, notes: notesDraft } : null);
+      setOrders(prev => prev.map(o => o.id === selected.id ? { ...o, notes: notesDraft } : o));
+      showToast('Notes saved!');
+    } finally {
+      setNotesSaving(false);
+    }
+  };
 
   // Lock background scroll when any modal/panel is open
   useEffect(() => {
@@ -2561,12 +2584,23 @@ export default function AdminDashboard() {
                         : <p className="text-sm text-white/70 font-medium">{f.value}</p>}
                     </div>
                   ))}
-                  {selected.notes && (
-                    <div className="col-span-2 p-3 rounded-xl border border-brass/15" style={{ background: 'rgba(200,180,74,0.05)' }}>
-                      <p className="text-sm font-bold uppercase tracking-[2px] mb-0.5" style={{ color: 'rgba(200,180,74,0.5)' }}>Notes</p>
-                      <p className="text-sm text-white/60">{selected.notes}</p>
-                    </div>
-                  )}
+                  <div className="col-span-2 p-3 rounded-xl border border-brass/15" style={{ background: 'rgba(200,180,74,0.05)' }}>
+                    <p className="text-sm font-bold uppercase tracking-[2px] mb-1.5" style={{ color: 'rgba(200,180,74,0.5)' }}>Notes</p>
+                    <textarea
+                      value={notesDraft}
+                      onChange={e => setNotesDraft(e.target.value.slice(0, 500))}
+                      placeholder="No notes yet — add one for this order…"
+                      rows={2}
+                      className="w-full bg-transparent text-sm text-white/70 outline-none resize-y placeholder:text-white/25"
+                    />
+                    {notesDraft !== (selected.notes || '') && (
+                      <button onClick={saveNotes} disabled={notesSaving}
+                        className="mt-2 px-3 py-1.5 rounded-lg text-sm font-semibold disabled:opacity-50 transition-all"
+                        style={{ background: 'rgba(200,180,74,0.15)', color: '#C8B44A' }}>
+                        {notesSaving ? 'Saving…' : 'Save Note'}
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Order items */}
