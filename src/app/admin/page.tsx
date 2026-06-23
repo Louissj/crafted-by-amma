@@ -177,7 +177,7 @@ export default function AdminDashboard() {
         total: all.length,
         pending: all.filter((o: Order) => o.status === 'pending').length,
         confirmed: all.filter((o: Order) => ['confirmed', 'shipped', 'delivered'].includes(o.status)).length,
-        revenue: all.filter((o: Order) => o.totalAmount).reduce((s: number, o: Order) => s + (o.totalAmount || 0), 0),
+        revenue: all.filter((o: Order) => o.totalAmount && o.status !== 'cancelled').reduce((s: number, o: Order) => s + (o.totalAmount || 0), 0),
       });
     }
   }, [filter]);
