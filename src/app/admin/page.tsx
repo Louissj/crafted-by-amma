@@ -320,11 +320,24 @@ export default function AdminDashboard() {
     }
   };
 
-  // Lock background scroll when any modal/panel is open
+  // Lock background scroll when any modal/panel is open (iOS-safe: overflow alone doesn't block touch-scroll)
   useEffect(() => {
     const anyModalOpen = !!selected || !!selectedCustomer || !!editingProduct || showOfflineModal;
-    document.body.style.overflow = anyModalOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
+    if (!anyModalOpen) return;
+    const scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    return () => {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      window.scrollTo(0, scrollY);
+    };
   }, [selected, selectedCustomer, editingProduct, showOfflineModal]);
 
   useEffect(() => {
@@ -2814,15 +2827,15 @@ export default function AdminDashboard() {
                           <select value={item.productId}
                             onChange={e => updateOfflineItemRow(idx, { productId: e.target.value, packSize: '' })}
                             className="flex-1 min-w-0 px-2.5 py-2 rounded-lg text-sm bg-white/[.04] border border-white/[.08] text-white outline-none">
-                            <option value="">Select product…</option>
-                            {products.map(p => <option key={p.id} value={p.id}>{p.shortName}</option>)}
+                            <option value="" style={{ background: '#1A2A14', color: '#E8DEB0' }}>Select product…</option>
+                            {products.map(p => <option key={p.id} value={p.id} style={{ background: '#1A2A14', color: '#E8DEB0' }}>{p.shortName}</option>)}
                           </select>
                           <select value={item.packSize}
                             onChange={e => updateOfflineItemRow(idx, { packSize: e.target.value })}
                             disabled={!product}
                             className="w-24 px-2.5 py-2 rounded-lg text-sm bg-white/[.04] border border-white/[.08] text-white outline-none disabled:opacity-40">
-                            <option value="">Size</option>
-                            {sizes.map(s => <option key={s} value={s}>{s} · ₹{product!.prices[s]}</option>)}
+                            <option value="" style={{ background: '#1A2A14', color: '#E8DEB0' }}>Size</option>
+                            {sizes.map(s => <option key={s} value={s} style={{ background: '#1A2A14', color: '#E8DEB0' }}>{s} · ₹{product!.prices[s]}</option>)}
                           </select>
                           <input type="number" min={1} value={item.count}
                             onChange={e => updateOfflineItemRow(idx, { count: Math.max(1, parseInt(e.target.value) || 1) })}
@@ -2842,15 +2855,15 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-2 gap-3">
                   <select value={offlineForm.paymentMethod} onChange={e => setOfflineForm(f => ({ ...f, paymentMethod: e.target.value }))}
                     className="px-3.5 py-2.5 rounded-xl text-sm bg-white/[.04] border border-white/[.08] text-white outline-none">
-                    <option value="cash">Cash</option>
-                    <option value="upi">UPI</option>
-                    <option value="bank-transfer">Bank Transfer</option>
-                    <option value="other">Other</option>
+                    <option value="cash" style={{ background: '#1A2A14', color: '#E8DEB0' }}>Cash</option>
+                    <option value="upi" style={{ background: '#1A2A14', color: '#E8DEB0' }}>UPI</option>
+                    <option value="bank-transfer" style={{ background: '#1A2A14', color: '#E8DEB0' }}>Bank Transfer</option>
+                    <option value="other" style={{ background: '#1A2A14', color: '#E8DEB0' }}>Other</option>
                   </select>
                   <select value={offlineForm.status} onChange={e => setOfflineForm(f => ({ ...f, status: e.target.value }))}
                     className="px-3.5 py-2.5 rounded-xl text-sm bg-white/[.04] border border-white/[.08] text-white outline-none">
                     {['pending', 'verified', 'confirmed', 'shipped', 'delivered'].map(s => (
-                      <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                      <option key={s} value={s} style={{ background: '#1A2A14', color: '#E8DEB0' }}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
                     ))}
                   </select>
                   <input type="number" min={0} value={offlineForm.deliveryCharge}
