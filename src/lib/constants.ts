@@ -46,6 +46,7 @@ export const CONTACT = {
   phone2: '9483707934',
   whatsapp: '917899858581',
   instagram: 'https://www.instagram.com/craftedbyamma/',
+  email: 'Craftedbyamma@gmail.com',
   location: 'Mysuru, Karnataka',
 };
 

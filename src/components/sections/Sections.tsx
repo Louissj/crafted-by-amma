@@ -553,9 +553,16 @@ export function CTA() {
           className="bg-green-500 text-white px-7 py-3.5 rounded-full text-xs font-semibold tracking-[1.5px] no-underline inline-flex items-center gap-2 shadow-lg hover:-translate-y-0.5 transition-all active:scale-95">
           💬 WhatsApp
         </a>
+        <a href={`mailto:${CONTACT.email}`}
+          className="bg-gradient-to-br from-sky-500 to-blue-600 text-white px-7 py-3.5 rounded-full text-xs font-semibold tracking-[1.5px] no-underline inline-flex items-center gap-2 shadow-lg hover:-translate-y-0.5 transition-all active:scale-95">
+          ✉️ Email
+        </a>
       </RevealSection>
       <p className="text-xs text-brass/65">
         📱 {CONTACT.phone1} · {CONTACT.phone2}
+      </p>
+      <p className="text-xs text-brass/65 mt-1.5">
+        ✉️ {CONTACT.email}
       </p>
     </section>
   );
@@ -697,7 +704,7 @@ export function Footer() {
           {[
             { title: 'Navigate', links: [{ label: 'Story', href: '#about' }, { label: 'Products', href: '#prods' }, { label: 'Why Us', href: '#why' }, { label: 'Order', href: '#order' }] },
             { title: 'Products', links: [{ label: 'Millet Malt', href: '#prods' }, { label: 'Dosa Mix', href: '#prods' }, { label: 'Track Order', href: '/track' }] },
-            { title: 'Connect', links: [{ label: 'Instagram', href: CONTACT.instagram }, { label: 'WhatsApp', href: `https://wa.me/${CONTACT.whatsapp}` }, { label: `📞 ${CONTACT.phone1}`, href: `tel:${CONTACT.phone1}` }] },
+            { title: 'Connect', links: [{ label: 'Instagram', href: CONTACT.instagram }, { label: 'WhatsApp', href: `https://wa.me/${CONTACT.whatsapp}` }, { label: `📞 ${CONTACT.phone1}`, href: `tel:${CONTACT.phone1}` }, { label: `✉️ Email`, href: `mailto:${CONTACT.email}` }] },
           ].map(col => (
             <div key={col.title}>
               <h4 className="font-display text-[.8rem] font-bold text-sand/60 mb-3 relative inline-block">
