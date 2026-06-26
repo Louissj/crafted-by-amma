@@ -72,3 +72,10 @@ body::before {
 /* Page entry */
 @keyframes pageEntry { from { opacity: 0; filter: blur(4px); } to { opacity: 1; filter: blur(0); } }
 body { animation: pageEntry 0.8s ease; }
+
+/* FSSAI flash card glow */
+@keyframes fssaiGlow {
+  0%, 100% { box-shadow: 0 0 0px rgba(212,148,42,0); }
+  50% { box-shadow: 0 0 28px rgba(212,148,42,0.4); }
+}
+.animate-fssai-glow { animation: fssaiGlow 2.6s ease-in-out infinite; }

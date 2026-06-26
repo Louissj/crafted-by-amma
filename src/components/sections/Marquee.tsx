@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react';
 type Offer = { id: string; icon: string; text: string };
 
 const STATIC_ITEMS = [
-  { icon: '🛡️', text: 'FSSAI Licensed · Lic No. 21226197000270' },
   { icon: '🌾', text: 'No Preservatives' },
   { icon: '🍃', text: 'No Added Sugar' },
   { icon: '✨', text: 'No Artificial Flavours' },

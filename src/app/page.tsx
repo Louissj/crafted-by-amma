@@ -6,6 +6,7 @@ import Navbar from '@/components/ui/Navbar';
 import Hero from '@/components/sections/Hero';
 import BioCard from '@/components/sections/BioCard';
 import Marquee from '@/components/sections/Marquee';
+import FssaiBadge from '@/components/sections/FssaiBadge';
 import About from '@/components/sections/About';
 import OffersSection from '@/components/sections/OffersSection';
 import Products from '@/components/sections/Products';
@@ -29,6 +30,7 @@ export default function RootPage() {
         <Hero />
         <BioCard />
         <Marquee />
+        <FssaiBadge />
         <OffersSection />
         <Products />
         <About />
