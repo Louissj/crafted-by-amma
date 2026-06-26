@@ -85,6 +85,18 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({ total: 0, pending: 0, confirmed: 0, revenue: 0 });
 
+  // Offline order entry
+  const emptyOfflineForm = {
+    name: '', phone: '', city: '', address: '', pincode: '',
+    paymentMethod: 'cash', status: 'confirmed',
+    deliveryCharge: '0', notes: '', isKarnataka: false,
+    totalOverride: '',
+    items: [{ productId: '', packSize: '', count: 1 }] as { productId: string; packSize: string; count: number }[],
+  };
+  const [showOfflineModal, setShowOfflineModal] = useState(false);
+  const [offlineForm, setOfflineForm] = useState(emptyOfflineForm);
+  const [offlineSaving, setOfflineSaving] = useState(false);
+
   const [offers, setOffers] = useState<Offer[]>([]);
   const [newOfferIcon, setNewOfferIcon] = useState('✨');
   const [newOfferText, setNewOfferText] = useState('');
@@ -256,12 +268,64 @@ export default function AdminDashboard() {
     }
   };
 
+  const offlineItemsTotal = offlineForm.items.reduce((sum, item) => {
+    const price = products.find(p => p.id === item.productId)?.prices?.[item.packSize] || 0;
+    return sum + price * item.count;
+  }, 0);
+  const offlineComputedTotal = offlineItemsTotal + (parseFloat(offlineForm.deliveryCharge) || 0);
+  const offlineFinalTotal = offlineForm.totalOverride !== '' ? parseFloat(offlineForm.totalOverride) || 0 : offlineComputedTotal;
+
+  const addOfflineItemRow = () => {
+    setOfflineForm(f => ({ ...f, items: [...f.items, { productId: '', packSize: '', count: 1 }] }));
+  };
+  const removeOfflineItemRow = (idx: number) => {
+    setOfflineForm(f => ({ ...f, items: f.items.filter((_, i) => i !== idx) }));
+  };
+  const updateOfflineItemRow = (idx: number, patch: Partial<{ productId: string; packSize: string; count: number }>) => {
+    setOfflineForm(f => ({ ...f, items: f.items.map((item, i) => i === idx ? { ...item, ...patch } : item) }));
+  };
+
+  const submitOfflineOrder = async () => {
+    const validItems = offlineForm.items.filter(i => i.productId && i.packSize && i.count >= 1);
+    const phoneOk = /^(\+91|91)?[6-9]\d{9}$/.test(offlineForm.phone.replace(/[\s\-()]/g, ''));
+    if (!offlineForm.name.trim() || !phoneOk || !offlineForm.city.trim() || !offlineForm.address.trim() || validItems.length === 0) {
+      showToast('Fill name, valid phone, city, address and at least one product', 'error');
+      return;
+    }
+    setOfflineSaving(true);
+    try {
+      const res = await fetch('/api/orders/manual', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: offlineForm.name, phone: offlineForm.phone, city: offlineForm.city,
+          address: offlineForm.address, pincode: offlineForm.pincode, notes: offlineForm.notes,
+          items: validItems, deliveryCharge: parseFloat(offlineForm.deliveryCharge) || 0,
+          isKarnataka: offlineForm.isKarnataka, paymentMethod: offlineForm.paymentMethod,
+          status: offlineForm.status,
+          totalAmountOverride: offlineForm.totalOverride !== '' ? parseFloat(offlineForm.totalOverride) : undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(data.error || 'Failed to add order', 'error');
+        return;
+      }
+      showToast('Offline order added!');
+      setShowOfflineModal(false);
+      setOfflineForm(emptyOfflineForm);
+      await fetchOrders();
+    } finally {
+      setOfflineSaving(false);
+    }
+  };
+
   // Lock background scroll when any modal/panel is open
   useEffect(() => {
-    const anyModalOpen = !!selected || !!selectedCustomer || !!editingProduct;
+    const anyModalOpen = !!selected || !!selectedCustomer || !!editingProduct || showOfflineModal;
     document.body.style.overflow = anyModalOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
-  }, [selected, selectedCustomer, editingProduct]);
+  }, [selected, selectedCustomer, editingProduct, showOfflineModal]);
 
   useEffect(() => {
     if (!loggedIn) return;
@@ -842,7 +906,7 @@ export default function AdminDashboard() {
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {NAV_ITEMS.map(item => (
-            <button key={item.id} onClick={() => { setTab(item.id); setSelected(null); setSelectedCustomer(null); setEditingProduct(null); }}
+            <button key={item.id} onClick={() => { setTab(item.id); setSelected(null); setSelectedCustomer(null); setEditingProduct(null); setShowOfflineModal(false); }}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left transition-all group
                 ${tab === item.id
                   ? 'text-forest font-bold shadow-lg'
@@ -904,7 +968,7 @@ export default function AdminDashboard() {
             <div className="flex-1" />
 
             {stats.pending > 0 && (
-              <button onClick={() => { setTab('orders'); setSelected(null); setSelectedCustomer(null); setEditingProduct(null); }}
+              <button onClick={() => { setTab('orders'); setSelected(null); setSelectedCustomer(null); setEditingProduct(null); setShowOfflineModal(false); }}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold border transition-all"
                 style={{ color: '#D4942A', borderColor: 'rgba(212,148,42,0.3)', background: 'rgba(212,148,42,0.1)' }}>
                 <span className="relative flex h-1.5 w-1.5">
@@ -931,7 +995,7 @@ export default function AdminDashboard() {
           style={{ background: 'rgba(13,26,9,0.97)', borderTop: '1px solid rgba(200,180,74,0.15)', backdropFilter: 'blur(20px)', scrollbarWidth: 'none' }}>
           <div className="flex min-w-max px-1">
             {NAV_ITEMS.map(item => (
-              <button key={item.id} onClick={() => { setTab(item.id); setSelected(null); setSelectedCustomer(null); setEditingProduct(null); }}
+              <button key={item.id} onClick={() => { setTab(item.id); setSelected(null); setSelectedCustomer(null); setEditingProduct(null); setShowOfflineModal(false); }}
                 className={`relative flex flex-col items-center justify-center gap-0.5 py-2.5 px-3 transition-all min-w-[60px]
                   ${tab === item.id ? 'text-brass' : 'text-white/30'}`}>
                 {tab === item.id && (
@@ -987,6 +1051,15 @@ export default function AdminDashboard() {
                   style={{ background: `linear-gradient(90deg, transparent, ${s.accent}44, transparent)` }} />
               </motion.div>
             ))}
+          </div>
+
+          {/* Add offline order */}
+          <div className="px-4 pt-2">
+            <button onClick={() => { setOfflineForm(emptyOfflineForm); setShowOfflineModal(true); }}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
+              style={{ background: 'rgba(200,180,74,0.12)', color: '#C8B44A', border: '1px solid rgba(200,180,74,0.25)' }}>
+              <span>+</span> Add Offline Order
+            </button>
           </div>
 
           {/* Filter pills */}
@@ -2677,6 +2750,133 @@ export default function AdminDashboard() {
                   style={{ background: 'linear-gradient(135deg, #25D366, #1da851)', boxShadow: '0 4px 16px rgba(37,211,102,0.25)' }}>
                   <span>💬</span> Message on WhatsApp
                 </a>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── ADD OFFLINE ORDER MODAL ── */}
+      <AnimatePresence>
+        {showOfflineModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+            style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)' }}
+            onClick={() => setShowOfflineModal(false)}>
+
+            <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 40 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="w-full sm:max-w-xl rounded-t-[24px] sm:rounded-[24px] max-h-[85dvh] overflow-y-auto"
+              style={{ background: '#080F06', boxShadow: '0 32px 80px rgba(0,0,0,0.6)', border: '1px solid rgba(200,180,74,0.1)' }}
+              onClick={e => e.stopPropagation()}>
+
+              {/* Header */}
+              <div className="px-5 pt-5 pb-4 border-b border-white/[.06] flex items-center justify-between sticky top-0 z-10" style={{ background: 'rgba(8,15,6,0.97)', backdropFilter: 'blur(10px)' }}>
+                <h2 className="font-display text-lg font-bold text-white">Add Offline Order</h2>
+                <button onClick={() => setShowOfflineModal(false)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-white/25 hover:text-white/60 hover:bg-white/[.06] transition-all text-sm">
+                  ✕
+                </button>
+              </div>
+
+              <div className="p-5 space-y-4" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 1.25rem)' }}>
+
+                {/* Customer fields */}
+                <div className="grid grid-cols-2 gap-3">
+                  <input value={offlineForm.name} onChange={e => setOfflineForm(f => ({ ...f, name: e.target.value }))}
+                    placeholder="Customer name *" className="col-span-2 px-3.5 py-2.5 rounded-xl text-sm bg-white/[.04] border border-white/[.08] text-white outline-none focus:border-brass/40 placeholder:text-white/25" />
+                  <input value={offlineForm.phone} onChange={e => setOfflineForm(f => ({ ...f, phone: e.target.value }))}
+                    placeholder="Phone *" className="px-3.5 py-2.5 rounded-xl text-sm bg-white/[.04] border border-white/[.08] text-white outline-none focus:border-brass/40 placeholder:text-white/25" />
+                  <input value={offlineForm.pincode} onChange={e => setOfflineForm(f => ({ ...f, pincode: e.target.value }))}
+                    placeholder="Pincode" className="px-3.5 py-2.5 rounded-xl text-sm bg-white/[.04] border border-white/[.08] text-white outline-none focus:border-brass/40 placeholder:text-white/25" />
+                  <input value={offlineForm.city} onChange={e => setOfflineForm(f => ({ ...f, city: e.target.value }))}
+                    placeholder="City *" className="px-3.5 py-2.5 rounded-xl text-sm bg-white/[.04] border border-white/[.08] text-white outline-none focus:border-brass/40 placeholder:text-white/25" />
+                  <label className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-sm bg-white/[.04] border border-white/[.08] text-white/60 cursor-pointer">
+                    <input type="checkbox" checked={offlineForm.isKarnataka} onChange={e => setOfflineForm(f => ({ ...f, isKarnataka: e.target.checked }))} />
+                    Karnataka 🏠
+                  </label>
+                  <input value={offlineForm.address} onChange={e => setOfflineForm(f => ({ ...f, address: e.target.value }))}
+                    placeholder="Address *" className="col-span-2 px-3.5 py-2.5 rounded-xl text-sm bg-white/[.04] border border-white/[.08] text-white outline-none focus:border-brass/40 placeholder:text-white/25" />
+                </div>
+
+                {/* Products */}
+                <div className="rounded-xl border border-white/[.07] overflow-hidden">
+                  <div className="px-4 py-2.5 border-b border-white/[.06] flex items-center justify-between" style={{ background: 'rgba(200,180,74,0.04)' }}>
+                    <p className="text-sm font-bold uppercase tracking-[2px]" style={{ color: 'rgba(200,180,74,0.4)' }}>Products</p>
+                    <button onClick={addOfflineItemRow} className="text-sm font-semibold" style={{ color: '#C8B44A' }}>+ Add row</button>
+                  </div>
+                  <div className="p-3 space-y-2">
+                    {offlineForm.items.map((item, idx) => {
+                      const product = products.find(p => p.id === item.productId);
+                      const sizes = product ? Object.keys(product.prices) : [];
+                      return (
+                        <div key={idx} className="flex items-center gap-2">
+                          <select value={item.productId}
+                            onChange={e => updateOfflineItemRow(idx, { productId: e.target.value, packSize: '' })}
+                            className="flex-1 min-w-0 px-2.5 py-2 rounded-lg text-sm bg-white/[.04] border border-white/[.08] text-white outline-none">
+                            <option value="">Select product…</option>
+                            {products.map(p => <option key={p.id} value={p.id}>{p.shortName}</option>)}
+                          </select>
+                          <select value={item.packSize}
+                            onChange={e => updateOfflineItemRow(idx, { packSize: e.target.value })}
+                            disabled={!product}
+                            className="w-24 px-2.5 py-2 rounded-lg text-sm bg-white/[.04] border border-white/[.08] text-white outline-none disabled:opacity-40">
+                            <option value="">Size</option>
+                            {sizes.map(s => <option key={s} value={s}>{s} · ₹{product!.prices[s]}</option>)}
+                          </select>
+                          <input type="number" min={1} value={item.count}
+                            onChange={e => updateOfflineItemRow(idx, { count: Math.max(1, parseInt(e.target.value) || 1) })}
+                            className="w-14 px-2 py-2 rounded-lg text-sm bg-white/[.04] border border-white/[.08] text-white outline-none text-center" />
+                          {offlineForm.items.length > 1 && (
+                            <button onClick={() => removeOfflineItemRow(idx)}
+                              className="w-8 h-8 rounded-lg flex items-center justify-center text-sm text-red-400/70 hover:text-red-400 transition-all flex-shrink-0"
+                              style={{ background: 'rgba(239,68,68,0.06)' }}>✕</button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Payment + status + delivery */}
+                <div className="grid grid-cols-2 gap-3">
+                  <select value={offlineForm.paymentMethod} onChange={e => setOfflineForm(f => ({ ...f, paymentMethod: e.target.value }))}
+                    className="px-3.5 py-2.5 rounded-xl text-sm bg-white/[.04] border border-white/[.08] text-white outline-none">
+                    <option value="cash">Cash</option>
+                    <option value="upi">UPI</option>
+                    <option value="bank-transfer">Bank Transfer</option>
+                    <option value="other">Other</option>
+                  </select>
+                  <select value={offlineForm.status} onChange={e => setOfflineForm(f => ({ ...f, status: e.target.value }))}
+                    className="px-3.5 py-2.5 rounded-xl text-sm bg-white/[.04] border border-white/[.08] text-white outline-none">
+                    {['pending', 'verified', 'confirmed', 'shipped', 'delivered'].map(s => (
+                      <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                    ))}
+                  </select>
+                  <input type="number" min={0} value={offlineForm.deliveryCharge}
+                    onChange={e => setOfflineForm(f => ({ ...f, deliveryCharge: e.target.value }))}
+                    placeholder="Delivery charge" className="px-3.5 py-2.5 rounded-xl text-sm bg-white/[.04] border border-white/[.08] text-white outline-none placeholder:text-white/25" />
+                  <input type="number" min={0} value={offlineForm.totalOverride}
+                    onChange={e => setOfflineForm(f => ({ ...f, totalOverride: e.target.value }))}
+                    placeholder={`Total (auto: ₹${offlineComputedTotal})`} className="px-3.5 py-2.5 rounded-xl text-sm bg-white/[.04] border border-white/[.08] text-white outline-none placeholder:text-white/25" />
+                </div>
+
+                <textarea value={offlineForm.notes} onChange={e => setOfflineForm(f => ({ ...f, notes: e.target.value.slice(0, 500) }))}
+                  placeholder="Notes (optional)" rows={2}
+                  className="w-full px-3.5 py-2.5 rounded-xl text-sm bg-white/[.04] border border-white/[.08] text-white outline-none resize-y placeholder:text-white/25" />
+
+                {/* Total + submit */}
+                <div className="flex items-center justify-between pt-2">
+                  <div>
+                    <p className="text-sm text-white/40">Total Amount</p>
+                    <p className="font-display text-2xl font-bold" style={{ color: '#C8B44A' }}>₹{offlineFinalTotal}</p>
+                  </div>
+                  <button onClick={submitOfflineOrder} disabled={offlineSaving}
+                    className="px-6 py-3 rounded-xl text-sm font-bold disabled:opacity-50 transition-all"
+                    style={{ background: 'linear-gradient(135deg,#C8B44A,#D4942A)', color: '#1A2A14' }}>
+                    {offlineSaving ? 'Saving…' : 'Add Order'}
+                  </button>
+                </div>
               </div>
             </motion.div>
           </motion.div>
