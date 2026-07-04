@@ -79,6 +79,8 @@ export default function AdminDashboard() {
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [filter, setFilter] = useState('all');
+  const [orderPage, setOrderPage] = useState(1);
+  const [orderTotalPages, setOrderTotalPages] = useState(1);
   const [selected, setSelected] = useState<Order | null>(null);
   const [notesDraft, setNotesDraft] = useState('');
   const [notesSaving, setNotesSaving] = useState(false);
@@ -181,20 +183,16 @@ export default function AdminDashboard() {
   }, []);
 
   const fetchOrders = useCallback(async () => {
-    const url = filter === 'all' ? '/api/orders' : `/api/orders?status=${filter}`;
-    const res = await fetch(url);
+    const params = new URLSearchParams({ page: String(orderPage), limit: '20' });
+    if (filter !== 'all') params.set('status', filter);
+    const res = await fetch(`/api/orders?${params}`);
     const data = await res.json();
     setOrders(data.orders || []);
-    if (filter === 'all') {
-      const all = data.orders || [];
-      setStats({
-        total: all.length,
-        pending: all.filter((o: Order) => o.status === 'pending').length,
-        confirmed: all.filter((o: Order) => ['confirmed', 'shipped', 'delivered'].includes(o.status)).length,
-        revenue: all.filter((o: Order) => o.totalAmount && o.status !== 'cancelled').reduce((s: number, o: Order) => s + (o.totalAmount || 0), 0),
-      });
+    setOrderTotalPages(data.totalPages || 1);
+    if (data.aggStats) {
+      setStats(data.aggStats);
     }
-  }, [filter]);
+  }, [filter, orderPage]);
 
   const fetchOffers = useCallback(async () => {
     const res = await fetch('/api/offers');
@@ -246,6 +244,8 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (loggedIn) fetchProducts();
   }, [loggedIn, fetchProducts]);
+
+  useEffect(() => { setOrderPage(1); }, [filter]);
 
   useEffect(() => {
     setNotesDraft(selected?.notes || '');
@@ -1227,6 +1227,29 @@ export default function AdminDashboard() {
               </div>
             </div>
           </div>
+
+          {/* Pagination */}
+          {orderTotalPages > 1 && (
+            <div className="flex items-center justify-center gap-3 py-5 px-4">
+              <button
+                disabled={orderPage === 1}
+                onClick={() => setOrderPage(p => p - 1)}
+                className="px-4 py-2 rounded-xl text-sm font-semibold border transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                style={{ background: 'rgba(255,255,255,0.05)', color: '#E8DEB0', borderColor: 'rgba(255,255,255,0.1)' }}>
+                ← Prev
+              </button>
+              <span className="text-sm font-mono" style={{ color: 'rgba(232,222,176,0.5)' }}>
+                Page {orderPage} of {orderTotalPages}
+              </span>
+              <button
+                disabled={orderPage === orderTotalPages}
+                onClick={() => setOrderPage(p => p + 1)}
+                className="px-4 py-2 rounded-xl text-sm font-semibold border transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                style={{ background: 'rgba(255,255,255,0.05)', color: '#E8DEB0', borderColor: 'rgba(255,255,255,0.1)' }}>
+                Next →
+              </button>
+            </div>
+          )}
         </motion.div>
       )}
 

@@ -136,15 +136,32 @@ export async function GET(req: NextRequest) {
     if (status && status !== 'all') where.status = status;
     if (phone) where.phone = phone;
 
-    const [orders, total] = await Promise.all([
+    const [orders, total, revenueAgg, pendingCount, confirmedCount, globalTotal] = await Promise.all([
       prisma.order.findMany({
         where, orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit, take: limit,
       }),
       prisma.order.count({ where }),
+      // Aggregate stats always reflect full DB (ignore page/status filters)
+      !phone ? prisma.order.aggregate({
+        where: { status: { not: 'cancelled' }, totalAmount: { not: null } },
+        _sum: { totalAmount: true },
+      }) : Promise.resolve(null),
+      !phone ? prisma.order.count({ where: { status: 'pending' } }) : Promise.resolve(null),
+      !phone ? prisma.order.count({ where: { status: { in: ['confirmed', 'shipped', 'delivered'] } } }) : Promise.resolve(null),
+      !phone ? prisma.order.count({}) : Promise.resolve(null),
     ]);
 
-    return NextResponse.json({ orders, total, page, totalPages: Math.ceil(total / limit) });
+    const aggStats = (!phone && revenueAgg && pendingCount !== null && confirmedCount !== null && globalTotal !== null)
+      ? {
+          total: globalTotal,
+          revenue: (revenueAgg as { _sum: { totalAmount: number | null } })._sum.totalAmount || 0,
+          pending: pendingCount as number,
+          confirmed: confirmedCount as number,
+        }
+      : null;
+
+    return NextResponse.json({ orders, total, page, totalPages: Math.ceil(total / limit), aggStats });
   } catch (error) {
     console.error('Orders fetch error:', error);
     return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
