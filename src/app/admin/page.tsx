@@ -184,15 +184,28 @@ export default function AdminDashboard() {
 
   const fetchOrders = useCallback(async () => {
     const params = new URLSearchParams({ page: String(orderPage), limit: '20' });
-    if (filter !== 'all') params.set('status', filter);
+    if (filter === 'offline' || filter === 'online') params.set('type', filter);
+    else if (filter !== 'all') params.set('status', filter);
     const res = await fetch(`/api/orders?${params}`);
     const data = await res.json();
     setOrders(data.orders || []);
     setOrderTotalPages(data.totalPages || 1);
-    if (data.aggStats) {
-      setStats(data.aggStats);
-    }
+    if (data.aggStats) setStats(data.aggStats);
   }, [filter, orderPage]);
+
+  const deleteOrder = useCallback(async (id: string) => {
+    if (!confirm('Delete this order permanently? This cannot be undone.')) return;
+    setLoading(true);
+    try {
+      await fetch(`/api/orders/${id}`, { method: 'DELETE' });
+      setOrders(prev => prev.filter(o => o.id !== id));
+      if (selected?.id === id) setSelected(null);
+      showToast('Order deleted');
+      await fetchOrders();
+    } finally {
+      setLoading(false);
+    }
+  }, [selected, fetchOrders]);
 
   const fetchOffers = useCallback(async () => {
     const res = await fetch('/api/offers');
@@ -1077,20 +1090,22 @@ export default function AdminDashboard() {
 
           {/* Filter pills */}
           <div className="px-4 py-4 flex gap-2 overflow-x-auto pb-3" style={{ scrollbarWidth: 'none' }}>
-            {['all', ...ORDER_STATUSES.map(s => s.value)].map(s => {
-              const meta = s === 'all' ? null : STATUS_META[s];
-              return (
-                <button key={s} onClick={() => setFilter(s)}
-                  className={`px-3.5 py-1.5 rounded-full text-sm font-semibold transition-all border flex-shrink-0 ${
-                    filter === s
-                      ? 'text-white border-transparent shadow-md'
-                      : 'text-white/30 border-white/[.08] hover:border-white/20 hover:text-white/50'
-                  }`}
-                  style={filter === s ? { background: meta?.color || '#1A2A14', boxShadow: `0 4px 12px ${meta?.color || '#1A2A14'}44` } : { background: 'rgba(255,255,255,0.04)' }}>
-                  {s === 'all' ? 'All Orders' : meta?.label}
-                </button>
-              );
-            })}
+            {[
+              { id: 'all',     label: 'All Orders',  color: '#1A2A14' },
+              { id: 'online',  label: '🌐 Online',   color: '#3B82F6' },
+              { id: 'offline', label: '🤝 Offline',  color: '#8B5CF6' },
+              ...ORDER_STATUSES.map(s => ({ id: s.value, label: STATUS_META[s.value]?.label || s.label, color: STATUS_META[s.value]?.color || '#888' })),
+            ].map(s => (
+              <button key={s.id} onClick={() => setFilter(s.id)}
+                className={`px-3.5 py-1.5 rounded-full text-sm font-semibold transition-all border flex-shrink-0 ${
+                  filter === s.id
+                    ? 'text-white border-transparent shadow-md'
+                    : 'text-white/30 border-white/[.08] hover:border-white/20 hover:text-white/50'
+                }`}
+                style={filter === s.id ? { background: s.color, boxShadow: `0 4px 12px ${s.color}44` } : { background: 'rgba(255,255,255,0.04)' }}>
+                {s.label}
+              </button>
+            ))}
           </div>
 
           {/* Mobile order cards */}
@@ -1141,13 +1156,19 @@ export default function AdminDashboard() {
                       const forward = flow.slice(currentIdx);
                       const opts = [...forward, 'cancelled'].map(v => ORDER_STATUSES.find(s => s.value === v)!).filter(Boolean);
                       return (
-                        <div className="mt-2.5 pl-12" onClick={e => e.stopPropagation()}>
+                        <div className="mt-2.5 pl-12 flex items-center gap-2" onClick={e => e.stopPropagation()}>
                           <select value={order.status} onChange={e => { e.stopPropagation(); updateStatus(order.id, e.target.value, order); }}
                             disabled={loading}
-                            className="w-full text-sm border border-white/20 rounded-lg px-3 py-2 outline-none cursor-pointer disabled:opacity-50"
+                            className="flex-1 text-sm border border-white/20 rounded-lg px-3 py-2 outline-none cursor-pointer disabled:opacity-50"
                             style={{ background: '#1A2A14', color: '#E8DEB0', minWidth: 120 }}>
                             {opts.map(s => <option key={s.value} value={s.value} style={{ background: '#1A2A14', color: '#E8DEB0' }}>{s.label}</option>)}
                           </select>
+                          <button onClick={e => { e.stopPropagation(); deleteOrder(order.id); }}
+                            className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-all"
+                            style={{ background: 'rgba(239,68,68,0.12)', color: 'rgba(239,68,68,0.7)', border: '1px solid rgba(239,68,68,0.2)' }}
+                            title="Delete order">
+                            🗑
+                          </button>
                         </div>
                       );
                     })()}
@@ -1200,22 +1221,30 @@ export default function AdminDashboard() {
                           <StatusBadge status={order.status} />
                         </td>
                         <td className="px-4 py-3.5" onClick={e => e.stopPropagation()}>
-                          {(() => {
-                            const flow = ['pending', 'verified', 'confirmed', 'shipped', 'delivered'];
-                            const currentIdx = flow.indexOf(order.status);
-                            if (order.status === 'cancelled') return <span className="text-[.85rem] text-red-400/80 italic">Cancelled</span>;
-                            if (order.status === 'delivered') return <span className="text-[.85rem] text-emerald-400/80 italic">Delivered</span>;
-                            const forward = flow.slice(currentIdx);
-                            const opts = [...forward, 'cancelled'].map(v => ORDER_STATUSES.find(s => s.value === v)!).filter(Boolean);
-                            return (
-                              <select value={order.status} onChange={e => updateStatus(order.id, e.target.value, order)}
-                                disabled={loading}
-                                className="text-sm border border-white/20 rounded-lg px-3 py-2 outline-none cursor-pointer disabled:opacity-50"
-                                style={{ background: '#1A2A14', color: '#E8DEB0', minWidth: 120 }}>
-                                {opts.map(s => <option key={s.value} value={s.value} style={{ background: '#1A2A14', color: '#E8DEB0' }}>{s.label}</option>)}
-                              </select>
-                            );
-                          })()}
+                          <div className="flex items-center gap-2">
+                            {(() => {
+                              const flow = ['pending', 'verified', 'confirmed', 'shipped', 'delivered'];
+                              const currentIdx = flow.indexOf(order.status);
+                              if (order.status === 'cancelled') return <span className="text-[.85rem] text-red-400/80 italic">Cancelled</span>;
+                              if (order.status === 'delivered') return <span className="text-[.85rem] text-emerald-400/80 italic">Delivered</span>;
+                              const forward = flow.slice(currentIdx);
+                              const opts = [...forward, 'cancelled'].map(v => ORDER_STATUSES.find(s => s.value === v)!).filter(Boolean);
+                              return (
+                                <select value={order.status} onChange={e => updateStatus(order.id, e.target.value, order)}
+                                  disabled={loading}
+                                  className="text-sm border border-white/20 rounded-lg px-3 py-2 outline-none cursor-pointer disabled:opacity-50"
+                                  style={{ background: '#1A2A14', color: '#E8DEB0', minWidth: 120 }}>
+                                  {opts.map(s => <option key={s.value} value={s.value} style={{ background: '#1A2A14', color: '#E8DEB0' }}>{s.label}</option>)}
+                                </select>
+                              );
+                            })()}
+                            <button onClick={() => deleteOrder(order.id)}
+                              className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all text-sm"
+                              style={{ background: 'rgba(239,68,68,0.1)', color: 'rgba(239,68,68,0.6)', border: '1px solid rgba(239,68,68,0.18)' }}
+                              title="Delete order">
+                              🗑
+                            </button>
+                          </div>
                         </td>
                       </motion.tr>
                     ))}

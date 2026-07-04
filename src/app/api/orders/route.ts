@@ -129,12 +129,15 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status');
     const phone  = searchParams.get('phone');
+    const type   = searchParams.get('type'); // 'offline' | 'online'
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20')));
 
     const where: Record<string, unknown> = {};
     if (status && status !== 'all') where.status = status;
     if (phone) where.phone = phone;
+    if (type === 'offline') where.notes = { startsWith: '[Offline order]' };
+    if (type === 'online')  where.notes = { not: { startsWith: '[Offline order]' } };
 
     const [orders, total, revenueAgg, pendingCount, confirmedCount, globalTotal] = await Promise.all([
       prisma.order.findMany({
