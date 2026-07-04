@@ -1166,12 +1166,14 @@ export default function AdminDashboard() {
                           </select>
                         );
                       })()}
-                      <button onClick={e => { e.stopPropagation(); setConfirmDeleteId(order.id); }}
-                        className="flex-shrink-0 ml-auto w-9 h-9 rounded-lg flex items-center justify-center transition-all"
-                        style={{ background: 'rgba(239,68,68,0.1)', color: 'rgba(239,68,68,0.6)', border: '1px solid rgba(239,68,68,0.18)' }}
-                        title="Delete order">
-                        🗑
-                      </button>
+                      {order.notes?.startsWith('[Offline order]') && (
+                        <button onClick={e => { e.stopPropagation(); setConfirmDeleteId(order.id); }}
+                          className="flex-shrink-0 ml-auto w-9 h-9 rounded-lg flex items-center justify-center transition-all"
+                          style={{ background: 'rgba(239,68,68,0.1)', color: 'rgba(239,68,68,0.6)', border: '1px solid rgba(239,68,68,0.18)' }}
+                          title="Delete order">
+                          🗑
+                        </button>
+                      )}
                     </div>
                   </div>{/* end flex-1 */}
                 </div>{/* end flex */}
@@ -1239,12 +1241,14 @@ export default function AdminDashboard() {
                                 </select>
                               );
                             })()}
-                            <button onClick={() => setConfirmDeleteId(order.id)}
-                              className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all text-sm"
-                              style={{ background: 'rgba(239,68,68,0.1)', color: 'rgba(239,68,68,0.6)', border: '1px solid rgba(239,68,68,0.18)' }}
-                              title="Delete order">
-                              🗑
-                            </button>
+                            {order.notes?.startsWith('[Offline order]') && (
+                              <button onClick={() => setConfirmDeleteId(order.id)}
+                                className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all text-sm"
+                                style={{ background: 'rgba(239,68,68,0.1)', color: 'rgba(239,68,68,0.6)', border: '1px solid rgba(239,68,68,0.18)' }}
+                                title="Delete order">
+                                🗑
+                              </button>
+                            )}
                           </div>
                         </td>
                       </motion.tr>
