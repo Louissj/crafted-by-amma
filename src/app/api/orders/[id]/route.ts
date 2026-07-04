@@ -58,7 +58,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const authError = await requireAuth();
   if (authError) return authError;
 
@@ -66,9 +66,12 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params;
     if (!id || id.length > 30) return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
 
-    await prisma.order.delete({ where: { id } });
+    const { searchParams } = new URL(req.url);
+    const restore = searchParams.get('restore') === '1';
+
+    await prisma.order.update({ where: { id }, data: { deleted: !restore } });
     return NextResponse.json({ success: true });
   } catch {
-    return NextResponse.json({ error: 'Failed to delete order' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to update order' }, { status: 500 });
   }
 }

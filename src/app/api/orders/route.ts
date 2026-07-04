@@ -133,26 +133,31 @@ export async function GET(req: NextRequest) {
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20')));
 
-    const where: Record<string, unknown> = {};
+    const where: Record<string, unknown> = { deleted: false };
     if (status && status !== 'all') where.status = status;
     if (phone) where.phone = phone;
     if (type === 'offline') where.notes = { startsWith: '[Offline order]' };
-    if (type === 'online')  where.notes = { not: { startsWith: '[Offline order]' } };
+    // Online = notes is null OR notes does not start with '[Offline order]'
+    if (type === 'online') where.OR = [
+      { notes: null },
+      { notes: { not: { startsWith: '[Offline order]' } } },
+    ];
 
+    const baseWhere = { deleted: false };
     const [orders, total, revenueAgg, pendingCount, confirmedCount, globalTotal] = await Promise.all([
       prisma.order.findMany({
         where, orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit, take: limit,
       }),
       prisma.order.count({ where }),
-      // Aggregate stats always reflect full DB (ignore page/status filters)
+      // Aggregate stats always reflect full non-deleted DB (ignore page/status filters)
       !phone ? prisma.order.aggregate({
-        where: { status: { not: 'cancelled' }, totalAmount: { not: null } },
+        where: { ...baseWhere, status: { not: 'cancelled' }, totalAmount: { not: null } },
         _sum: { totalAmount: true },
       }) : Promise.resolve(null),
-      !phone ? prisma.order.count({ where: { status: 'pending' } }) : Promise.resolve(null),
-      !phone ? prisma.order.count({ where: { status: { in: ['confirmed', 'shipped', 'delivered'] } } }) : Promise.resolve(null),
-      !phone ? prisma.order.count({}) : Promise.resolve(null),
+      !phone ? prisma.order.count({ where: { ...baseWhere, status: 'pending' } }) : Promise.resolve(null),
+      !phone ? prisma.order.count({ where: { ...baseWhere, status: { in: ['confirmed', 'shipped', 'delivered'] } } }) : Promise.resolve(null),
+      !phone ? prisma.order.count({ where: baseWhere }) : Promise.resolve(null),
     ]);
 
     const aggStats = (!phone && revenueAgg && pendingCount !== null && confirmedCount !== null && globalTotal !== null)

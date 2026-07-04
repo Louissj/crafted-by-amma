@@ -81,6 +81,7 @@ export default function AdminDashboard() {
   const [filter, setFilter] = useState('all');
   const [orderPage, setOrderPage] = useState(1);
   const [orderTotalPages, setOrderTotalPages] = useState(1);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [selected, setSelected] = useState<Order | null>(null);
   const [notesDraft, setNotesDraft] = useState('');
   const [notesSaving, setNotesSaving] = useState(false);
@@ -194,13 +195,13 @@ export default function AdminDashboard() {
   }, [filter, orderPage]);
 
   const deleteOrder = useCallback(async (id: string) => {
-    if (!confirm('Delete this order permanently? This cannot be undone.')) return;
+    setConfirmDeleteId(null);
     setLoading(true);
     try {
       await fetch(`/api/orders/${id}`, { method: 'DELETE' });
       setOrders(prev => prev.filter(o => o.id !== id));
       if (selected?.id === id) setSelected(null);
-      showToast('Order deleted');
+      showToast('Order hidden');
       await fetchOrders();
     } finally {
       setLoading(false);
@@ -1149,29 +1150,41 @@ export default function AdminDashboard() {
                     {/* Products */}
                     <div className="text-sm text-white/25 mt-2.5 truncate pl-12">{getProductNames(order.products)}</div>
                     {/* Status select — full width below, easy to tap */}
-                    {(() => {
-                      const flow = ['pending', 'verified', 'confirmed', 'shipped', 'delivered'];
-                      const currentIdx = flow.indexOf(order.status);
-                      if (order.status === 'cancelled' || order.status === 'delivered') return null;
-                      const forward = flow.slice(currentIdx);
-                      const opts = [...forward, 'cancelled'].map(v => ORDER_STATUSES.find(s => s.value === v)!).filter(Boolean);
-                      return (
-                        <div className="mt-2.5 pl-12 flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                    <div className="mt-2.5 pl-12 flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                      {(() => {
+                        const flow = ['pending', 'verified', 'confirmed', 'shipped', 'delivered'];
+                        const currentIdx = flow.indexOf(order.status);
+                        if (order.status === 'cancelled' || order.status === 'delivered') return null;
+                        const forward = flow.slice(currentIdx);
+                        const opts = [...forward, 'cancelled'].map(v => ORDER_STATUSES.find(s => s.value === v)!).filter(Boolean);
+                        return (
                           <select value={order.status} onChange={e => { e.stopPropagation(); updateStatus(order.id, e.target.value, order); }}
                             disabled={loading}
                             className="flex-1 text-sm border border-white/20 rounded-lg px-3 py-2 outline-none cursor-pointer disabled:opacity-50"
                             style={{ background: '#1A2A14', color: '#E8DEB0', minWidth: 120 }}>
                             {opts.map(s => <option key={s.value} value={s.value} style={{ background: '#1A2A14', color: '#E8DEB0' }}>{s.label}</option>)}
                           </select>
+                        );
+                      })()}
+                      {confirmDeleteId === order.id ? (
+                        <div className="flex items-center gap-1.5 ml-auto flex-shrink-0">
+                          <span className="text-xs text-red-400/80">Hide order?</span>
                           <button onClick={e => { e.stopPropagation(); deleteOrder(order.id); }}
-                            className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-all"
-                            style={{ background: 'rgba(239,68,68,0.12)', color: 'rgba(239,68,68,0.7)', border: '1px solid rgba(239,68,68,0.2)' }}
-                            title="Delete order">
-                            🗑
-                          </button>
+                            className="px-2.5 py-1 rounded-lg text-xs font-bold"
+                            style={{ background: 'rgba(239,68,68,0.2)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.35)' }}>Yes</button>
+                          <button onClick={e => { e.stopPropagation(); setConfirmDeleteId(null); }}
+                            className="px-2.5 py-1 rounded-lg text-xs font-bold"
+                            style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.12)' }}>No</button>
                         </div>
-                      );
-                    })()}
+                      ) : (
+                        <button onClick={e => { e.stopPropagation(); setConfirmDeleteId(order.id); }}
+                          className="flex-shrink-0 ml-auto w-9 h-9 rounded-lg flex items-center justify-center transition-all"
+                          style={{ background: 'rgba(239,68,68,0.1)', color: 'rgba(239,68,68,0.6)', border: '1px solid rgba(239,68,68,0.18)' }}
+                          title="Hide order">
+                          🗑
+                        </button>
+                      )}
+                    </div>
                   </div>{/* end flex-1 */}
                 </div>{/* end flex */}
               </motion.div>
@@ -1238,12 +1251,24 @@ export default function AdminDashboard() {
                                 </select>
                               );
                             })()}
-                            <button onClick={() => deleteOrder(order.id)}
-                              className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all text-sm"
-                              style={{ background: 'rgba(239,68,68,0.1)', color: 'rgba(239,68,68,0.6)', border: '1px solid rgba(239,68,68,0.18)' }}
-                              title="Delete order">
-                              🗑
-                            </button>
+                            {confirmDeleteId === order.id ? (
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs text-red-400/70 whitespace-nowrap">Hide?</span>
+                                <button onClick={() => deleteOrder(order.id)}
+                                  className="px-2 py-1 rounded-lg text-xs font-bold"
+                                  style={{ background: 'rgba(239,68,68,0.2)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.35)' }}>Yes</button>
+                                <button onClick={() => setConfirmDeleteId(null)}
+                                  className="px-2 py-1 rounded-lg text-xs font-bold"
+                                  style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.12)' }}>No</button>
+                              </div>
+                            ) : (
+                              <button onClick={() => setConfirmDeleteId(order.id)}
+                                className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all text-sm"
+                                style={{ background: 'rgba(239,68,68,0.1)', color: 'rgba(239,68,68,0.6)', border: '1px solid rgba(239,68,68,0.18)' }}
+                                title="Hide order">
+                                🗑
+                              </button>
+                            )}
                           </div>
                         </td>
                       </motion.tr>

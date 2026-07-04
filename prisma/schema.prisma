@@ -25,6 +25,7 @@ model Order {
   deliveryCharge    Float?   @default(0)
   isKarnataka       Boolean  @default(false)
   count             Int      @default(1)
+  deleted           Boolean  @default(false)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
