@@ -16,6 +16,7 @@ export type DbProduct = {
   mrp: Record<string, number>;
   stock: Record<string, number>;
   images: string[];
+  category: string;
   active: boolean;
   sortOrder: number;
 };

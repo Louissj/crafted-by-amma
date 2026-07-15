@@ -57,7 +57,7 @@ export default function ProductsPage() {
             {[
               { label: 'Pack of 3', key: 'pack-3', sub: 'Choose 3' },
               { label: 'Pack of 5', key: 'pack-5', sub: 'Choose 5' },
-              { label: 'Pack of 10', key: 'pack-10', sub: 'All 10' },
+              { label: 'Pack of 11', key: 'pack-10', sub: 'All 11' },
             ].map((opt) => (
               <Link key={opt.key} href={`/samples?pack=${opt.key}`}
                 onClick={e => e.stopPropagation()}
@@ -75,7 +75,7 @@ export default function ProductsPage() {
               Try a Sample Pack
             </p>
             <p className="text-sm mb-3" style={{ color: 'rgba(235,225,200,0.40)' }}>
-              Not sure what to order? Pick any 3, 5, or all 10 products as a tasting sample.
+              Not sure what to order? Pick any 3, 5, or all 11 products as a tasting sample.
             </p>
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-wide"
               style={{ background: 'rgba(212,148,42,0.12)', border: '1px solid rgba(212,148,42,0.30)', color: '#D4942A' }}>
@@ -85,44 +85,54 @@ export default function ProductsPage() {
         </Link>
       </div>
 
-      {/* ── Products section ── */}
-      <div className="max-w-[1120px] mx-auto px-4 mb-4">
-        <div className="flex items-center gap-3">
-          <div className="h-px flex-1" style={{ background: 'rgba(255,255,255,0.06)' }} />
-          <p className="text-[0.62rem] font-bold tracking-[4px] uppercase" style={{ color: 'rgba(235,225,200,0.22)' }}>All Products</p>
-          <div className="h-px flex-1" style={{ background: 'rgba(255,255,255,0.06)' }} />
+      {/* ── Products by category ── */}
+      {loading ? (
+        <div className="max-w-[1120px] mx-auto px-4 pb-36">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 md:gap-8">
+            {[0, 1, 2, 3, 4, 5].map(i => <ProductSkeleton key={i} />)}
+          </div>
         </div>
-      </div>
-
-      {/* Grid */}
-      <div className="max-w-[1120px] mx-auto px-4 pb-36">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 md:gap-8">
-          {loading ? (
-            [0, 1, 2, 3, 4, 5].map(i => <ProductSkeleton key={i} />)
-          ) : products.length === 0 ? (
-            <div className="col-span-full text-center py-24">
-              <div className="text-5xl mb-4 opacity-30">🫙</div>
-              <p className="text-base font-semibold" style={{ color: 'rgba(235,225,200,0.4)' }}>
-                No products available right now
-              </p>
-            </div>
-          ) : (
-            products.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                priceMap={priceMap}
-                getCount={(packSize) => getCount(product.id, packSize)}
-                onCountChange={(packSize, count) => {
-                  const prev = getCount(product.id, packSize);
-                  if (count > prev) trackEvent('add_to_cart', { productId: product.id, packSize });
-                  setCount(product.id, packSize, count);
-                }}
-              />
-            ))
-          )}
+      ) : products.length === 0 ? (
+        <div className="max-w-[1120px] mx-auto px-4 pb-36 text-center py-24">
+          <div className="text-5xl mb-4 opacity-30">🫙</div>
+          <p className="text-base font-semibold" style={{ color: 'rgba(235,225,200,0.4)' }}>No products available right now</p>
         </div>
-      </div>
+      ) : (
+        <div className="max-w-[1120px] mx-auto px-4 pb-36 space-y-14">
+          {[
+            { key: 'staples', label: '🌾 Powders & Spices', color: 'rgba(235,225,200,0.22)' },
+            { key: 'snacks',  label: '🍘 Snacks',           color: 'rgba(212,148,42,0.50)'  },
+            { key: 'sweets',  label: '🍬 Sweets',           color: 'rgba(212,100,100,0.50)'  },
+          ].map(({ key, label, color }) => {
+            const group = products.filter(p => (p.category || 'staples') === key);
+            if (group.length === 0) return null;
+            return (
+              <div key={key}>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="h-px flex-1" style={{ background: 'rgba(255,255,255,0.06)' }} />
+                  <p className="text-[0.62rem] font-bold tracking-[4px] uppercase" style={{ color }}>{label}</p>
+                  <div className="h-px flex-1" style={{ background: 'rgba(255,255,255,0.06)' }} />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 md:gap-8">
+                  {group.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      priceMap={priceMap}
+                      getCount={(packSize) => getCount(product.id, packSize)}
+                      onCountChange={(packSize, count) => {
+                        const prev = getCount(product.id, packSize);
+                        if (count > prev) trackEvent('add_to_cart', { productId: product.id, packSize });
+                        setCount(product.id, packSize, count);
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Sticky mini cart bar */}
       <div className={`fixed bottom-0 left-0 right-0 z-[1000] px-4 pb-4 md:pb-5 transition-all duration-400

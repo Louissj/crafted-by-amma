@@ -106,6 +106,7 @@ model Product {
   mrp         Json     @default("{}") // { "250g": 150, "500g": 250, ... } — optional MRP per size
   stock       Json     @default("{}") // { "250g": 50, "500g": 20 } — null/missing = unlimited
   images      Json     @default("[]") // ["/images/..."]
+  category    String   @default("staples") // "staples" | "snacks" | "sweets"
   active      Boolean  @default(true)
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())

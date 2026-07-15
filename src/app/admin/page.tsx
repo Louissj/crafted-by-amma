@@ -37,6 +37,7 @@ type DbProduct = {
   mrp: Record<string, number>;
   stock: Record<string, number>;
   images: string[];
+  category: string;
   active: boolean; sortOrder: number;
 };
 
@@ -117,6 +118,7 @@ export default function AdminDashboard() {
   const [addingSaving, setAddingSaving] = useState(false);
   const [newProduct, setNewProduct] = useState({
     id: '', name: '', shortName: '', badge: '', description: '', ingredients: '',
+    category: 'staples',
     prices: { '250g': 0 } as Record<string, number>,
   });
 
@@ -531,6 +533,7 @@ export default function AdminDashboard() {
         badge: editingProduct.badge, description: editingProduct.description,
         ingredients: editingProduct.ingredients, usage: editingProduct.usage,
         prices: editingProduct.prices, mrp: editingProduct.mrp, stock: editingProduct.stock, active: editingProduct.active,
+        category: editingProduct.category,
       }),
     });
     await fetchProducts();
@@ -549,13 +552,13 @@ export default function AdminDashboard() {
         name: newProduct.name, shortName: newProduct.shortName || newProduct.name,
         badge: newProduct.badge, description: newProduct.description,
         ingredients: newProduct.ingredients, usage: [], prices: newProduct.prices,
-        sortOrder: 99,
+        category: newProduct.category, sortOrder: 99,
       }),
     });
     if (res.ok) {
       await fetchProducts();
       setShowAddForm(false);
-      setNewProduct({ id: '', name: '', shortName: '', badge: '', description: '', ingredients: '', prices: { '250g': 0 } });
+      setNewProduct({ id: '', name: '', shortName: '', badge: '', description: '', ingredients: '', category: 'staples', prices: { '250g': 0 } });
       showToast('Product created!');
     } else {
       const err = await res.json();
@@ -1729,11 +1732,22 @@ export default function AdminDashboard() {
             <div className="mb-6 rounded-2xl p-5 border border-white/[.10]"
               style={{ background: 'rgba(15,24,10,0.9)', boxShadow: '0 8px 30px rgba(0,0,0,0.4)' }}>
               <h3 className="font-display text-base font-bold text-white mb-4">New Product</h3>
+              {/* Category */}
+              <div className="mb-3">
+                <label className="text-[0.6rem] font-bold uppercase tracking-widest text-white/30 mb-1 block">Category</label>
+                <select value={newProduct.category} onChange={e => setNewProduct(p => ({ ...p, category: e.target.value }))}
+                  className="w-full px-3 py-2.5 rounded-xl text-sm text-white/80 outline-none border border-white/[.08]"
+                  style={{ background: '#1A2A14', color: '#E8DEB0' }}>
+                  <option value="staples" style={{ background: '#1A2A14' }}>🌾 Staples (Powders & Spices)</option>
+                  <option value="snacks"  style={{ background: '#1A2A14' }}>🍘 Snacks</option>
+                  <option value="sweets"  style={{ background: '#1A2A14' }}>🍬 Sweets</option>
+                </select>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                 {[
-                  { label: 'Product ID', key: 'id', placeholder: 'e.g. ragi-malt-powder' },
-                  { label: 'Full Name', key: 'name', placeholder: 'e.g. Homemade Ragi Malt Powder' },
-                  { label: 'Short Name', key: 'shortName', placeholder: 'e.g. Ragi Malt' },
+                  { label: 'Product ID', key: 'id', placeholder: 'e.g. coconut-kodbale' },
+                  { label: 'Full Name', key: 'name', placeholder: 'e.g. Coconut Kodbale' },
+                  { label: 'Short Name', key: 'shortName', placeholder: 'e.g. Kodbale' },
                   { label: 'Badge (optional)', key: 'badge', placeholder: 'e.g. New, Bestseller' },
                 ].map(f => (
                   <div key={f.key}>
@@ -1755,7 +1769,9 @@ export default function AdminDashboard() {
                   style={{ background: 'rgba(255,255,255,0.05)' }} />
               </div>
               <div className="mb-3">
-                <label className="text-[0.6rem] font-bold uppercase tracking-widest text-white/30 mb-1 block">Ingredients</label>
+                <label className="text-[0.6rem] font-bold uppercase tracking-widest text-white/30 mb-1 block">
+                  Ingredients <span className="text-white/20 normal-case font-normal">(optional)</span>
+                </label>
                 <textarea value={newProduct.ingredients}
                   onChange={e => setNewProduct(p => ({ ...p, ingredients: e.target.value }))}
                   rows={2} placeholder="List of ingredients…"
@@ -1765,15 +1781,41 @@ export default function AdminDashboard() {
               {/* Prices */}
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-[0.6rem] font-bold uppercase tracking-widest text-white/30">Pack Sizes & Prices</label>
-                  <button onClick={() => setNewProduct(p => ({ ...p, prices: { ...p.prices, '': 0 } }))}
-                    className="text-xs font-bold px-2 py-1 rounded-lg"
-                    style={{ background: 'rgba(212,148,42,0.10)', color: 'rgba(212,148,42,0.7)' }}>+ Add size</button>
+                  <label className="text-[0.6rem] font-bold uppercase tracking-widest text-white/30">Sizes & Prices</label>
+                </div>
+                {/* Quick-pick size chips */}
+                <div className="mb-3 space-y-2">
+                  <p className="text-[0.58rem] text-white/25 uppercase tracking-widest">Quick add — Grams</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {['250g', '500g', '1kg', '2kg'].map(s => (
+                      <button key={s} type="button"
+                        onClick={() => { if (!(s in newProduct.prices)) setNewProduct(p => ({ ...p, prices: { ...p.prices, [s]: 0 } })); }}
+                        className="px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all"
+                        style={s in newProduct.prices
+                          ? { background: 'rgba(90,122,58,0.2)', color: '#8AA050', borderColor: 'rgba(90,122,58,0.4)' }
+                          : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.3)', borderColor: 'rgba(255,255,255,0.08)' }}>
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[0.58rem] text-white/25 uppercase tracking-widest">Quick add — Packs</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {['200g', 'Pack of 3', 'Pack of 5', 'Pack of 10', 'Pack of 11'].map(s => (
+                      <button key={s} type="button"
+                        onClick={() => { if (!(s in newProduct.prices)) setNewProduct(p => ({ ...p, prices: { ...p.prices, [s]: 0 } })); }}
+                        className="px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all"
+                        style={s in newProduct.prices
+                          ? { background: 'rgba(212,148,42,0.18)', color: '#D4942A', borderColor: 'rgba(212,148,42,0.4)' }
+                          : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.3)', borderColor: 'rgba(255,255,255,0.08)' }}>
+                        {s}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div className="space-y-2">
                   {Object.entries(newProduct.prices).map(([size, price], idx) => (
                     <div key={idx} className="flex items-center gap-2">
-                      <input value={size} placeholder="Size (e.g. 250g)"
+                      <input value={size} placeholder="Size (e.g. Pack of 5)"
                         onChange={e => {
                           const updated = Object.fromEntries(Object.entries(newProduct.prices).map(([k, v], i) => [i === idx ? e.target.value : k, v]));
                           setNewProduct(p => ({ ...p, prices: updated }));
@@ -1790,8 +1832,16 @@ export default function AdminDashboard() {
                           className="w-full pl-6 pr-3 py-2 rounded-xl text-sm text-white/80 outline-none border border-white/[.08]"
                           style={{ background: 'rgba(255,255,255,0.05)' }} />
                       </div>
+                      <button onClick={() => {
+                        const updated = Object.fromEntries(Object.entries(newProduct.prices).filter((_, i) => i !== idx));
+                        setNewProduct(p => ({ ...p, prices: updated }));
+                      }} className="w-7 h-7 rounded-lg flex items-center justify-center text-xs flex-shrink-0"
+                        style={{ background: 'rgba(239,68,68,0.1)', color: 'rgba(239,68,68,0.5)' }}>✕</button>
                     </div>
                   ))}
+                  <button onClick={() => setNewProduct(p => ({ ...p, prices: { ...p.prices, '': 0 } }))}
+                    className="text-xs font-bold px-3 py-1.5 rounded-lg"
+                    style={{ background: 'rgba(212,148,42,0.10)', color: 'rgba(212,148,42,0.7)' }}>+ Custom size</button>
                 </div>
               </div>
               <div className="flex gap-3">
@@ -2545,13 +2595,25 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
+                {/* Category */}
+                <div>
+                  <label className="block text-[.57rem] font-bold uppercase tracking-[2.5px] mb-1.5" style={{ color: 'rgba(200,180,74,0.45)' }}>Category</label>
+                  <select value={editingProduct.category || 'staples'} onChange={e => setEditingProduct(p => p ? { ...p, category: e.target.value } : p)}
+                    className="w-full px-3 py-2.5 border-[1.5px] border-white/[.08] rounded-xl text-sm outline-none"
+                    style={{ background: '#1A2A14', color: '#E8DEB0' }}>
+                    <option value="staples" style={{ background: '#1A2A14' }}>🌾 Staples (Powders & Spices)</option>
+                    <option value="snacks"  style={{ background: '#1A2A14' }}>🍘 Snacks</option>
+                    <option value="sweets"  style={{ background: '#1A2A14' }}>🍬 Sweets</option>
+                  </select>
+                </div>
+
                 {/* Basic fields */}
                 {[
                   { label: 'Product Name', key: 'name', multiline: false },
                   { label: 'Short Name (for cart/orders)', key: 'shortName', multiline: false },
                   { label: 'Badge (e.g. Bestseller)', key: 'badge', multiline: false },
                   { label: 'Description', key: 'description', multiline: true },
-                  { label: 'Ingredients', key: 'ingredients', multiline: true },
+                  { label: 'Ingredients (optional)', key: 'ingredients', multiline: true },
                 ].map(field => (
                   <div key={field.key}>
                     <label className="block text-[.57rem] font-bold uppercase tracking-[2.5px] mb-1.5" style={{ color: 'rgba(200,180,74,0.45)' }}>{field.label}</label>
