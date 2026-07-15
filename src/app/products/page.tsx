@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Navbar from '@/components/ui/Navbar';
 import { useCart } from '@/lib/useCart';
 import { useProducts } from '@/lib/useProducts';
@@ -9,6 +10,7 @@ import { ProductCard, ProductSkeleton } from '@/components/sections/ProductShare
 import { useSampleCart } from '@/lib/useSampleCart';
 
 export default function ProductsPage() {
+  const router = useRouter();
   const { products, priceMap, loading } = useProducts();
   const { cart, setCount, cartTotal, totalPacks } = useCart(priceMap);
   const { sampleTotal, sampleCount } = useSampleCart();
@@ -47,7 +49,7 @@ export default function ProductsPage() {
           <p className="text-[0.62rem] font-bold tracking-[4px] uppercase" style={{ color: 'rgba(212,148,42,0.50)' }}>Sample Packs</p>
           <div className="h-px flex-1" style={{ background: 'rgba(212,148,42,0.15)' }} />
         </div>
-        <Link href="/samples" className="group flex flex-col sm:flex-row items-center gap-5 px-6 py-5 rounded-2xl no-underline transition-all hover:scale-[1.01] active:scale-[.99]"
+        <div onClick={() => router.push('/samples')} className="group flex flex-col sm:flex-row items-center gap-5 px-6 py-5 rounded-2xl cursor-pointer transition-all hover:scale-[1.01] active:scale-[.99]"
           style={{
             background: 'linear-gradient(135deg,rgba(212,148,42,0.08),rgba(212,148,42,0.04))',
             border: '1.5px solid rgba(212,148,42,0.22)',
@@ -82,7 +84,7 @@ export default function ProductsPage() {
               {sampleCount > 0 ? `${sampleCount} sample pack in cart · ₹${sampleTotal}` : 'Build your sample pack →'}
             </span>
           </div>
-        </Link>
+        </div>
       </div>
 
       {/* ── Products by category ── */}
