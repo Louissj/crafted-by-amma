@@ -118,7 +118,7 @@ export default function AdminDashboard() {
   const [addingSaving, setAddingSaving] = useState(false);
   const [newProduct, setNewProduct] = useState({
     id: '', name: '', shortName: '', badge: '', description: '', ingredients: '',
-    category: 'staples',
+    category: 'millet-powders',
     prices: { '250g': 0 } as Record<string, number>,
   });
 
@@ -558,7 +558,7 @@ export default function AdminDashboard() {
     if (res.ok) {
       await fetchProducts();
       setShowAddForm(false);
-      setNewProduct({ id: '', name: '', shortName: '', badge: '', description: '', ingredients: '', category: 'staples', prices: { '250g': 0 } });
+      setNewProduct({ id: '', name: '', shortName: '', badge: '', description: '', ingredients: '', category: 'millet-powders', prices: { '250g': 0 } });
       showToast('Product created!');
     } else {
       const err = await res.json();
@@ -1738,9 +1738,11 @@ export default function AdminDashboard() {
                 <select value={newProduct.category} onChange={e => setNewProduct(p => ({ ...p, category: e.target.value }))}
                   className="w-full px-3 py-2.5 rounded-xl text-sm text-white/80 outline-none border border-white/[.08]"
                   style={{ background: '#1A2A14', color: '#E8DEB0' }}>
-                  <option value="staples" style={{ background: '#1A2A14' }}>🌾 Staples (Powders & Spices)</option>
-                  <option value="snacks"  style={{ background: '#1A2A14' }}>🍘 Snacks</option>
-                  <option value="sweets"  style={{ background: '#1A2A14' }}>🍬 Sweets</option>
+                  <option value="millet-powders" style={{ background: '#1A2A14' }}>🌾 Millet Powders</option>
+                  <option value="masala-powders" style={{ background: '#1A2A14' }}>🌶 Masala Powders</option>
+                  <option value="chutney-pudi"   style={{ background: '#1A2A14' }}>🥜 Chutney Pudi</option>
+                  <option value="snacks"         style={{ background: '#1A2A14' }}>🍘 Snacks</option>
+                  <option value="sweets"         style={{ background: '#1A2A14' }}>🍬 Sweets</option>
                 </select>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
@@ -2598,12 +2600,14 @@ export default function AdminDashboard() {
                 {/* Category */}
                 <div>
                   <label className="block text-[.57rem] font-bold uppercase tracking-[2.5px] mb-1.5" style={{ color: 'rgba(200,180,74,0.45)' }}>Category</label>
-                  <select value={editingProduct.category || 'staples'} onChange={e => setEditingProduct(p => p ? { ...p, category: e.target.value } : p)}
+                  <select value={editingProduct.category || 'millet-powders'} onChange={e => setEditingProduct(p => p ? { ...p, category: e.target.value } : p)}
                     className="w-full px-3 py-2.5 border-[1.5px] border-white/[.08] rounded-xl text-sm outline-none"
                     style={{ background: '#1A2A14', color: '#E8DEB0' }}>
-                    <option value="staples" style={{ background: '#1A2A14' }}>🌾 Staples (Powders & Spices)</option>
-                    <option value="snacks"  style={{ background: '#1A2A14' }}>🍘 Snacks</option>
-                    <option value="sweets"  style={{ background: '#1A2A14' }}>🍬 Sweets</option>
+                    <option value="millet-powders" style={{ background: '#1A2A14' }}>🌾 Millet Powders</option>
+                    <option value="masala-powders" style={{ background: '#1A2A14' }}>🌶 Masala Powders</option>
+                    <option value="chutney-pudi"   style={{ background: '#1A2A14' }}>🥜 Chutney Pudi</option>
+                    <option value="snacks"         style={{ background: '#1A2A14' }}>🍘 Snacks</option>
+                    <option value="sweets"         style={{ background: '#1A2A14' }}>🍬 Sweets</option>
                   </select>
                 </div>
 
