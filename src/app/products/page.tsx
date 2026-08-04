@@ -74,10 +74,10 @@ export default function ProductsPage() {
           </div>
           <div className="flex-1 text-center sm:text-left">
             <p className="font-display text-lg font-bold mb-1" style={{ color: 'rgba(235,225,200,0.92)' }}>
-              Try a Sample Pack
+              Try a Sample Pack of any Powders
             </p>
             <p className="text-sm mb-3" style={{ color: 'rgba(235,225,200,0.40)' }}>
-              Not sure what to order? Pick any 3, 5, or all 11 products as a tasting sample.
+              Not sure what to order? Pick any 3, 5, or all 11 powders as a tasting sample.
             </p>
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-wide"
               style={{ background: 'rgba(212,148,42,0.12)', border: '1px solid rgba(212,148,42,0.30)', color: '#D4942A' }}>
