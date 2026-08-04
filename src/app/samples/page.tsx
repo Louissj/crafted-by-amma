@@ -21,7 +21,8 @@ function SamplesContent() {
   const preAddId = searchParams.get('product');
   const prePackKey = searchParams.get('pack'); // e.g. 'pack-3' // product ID to auto-select
 
-  const { products, loading: productsLoading } = useProducts();
+  const { products: allProducts, loading: productsLoading } = useProducts();
+  const products = allProducts.filter(p => (p.category || 'staples') === 'staples');
   const { addSamplePack, sampleItems } = useSampleCart();
 
   const [pack, setPack] = useState<SamplePack | null>(null);
