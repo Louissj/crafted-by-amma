@@ -8,6 +8,7 @@ import { useCart } from '@/lib/useCart';
 import { useProducts } from '@/lib/useProducts';
 import { useSampleCart } from '@/lib/useSampleCart';
 import { trackEvent } from '@/lib/analytics';
+import { parseGrams } from '@/lib/delivery';
 
 type DeliverySlab = { maxGrams: number; charge: number };
 type DeliverySettings = {
@@ -16,7 +17,6 @@ type DeliverySettings = {
   karnatakaSlabs: DeliverySlab[]; southIndiaSlabs: DeliverySlab[]; northIndiaSlabs: DeliverySlab[];
 };
 const SOUTH_INDIA_STATES = ['tamil nadu','kerala','andhra pradesh','telangana','goa','puducherry','pondicherry','lakshadweep','andaman and nicobar'];
-function parseKgCo(s: string) { return parseFloat(s) * (s.toLowerCase().includes('kg') ? 1000 : 1); }
 
 type RazorpayResponse = {
   razorpay_order_id: string;
@@ -142,7 +142,7 @@ export default function CheckoutPage() {
 
   const coGrams = !delivery || deliveryZone === 'international' ? 0
     : cart.reduce((sum, item) => {
-        const g = parseKgCo(item.packSize);
+        const g = parseGrams(item.packSize);
         if (deliveryZone === 'karnataka' && g >= 1000) return sum;
         return sum + g * item.count;
       }, 0)

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { DbProduct } from '@/lib/useProducts';
+import { parseGrams } from '@/lib/delivery';
 
 /* ─── Lightbox ─── */
 export function Lightbox({ images, startIdx, onClose }: { images: string[]; startIdx: number; onClose: () => void }) {
@@ -191,8 +192,7 @@ export function ProductModal({
 
   const productPrices = priceMap[product.id] || product.prices || {};
   const mrpMapModal: Record<string, number> = product.mrp || {};
-  const parseSz = (s: string) => parseFloat(s) * (s.includes('kg') ? 1000 : 1);
-  const sizeEntries = Object.entries(productPrices).sort(([a], [b]) => parseSz(a) - parseSz(b));
+  const sizeEntries = Object.entries(productPrices).sort(([a], [b]) => parseGrams(a) - parseGrams(b));
   const images = product.images ?? [];
   const priceRange = sizeEntries.length
     ? sizeEntries.length === 1
@@ -423,8 +423,7 @@ export function ProductCard({
   const productPrices = priceMap[product.id] || product.prices || {};
   const mrpMap: Record<string, number> = product.mrp || {};
   const stockMap: Record<string, number> = product.stock || {};
-  const parseSzCard = (s: string) => parseFloat(s) * (s.includes('kg') ? 1000 : 1);
-  const sizeEntries = Object.entries(productPrices).sort(([a], [b]) => parseSzCard(a) - parseSzCard(b));
+  const sizeEntries = Object.entries(productPrices).sort(([a], [b]) => parseGrams(a) - parseGrams(b));
   const images = product.images ?? [];
   const totalInCart = sizeEntries.reduce((sum, [size, price]) => sum + price * getCount(size), 0);
   const packsInCart = sizeEntries.reduce((sum, [size]) => sum + getCount(size), 0);

@@ -9,6 +9,7 @@ import { useProducts } from '@/lib/useProducts';
 import { useSampleCart } from '@/lib/useSampleCart';
 import { PRODUCTS } from '@/lib/constants';
 import { trackEvent } from '@/lib/analytics';
+import { parseGrams } from '@/lib/delivery';
 
 type DeliverySlab = { maxGrams: number; charge: number };
 type DeliverySettings = {
@@ -101,15 +102,6 @@ export default function CartPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pincode]);
 
-  function parseKg(packSize: string): number {
-    const lower = packSize.toLowerCase();
-    const gMatch = lower.match(/(\d+(?:\.\d+)?)\s*g\b/);
-    if (gMatch) return parseFloat(gMatch[1]) / 1000;
-    const kgMatch = lower.match(/(\d+(?:\.\d+)?)\s*kg/);
-    if (kgMatch) return parseFloat(kgMatch[1]);
-    return 1;
-  }
-
   // Computed every render — guarantees instant update when cart changes
   function calcSlabCharge(slabs: DeliverySlab[], grams: number, fallback: number): number {
     if (!slabs?.length) return fallback;
@@ -119,9 +111,9 @@ export default function CartPage() {
 
   const chargeableGrams = !delivery || !pincodeState || deliveryZone === 'international' ? 0
     : cart.reduce((sum, item) => {
-        const kg = parseKg(item.packSize);
-        if (deliveryZone === 'karnataka' && kg >= 1) return sum; // 1kg+ free only in Karnataka
-        return sum + Math.round(kg * 1000) * item.count;
+        const g = parseGrams(item.packSize);
+        if (deliveryZone === 'karnataka' && g >= 1000) return sum; // 1kg+ free only in Karnataka
+        return sum + g * item.count;
       }, 0) + sampleItems.reduce((sum, i) => sum + 50 * i.count * i.qty, 0);
 
   const deliveryCharge = (() => {

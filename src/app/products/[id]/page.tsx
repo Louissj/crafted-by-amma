@@ -7,6 +7,7 @@ import Navbar from '@/components/ui/Navbar';
 import { useCart } from '@/lib/useCart';
 import { useProducts, DbProduct } from '@/lib/useProducts';
 import { trackEvent } from '@/lib/analytics';
+import { parseGrams } from '@/lib/delivery';
 
 /* ─── Lightbox ─── */
 function Lightbox({ images, startIdx, onClose }: { images: string[]; startIdx: number; onClose: () => void }) {
@@ -258,8 +259,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   const productPrices = priceMap[product.id] || product.prices || {};
   const mrpMap: Record<string, number> = product.mrp || {};
   const stockMap: Record<string, number> = product.stock || {};
-  const parseSz = (s: string) => parseFloat(s) * (s.includes('kg') ? 1000 : 1);
-  const sizeEntries = Object.entries(productPrices).sort(([a], [b]) => parseSz(a) - parseSz(b));
+  const sizeEntries = Object.entries(productPrices).sort(([a], [b]) => parseGrams(a) - parseGrams(b));
   const images = product.images ?? [];
   const priceRange = sizeEntries.length
     ? sizeEntries.length === 1
