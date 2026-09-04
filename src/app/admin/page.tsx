@@ -517,6 +517,8 @@ export default function AdminDashboard() {
       });
       if (!res.ok) throw new Error('failed');
       await fetchOrders();
+      // the detail modal holds its own copy of the order
+      setSelected(prev => (prev && prev.id === order.id ? { ...prev, referralPaid: next } : prev));
       showToast(next ? 'Marked referral as paid' : 'Marked referral as unpaid', 'success');
     } catch {
       showToast('Could not update referral payout', 'error');
@@ -2931,6 +2933,70 @@ export default function AdminDashboard() {
                     )}
                   </div>
                 </div>
+
+                {/* Referral */}
+                {selected.referralCode && (() => {
+                  const eligible = selected.referralEligibleAmount ?? 0;
+                  const cancelled = selected.status === 'cancelled';
+                  const noPowders = eligible <= 0;
+                  const payable = !cancelled && !noPowders;
+                  const waPhone = selected.referrer ? selected.referrer.phone.replace(/[^0-9]/g, '').slice(-10) : '';
+                  return (
+                    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(200,180,74,0.20)' }}>
+                      <div className="px-4 py-2.5 flex items-center justify-between gap-2"
+                        style={{ background: 'rgba(200,180,74,0.06)', borderBottom: '1px solid rgba(200,180,74,0.12)' }}>
+                        <p className="text-sm font-bold uppercase tracking-[2px]" style={{ color: 'rgba(200,180,74,0.5)' }}>Referral</p>
+                        {!payable && !selected.referralPaid ? (
+                          <span className="text-sm font-bold px-2.5 py-1 rounded-lg"
+                            style={{ color: 'rgba(255,255,255,0.35)', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }}>
+                            {cancelled ? 'Not payable - cancelled' : 'Not payable - no powders'}
+                          </span>
+                        ) : (
+                          <button onClick={() => toggleReferralPaid(selected)} disabled={loading}
+                            className="text-sm font-bold px-2.5 py-1 rounded-lg transition-all disabled:opacity-50"
+                            style={selected.referralPaid
+                              ? (cancelled
+                                  ? { color: '#fbbf24', background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.30)' }
+                                  : { color: '#34d399', background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.25)' })
+                              : { color: 'rgba(239,68,68,0.80)', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.22)' }}>
+                            {selected.referralPaid ? (cancelled ? 'Paid - cancelled' : 'Paid') : 'Mark as paid'}
+                          </button>
+                        )}
+                      </div>
+                      <div className="p-4 grid grid-cols-2 gap-3">
+                        <div className="p-3 rounded-xl border border-white/[.07]" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                          <p className="text-sm font-bold uppercase tracking-[2px] mb-0.5" style={{ color: 'rgba(200,180,74,0.4)' }}>Referred by</p>
+                          <p className="text-sm text-white/70 font-medium">{selected.referrer ? selected.referrer.name : 'Not on file'}</p>
+                        </div>
+                        <div className="p-3 rounded-xl border border-white/[.07]" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                          <p className="text-sm font-bold uppercase tracking-[2px] mb-0.5" style={{ color: 'rgba(200,180,74,0.4)' }}>Their number</p>
+                          {selected.referrer ? (
+                            <a href={`tel:${selected.referrer.phone}`} className="text-sm font-semibold no-underline" style={{ color: '#C8B44A' }}>
+                              {selected.referrer.phone}
+                            </a>
+                          ) : <p className="text-sm text-white/40">-</p>}
+                        </div>
+                        <div className="p-3 rounded-xl border border-white/[.07]" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                          <p className="text-sm font-bold uppercase tracking-[2px] mb-0.5" style={{ color: 'rgba(200,180,74,0.4)' }}>Code used</p>
+                          <p className="text-sm font-mono font-bold" style={{ color: '#C8B44A' }}>{selected.referralCode}</p>
+                        </div>
+                        <div className="p-3 rounded-xl border border-white/[.07]" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                          <p className="text-sm font-bold uppercase tracking-[2px] mb-0.5" style={{ color: 'rgba(200,180,74,0.4)' }}>Powders eligible</p>
+                          <p className="text-sm font-bold" style={{ color: noPowders ? 'rgba(255,255,255,0.35)' : '#C8B44A' }}>
+                            {noPowders ? 'None' : `Rs ${eligible.toLocaleString()}`}
+                          </p>
+                        </div>
+                        {selected.referrer && payable && (
+                          <a href={`https://wa.me/91${waPhone}`} target="_blank" rel="noopener noreferrer"
+                            className="col-span-2 py-2.5 rounded-xl text-sm font-bold text-center no-underline transition-all"
+                            style={{ background: 'rgba(37,211,102,0.14)', border: '1px solid rgba(37,211,102,0.30)', color: '#25D366' }}>
+                            Message referrer on WhatsApp
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Order items */}
                 <div className="rounded-xl border border-white/[.07] overflow-hidden">
