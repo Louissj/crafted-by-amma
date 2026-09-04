@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/ui/Navbar';
@@ -24,6 +24,49 @@ export default function ProductsPage() {
   const { cart, setCount, cartTotal, totalPacks } = useCart(priceMap);
   const { sampleTotal, sampleCount } = useSampleCart();
   const [activeFilter, setActiveFilter] = useState('all');
+  const pillsRef = useRef<HTMLDivElement>(null);
+  const [pillEdges, setPillEdges] = useState({ left: false, right: false });
+
+  // Bring the tapped pill into view — rect math instead of scrollIntoView so
+  // the page never jumps vertically on mobile
+  const centerPill = (btn: HTMLElement) => {
+    const row = pillsRef.current;
+    if (!row) return;
+    const rowRect = row.getBoundingClientRect();
+    const btnRect = btn.getBoundingClientRect();
+    const left = (btnRect.left - rowRect.left) - (rowRect.width - btnRect.width) / 2;
+    row.scrollBy({ left, behavior: 'smooth' });
+  };
+
+  // Which side still has pills hidden past the edge
+  const syncPillEdges = useCallback(() => {
+    const row = pillsRef.current;
+    if (!row) return;
+    const max = row.scrollWidth - row.clientWidth;
+    setPillEdges({ left: row.scrollLeft > 1, right: row.scrollLeft < max - 1 });
+  }, []);
+
+  useEffect(() => {
+    const row = pillsRef.current;
+    if (!row) return;
+    syncPillEdges();
+    row.addEventListener('scroll', syncPillEdges, { passive: true });
+    // ResizeObserver also catches the reflow when the display font finishes loading
+    const ro = new ResizeObserver(syncPillEdges);
+    ro.observe(row);
+    return () => {
+      row.removeEventListener('scroll', syncPillEdges);
+      ro.disconnect();
+    };
+  }, [syncPillEdges]);
+
+  // Fade the content itself rather than overlaying a colour — the page
+  // background is a gradient, so a solid-colour fade would seam.
+  const pillMask = `linear-gradient(to right, ${
+    pillEdges.left ? 'transparent 0, #000 28px' : '#000 0'
+  }, ${
+    pillEdges.right ? '#000 calc(100% - 28px), transparent 100%' : '#000 100%'
+  })`;
 
   const getCount = (productId: string, packSize: string) =>
     cart.find(i => i.productId === productId && i.packSize === packSize)?.count || 0;
@@ -95,11 +138,12 @@ export default function ProductsPage() {
 
       {/* ── Category filter pills ── */}
       <div className="max-w-[1120px] mx-auto px-4 mb-8">
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
+        <div ref={pillsRef} className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide"
+          style={{ WebkitMaskImage: pillMask, maskImage: pillMask, transition: 'mask-image .2s linear' }}>
           {[{ key: 'all', label: 'All' }, ...SECTIONS].map(({ key, label, filterLabel }: { key: string; label: string; filterLabel?: string }) => {
             const isActive = activeFilter === key;
             return (
-              <button key={key} onClick={() => setActiveFilter(key)}
+              <button key={key} onClick={e => { setActiveFilter(key); centerPill(e.currentTarget); }}
                 className="flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide transition-all active:scale-95"
                 style={{
                   background: isActive ? 'rgba(212,148,42,0.20)' : 'rgba(255,255,255,0.05)',

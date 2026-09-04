@@ -32,6 +32,12 @@ body { font-family: 'Outfit', sans-serif; background: var(--cream); color: #2D1B
 ::-webkit-scrollbar-thumb:hover { background: rgba(90,122,58,.25); }
 html { scrollbar-width: thin; scrollbar-color: rgba(90,122,58,.15) transparent; }
 
+/* Horizontal strips that use their own scroll affordance (e.g. category pills).
+   The global rule above only sets width, which leaves a default-height bar on
+   older WebKit for horizontal scrollers. */
+.scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; height: 0; }
+
 /* Film grain */
 body::after {
   content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 99999;
