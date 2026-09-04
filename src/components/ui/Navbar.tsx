@@ -69,6 +69,7 @@ export default function Navbar() {
     { href: '/products', label: 'Products', icon: '🌾' },
     { href: '/#why', label: 'Why Us', icon: '💚' },
     { href: '/#testi', label: 'Reviews', icon: '⭐' },
+    { href: '/refer', label: 'Refer & Earn', icon: '🎁' },
   ];
 
   const whatsappUrl = `https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent('Hi! I want to order from Crafted by Amma 🌾')}`;

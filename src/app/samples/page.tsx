@@ -7,6 +7,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Navbar from '@/components/ui/Navbar';
 import { useProducts } from '@/lib/useProducts';
 import { useSampleCart, SamplePackOption } from '@/lib/useSampleCart';
+import { isReferralEligibleCategory } from '@/lib/referralRules';
 
 type SamplePack = {
   id: string;
@@ -22,7 +23,7 @@ function SamplesContent() {
   const prePackKey = searchParams.get('pack'); // e.g. 'pack-3' // product ID to auto-select
 
   const { products: allProducts, loading: productsLoading } = useProducts();
-  const products = allProducts.filter(p => !['snacks', 'sweets'].includes(p.category || 'millet-powders'));
+  const products = allProducts.filter(p => isReferralEligibleCategory(p.category));
   const { addSamplePack, sampleItems } = useSampleCart();
 
   const [pack, setPack] = useState<SamplePack | null>(null);

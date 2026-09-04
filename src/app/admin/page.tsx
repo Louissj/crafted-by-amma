@@ -6,6 +6,8 @@ import Image from 'next/image';
 import { ORDER_STATUSES, PRODUCTS } from '@/lib/constants';
 
 type CartItem = { productId: string; packSize: string; count: number };
+// count is briefly '' while the field is being retyped; normalised on blur
+type OfflineItem = { productId: string; packSize: string; count: number | '' };
 
 type Order = {
   id: string; name: string; phone: string;
@@ -13,6 +15,8 @@ type Order = {
   quantity: string;
   city: string; address: string; pincode: string | null; paymentScreenshot: string | null; notes: string | null;
   status: string; totalAmount: number | null; deliveryCharge: number | null; isKarnataka: boolean; createdAt: string; paymentMethod: string | null;
+  referralCode: string | null; referralPaid: boolean; referralEligibleAmount: number | null;
+  referrer: { code: string; name: string; phone: string } | null;
 };
 
 type Offer = { id: string; icon: string; text: string; active: boolean; sortOrder: number };
@@ -26,7 +30,7 @@ type DeliverySettings = {
 };
 type AdminReview = { id: string; name: string; place: string; rating: number; text: string; approved: boolean; createdAt: string };
 type Tab = 'orders' | 'offers' | 'delivery' | 'products' | 'analytics' | 'reviews' | 'samples';
-type SampleOption = { key: string; label: string; count: number; price: number; mrp?: number };
+type SampleOption = { key: string; label: string; count: number | ''; price: number; mrp?: number };
 type SamplePackData = { id: string; name: string; description: string; options: SampleOption[]; active: boolean };
 
 type DbProduct = {
@@ -49,6 +53,55 @@ const STATUS_META: Record<string, { label: string; color: string; bg: string; ic
   delivered: { label: 'Delivered', color: '#10B981', bg: 'rgba(16,185,129,0.12)',  icon: '🎉' },
   cancelled: { label: 'Cancelled', color: '#EF4444', bg: 'rgba(239,68,68,0.12)',   icon: '✕' },
 };
+
+// Referrer behind an order, their number (needed to verify and pay them),
+// and whether the 15% has gone out. A cancelled order is never payable.
+function ReferralTag({ order, onTogglePaid }: { order: Order; onTogglePaid: (o: Order) => void }) {
+  if (!order.referralCode) return null;
+  const paid = order.referralPaid;
+  const cancelled = order.status === 'cancelled';
+  // Offer covers powders only; a snacks/sweets-only order has nothing to pay on
+  const eligible = order.referralEligibleAmount ?? 0;
+  const noPowders = eligible <= 0;
+  const payable = !cancelled && !noPowders;
+  return (
+    <div className="flex items-center gap-1.5 flex-wrap mt-1.5" onClick={e => e.stopPropagation()}>
+      <span className="text-[.8rem] font-bold px-2 py-0.5 rounded-md"
+        style={cancelled
+          ? { color: 'rgba(255,255,255,0.30)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.10)' }
+          : { color: '#C8B44A', background: 'rgba(200,180,74,0.10)', border: '1px solid rgba(200,180,74,0.22)' }}>
+        ref: {order.referrer ? order.referrer.name : order.referralCode}
+        {order.referrer && (
+          <span className="font-normal opacity-70"> - {order.referrer.phone}</span>
+        )}
+        {!noPowders && (
+          <span className="font-normal opacity-70"> - powders Rs {eligible.toLocaleString()}</span>
+        )}
+      </span>
+
+      {!payable && !paid ? (
+        <span className="text-[.8rem] font-bold px-2 py-0.5 rounded-md"
+          style={{ color: 'rgba(255,255,255,0.30)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.10)' }}
+          title={cancelled ? 'Order was cancelled - nothing to pay out' : 'No powders in this order - offer covers powders only'}>
+          {cancelled ? 'Not payable - cancelled' : 'Not payable - no powders'}
+        </span>
+      ) : (
+        <button onClick={() => onTogglePaid(order)}
+          className="text-[.8rem] font-bold px-2 py-0.5 rounded-md transition-all"
+          style={paid
+            ? (cancelled
+                ? { color: '#fbbf24', background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.30)' }
+                : { color: '#34d399', background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.25)' })
+            : { color: 'rgba(239,68,68,0.75)', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.20)' }}
+          title={cancelled && paid
+            ? 'Already paid on an order that was later cancelled'
+            : 'Toggle whether the referrer has been paid'}>
+          {paid ? (cancelled ? 'Paid - order cancelled' : 'Paid') : 'Unpaid'}
+        </button>
+      )}
+    </div>
+  );
+}
 
 function StatusBadge({ status, size = 'sm' }: { status: string; size?: 'xs' | 'sm' }) {
   const meta = STATUS_META[status] || { label: status, color: '#888', bg: 'rgba(136,136,136,0.1)', icon: '•' };
@@ -93,9 +146,9 @@ export default function AdminDashboard() {
   const emptyOfflineForm = {
     name: '', phone: '', city: '', address: '', pincode: '',
     paymentMethod: 'cash', status: 'confirmed',
-    deliveryCharge: '0', notes: '', isKarnataka: false,
+    deliveryCharge: '0', notes: '', isKarnataka: false, referralCode: '',
     totalOverride: '',
-    items: [{ productId: '', packSize: '', count: 1 }] as { productId: string; packSize: string; count: number }[],
+    items: [{ productId: '', packSize: '', count: 1 }] as OfflineItem[],
   };
   const [showOfflineModal, setShowOfflineModal] = useState(false);
   const [offlineForm, setOfflineForm] = useState(emptyOfflineForm);
@@ -286,7 +339,7 @@ export default function AdminDashboard() {
 
   const offlineItemsTotal = offlineForm.items.reduce((sum, item) => {
     const price = products.find(p => p.id === item.productId)?.prices?.[item.packSize] || 0;
-    return sum + price * item.count;
+    return sum + price * (Number(item.count) || 0);
   }, 0);
   const offlineComputedTotal = offlineItemsTotal + (parseFloat(offlineForm.deliveryCharge) || 0);
   const offlineFinalTotal = offlineForm.totalOverride !== '' ? parseFloat(offlineForm.totalOverride) || 0 : offlineComputedTotal;
@@ -297,12 +350,14 @@ export default function AdminDashboard() {
   const removeOfflineItemRow = (idx: number) => {
     setOfflineForm(f => ({ ...f, items: f.items.filter((_, i) => i !== idx) }));
   };
-  const updateOfflineItemRow = (idx: number, patch: Partial<{ productId: string; packSize: string; count: number }>) => {
+  const updateOfflineItemRow = (idx: number, patch: Partial<OfflineItem>) => {
     setOfflineForm(f => ({ ...f, items: f.items.map((item, i) => i === idx ? { ...item, ...patch } : item) }));
   };
 
   const submitOfflineOrder = async () => {
-    const validItems = offlineForm.items.filter(i => i.productId && i.packSize && i.count >= 1);
+    const validItems = offlineForm.items
+      .filter(i => i.productId && i.packSize && Number(i.count) >= 1)
+      .map(i => ({ ...i, count: Number(i.count) }));
     const phoneOk = /^(\+91|91)?[6-9]\d{9}$/.test(offlineForm.phone.replace(/[\s\-()]/g, ''));
     if (!offlineForm.name.trim() || !phoneOk || !offlineForm.city.trim() || !offlineForm.address.trim() || validItems.length === 0) {
       showToast('Fill name, valid phone, city, address and at least one product', 'error');
@@ -316,6 +371,7 @@ export default function AdminDashboard() {
         body: JSON.stringify({
           name: offlineForm.name, phone: offlineForm.phone, city: offlineForm.city,
           address: offlineForm.address, pincode: offlineForm.pincode, notes: offlineForm.notes,
+          referralCode: offlineForm.referralCode,
           items: validItems, deliveryCharge: parseFloat(offlineForm.deliveryCharge) || 0,
           isKarnataka: offlineForm.isKarnataka, paymentMethod: offlineForm.paymentMethod,
           status: offlineForm.status,
@@ -446,6 +502,26 @@ export default function AdminDashboard() {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+    }
+  };
+
+  // Mark the referrer's 15% as paid / not paid for this order
+  const toggleReferralPaid = async (order: Order) => {
+    const next = !order.referralPaid;
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/orders/${order.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ referralPaid: next }),
+      });
+      if (!res.ok) throw new Error('failed');
+      await fetchOrders();
+      showToast(next ? 'Marked referral as paid' : 'Marked referral as unpaid', 'success');
+    } catch {
+      showToast('Could not update referral payout', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -1152,6 +1228,7 @@ export default function AdminDashboard() {
                     </div>
                     {/* Products */}
                     <div className="text-sm text-white/25 mt-2.5 truncate pl-12">{getProductNames(order.products)}</div>
+                    <div className="pl-12"><ReferralTag order={order} onTogglePaid={toggleReferralPaid} /></div>
                     {/* Status select — full width below, easy to tap */}
                     <div className="mt-2.5 pl-12 flex items-center gap-2" onClick={e => e.stopPropagation()}>
                       {(() => {
@@ -1211,6 +1288,7 @@ export default function AdminDashboard() {
                         <td className="px-4 py-3.5">
                           <div className="font-semibold text-sm text-white/90">{order.name}</div>
                           <div className="text-[.85rem] text-white/30 mt-0.5">{order.phone}</div>
+                          <ReferralTag order={order} onTogglePaid={toggleReferralPaid} />
                         </td>
                         <td className="px-4 py-3.5">
                           <span className="text-sm text-white/40 line-clamp-1 max-w-[200px] block">{getProductNames(order.products)}</span>
@@ -1489,7 +1567,10 @@ export default function AdminDashboard() {
                     {/* Count */}
                     <input type="number" min={1} max={50} value={opt.count}
                       onChange={e => setEditingSamplePack(prev => prev ? {
-                        ...prev, options: prev.options.map((o, i) => i === idx ? { ...o, count: parseInt(e.target.value) || 1 } : o)
+                        ...prev, options: prev.options.map((o, i) => i === idx ? { ...o, count: e.target.value === '' ? '' : parseInt(e.target.value) || 1 } : o)
+                      } : prev)}
+                      onBlur={() => opt.count === '' && setEditingSamplePack(prev => prev ? {
+                        ...prev, options: prev.options.map((o, i) => i === idx ? { ...o, count: 1 } : o)
                       } : prev)}
                       className="w-full px-2 py-2 rounded-xl text-sm text-white/80 outline-none border border-white/[.08] text-center"
                       style={{ background: 'rgba(255,255,255,0.05)' }} />
@@ -1529,7 +1610,7 @@ export default function AdminDashboard() {
 
               {/* Add option */}
               <button onClick={() => {
-                const count = (editingSamplePack.options.at(-1)?.count ?? 5) + 5;
+                const count = (Number(editingSamplePack.options.at(-1)?.count) || 5) + 5;
                 setEditingSamplePack(prev => prev ? {
                   ...prev,
                   options: [...prev.options, { key: `pack-${count}`, label: `Pack of ${count}`, count, price: 0 }]
@@ -1548,7 +1629,7 @@ export default function AdminDashboard() {
                   const res = await fetch(`/api/sample-packs/${editingSamplePack.id}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ options: editingSamplePack.options }),
+                    body: JSON.stringify({ options: editingSamplePack.options.map(o => ({ ...o, count: Number(o.count) || 1 })) }),
                   });
                   if (res.ok) {
                     const updated = await res.json();
@@ -3000,7 +3081,11 @@ export default function AdminDashboard() {
                             {sizes.map(s => <option key={s} value={s} style={{ background: '#1A2A14', color: '#E8DEB0' }}>{s} · ₹{product!.prices[s]}</option>)}
                           </select>
                           <input type="number" min={1} value={item.count}
-                            onChange={e => updateOfflineItemRow(idx, { count: Math.max(1, parseInt(e.target.value) || 1) })}
+                            onChange={e => {
+                              const v = e.target.value;
+                              updateOfflineItemRow(idx, { count: v === '' ? '' : Math.max(1, parseInt(v) || 1) });
+                            }}
+                            onBlur={() => { if (item.count === '') updateOfflineItemRow(idx, { count: 1 }); }}
                             className="w-14 px-2 py-2 rounded-lg text-sm bg-white/[.04] border border-white/[.08] text-white outline-none text-center" />
                           {offlineForm.items.length > 1 && (
                             <button onClick={() => removeOfflineItemRow(idx)}
@@ -3035,6 +3120,11 @@ export default function AdminDashboard() {
                     onChange={e => setOfflineForm(f => ({ ...f, totalOverride: e.target.value }))}
                     placeholder={`Total (auto: ₹${offlineComputedTotal})`} className="px-3.5 py-2.5 rounded-xl text-sm bg-white/[.04] border border-white/[.08] text-white outline-none placeholder:text-white/25" />
                 </div>
+
+                <input value={offlineForm.referralCode}
+                  onChange={e => setOfflineForm(f => ({ ...f, referralCode: e.target.value.toUpperCase().slice(0, 32) }))}
+                  placeholder="Referral code (optional)" autoCapitalize="characters" spellCheck={false}
+                  className="w-full px-3.5 py-2.5 rounded-xl text-sm bg-white/[.04] border border-white/[.08] text-white outline-none placeholder:text-white/25" />
 
                 <textarea value={offlineForm.notes} onChange={e => setOfflineForm(f => ({ ...f, notes: e.target.value.slice(0, 500) }))}
                   placeholder="Notes (optional)" rows={2}

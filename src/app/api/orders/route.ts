@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { resolveReferralCode } from '@/lib/referral';
+import { referralEligibleSubtotal } from '@/lib/referralRules';
 import { getAuthUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -31,6 +33,7 @@ export async function POST(req: NextRequest) {
     const deliveryZone = (formData.get('deliveryZone') as string) || 'india'; // 'karnataka' | 'india' | 'international'
     const isKarnataka = deliveryZone === 'karnataka';
     const screenshot = formData.get('screenshot') as File | null;
+    const referralCode = await resolveReferralCode(formData.get('referralCode'));
 
     // Validate required fields
     if (!name || name.length < 2) return NextResponse.json({ error: 'Valid name required' }, { status: 400 });
@@ -85,6 +88,12 @@ export async function POST(req: NextRequest) {
 
     const totalAmount = productSubtotal + deliveryCharge;
 
+    // The offer covers powders only, so record what the 15% applies to
+    const categoryById = Object.fromEntries(dbProducts.map(p => [p.id, p.category]));
+    const referralEligibleAmount = referralCode
+      ? referralEligibleSubtotal(cartItems, priceMap, categoryById)
+      : null;
+
     const order = await prisma.order.create({
       data: {
         name, phone,
@@ -97,6 +106,8 @@ export async function POST(req: NextRequest) {
         deliveryCharge,
         isKarnataka,
         count: totalCount,
+        referralCode,
+        referralEligibleAmount,
         status: 'pending',
       },
     });
@@ -169,7 +180,21 @@ export async function GET(req: NextRequest) {
         }
       : null;
 
-    return NextResponse.json({ orders, total, page, totalPages: Math.ceil(total / limit), aggStats });
+    // Attach referrer details for any order that carries a code
+    const codes = Array.from(new Set(orders.map(o => o.referralCode).filter(Boolean))) as string[];
+    const referrers = codes.length
+      ? await prisma.referrer.findMany({
+          where: { code: { in: codes } },
+          select: { code: true, name: true, phone: true },
+        })
+      : [];
+    const referrerByCode = Object.fromEntries(referrers.map(r => [r.code, r]));
+    const ordersWithReferrer = orders.map(o => ({
+      ...o,
+      referrer: o.referralCode ? referrerByCode[o.referralCode] ?? null : null,
+    }));
+
+    return NextResponse.json({ orders: ordersWithReferrer, total, page, totalPages: Math.ceil(total / limit), aggStats });
   } catch (error) {
     console.error('Orders fetch error:', error);
     return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });

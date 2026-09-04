@@ -9,6 +9,7 @@ import { useProducts } from '@/lib/useProducts';
 import { useSampleCart } from '@/lib/useSampleCart';
 import { trackEvent } from '@/lib/analytics';
 import { parseGrams } from '@/lib/delivery';
+import { getReferralCode, clearReferralCode } from '@/lib/referralClient';
 
 type DeliverySlab = { maxGrams: number; charge: number };
 type DeliverySettings = {
@@ -63,6 +64,9 @@ export default function CheckoutPage() {
   const [orderId, setOrderId] = useState('');
   const [error, setError] = useState('');
   const [delivery, setDelivery] = useState<DeliverySettings | null>(null);
+  const [referralCode, setReferralCode] = useState('');
+  const [referralState, setReferralState] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
+  const [referrerName, setReferrerName] = useState('');
 
   useEffect(() => {
     fetch('/api/settings/delivery').then(r => r.json()).then(setDelivery).catch(() => {});
@@ -73,6 +77,10 @@ export default function CheckoutPage() {
     script.src = 'https://checkout.razorpay.com/v1/checkout.js';
     script.async = true;
     document.head.appendChild(script);
+
+    // Referral code carried in from a shared ?ref= link
+    const savedRef = getReferralCode();
+    if (savedRef) setReferralCode(savedRef);
 
     // Pre-fill pincode/zone carried over from cart page
     try {
@@ -133,6 +141,24 @@ export default function CheckoutPage() {
   useEffect(() => {
     try { sessionStorage.setItem('amma_delivery', JSON.stringify({ pincode, deliveryZone })); } catch { /* ignore */ }
   }, [pincode, deliveryZone]);
+
+  // Check the code against the server so a customer sees straight away
+  // whether it will actually count
+  useEffect(() => {
+    const code = referralCode.trim().toUpperCase();
+    if (!code) { setReferralState('idle'); setReferrerName(''); return; }
+    setReferralState('checking');
+    const t = setTimeout(() => {
+      fetch(`/api/referrals?code=${encodeURIComponent(code)}`)
+        .then(r => r.json())
+        .then(d => {
+          if (d.valid) { setReferralState('valid'); setReferrerName(d.name || ''); }
+          else { setReferralState('invalid'); setReferrerName(''); }
+        })
+        .catch(() => { setReferralState('idle'); setReferrerName(''); });
+    }, 450);
+    return () => clearTimeout(t);
+  }, [referralCode]);
 
   function coSlabCharge(slabs: DeliverySlab[], grams: number, fallback: number) {
     if (!slabs?.length) return fallback;
@@ -239,12 +265,14 @@ export default function CheckoutPage() {
                 notes: form.notes,
                 cartItems: cart,
                 sampleItems,
+                referralCode: referralState === 'valid' ? referralCode.trim().toUpperCase() : '',
               }),
             });
             const verifyData = await verifyRes.json();
             if (verifyRes.ok) {
               clearCart();
               clearSampleCart();
+              clearReferralCode();
               setOrderId(verifyData.orderId || '');
             } else {
               setError(verifyData.error || 'Payment verification failed. Please contact support.');
@@ -309,9 +337,20 @@ export default function CheckoutPage() {
 
           {/* White body */}
           <div className="px-8 py-7 bg-white">
-            <p className="text-xs text-forest/50 text-center mb-6">
+            <p className="text-xs text-forest/50 text-center mb-5">
               Use your WhatsApp number to track your order status anytime.
             </p>
+
+            {/* They just bought — best moment to ask for a referral */}
+            <Link href="/refer"
+              className="flex items-center gap-3 px-4 py-3 mb-5 rounded-2xl no-underline transition-all hover:scale-[1.01] active:scale-[.99]"
+              style={{ background: 'rgba(212,148,42,0.08)', border: '1.5px solid rgba(212,148,42,0.25)' }}>
+              <span className="text-xl">🎁</span>
+              <span className="flex-1">
+                <span className="block text-sm font-bold text-forest">Earn 15% on every friend you refer</span>
+                <span className="block text-xs text-forest/50 mt-0.5">Get your referral link →</span>
+              </span>
+            </Link>
             <div className="flex flex-col gap-3">
               <Link href="/track"
                 className="flex items-center justify-center gap-2 py-[18px] rounded-2xl font-bold text-sm no-underline text-forest transition-all"
@@ -593,6 +632,29 @@ export default function CheckoutPage() {
                 <InputField label="Notes (optional)">
                   <input value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })}
                     className={inputCls} placeholder="Any preferences or special instructions…" />
+                </InputField>
+
+                <InputField label="Referral code (optional)">
+                  <input value={referralCode}
+                    onChange={e => setReferralCode(e.target.value.toUpperCase())}
+                    className={inputCls} placeholder="Code from the friend who referred you"
+                    autoCapitalize="characters" spellCheck={false} />
+                  {referralState === 'idle' && (
+                    <p className="text-xs mt-1.5 text-forest/40">Referral rewards apply to powders only.</p>
+                  )}
+                  {referralState === 'checking' && (
+                    <p className="text-xs mt-1.5 text-forest/40">Checking…</p>
+                  )}
+                  {referralState === 'valid' && (
+                    <p className="text-xs mt-1.5 font-semibold" style={{ color: '#5A7A3A' }}>
+                      ✓ Referred by {referrerName}
+                    </p>
+                  )}
+                  {referralState === 'invalid' && (
+                    <p className="text-xs mt-1.5 font-semibold text-red-600/80">
+                      That code isn&apos;t valid — check it with your friend, or leave it blank.
+                    </p>
+                  )}
                 </InputField>
               </div>
 

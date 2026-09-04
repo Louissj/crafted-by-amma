@@ -13,7 +13,8 @@ function getSessionId(): string {
   }
 }
 
-type EventType = 'page_view' | 'cart_view' | 'add_to_cart' | 'checkout_start' | 'order_placed';
+type EventType = 'page_view' | 'cart_view' | 'add_to_cart' | 'checkout_start' | 'order_placed'
+  | 'referral_link_visit' | 'referral_code_created' | 'referral_share';
 
 interface TrackPayload {
   productId?: string;

@@ -12,12 +12,12 @@ model Order {
   name              String
   phone             String
   email             String?
-  products          Json     // ["millet-malt", "instant-dosa"]
-  quantity          String   // "250g", "500g", "1kg", "2kg"
+  products          Json // ["millet-malt", "instant-dosa"]
+  quantity          String // "250g", "500g", "1kg", "2kg"
   city              String
   address           String
   pincode           String?
-  paymentScreenshot String?  // file path
+  paymentScreenshot String? // file path
   paymentMethod     String?
   notes             String?
   status            String   @default("pending")
@@ -26,11 +26,26 @@ model Order {
   isKarnataka       Boolean  @default(false)
   count             Int      @default(1)
   deleted           Boolean  @default(false)
+  referralCode      String? // code entered/carried at checkout, validated against Referrer
+  referralPaid      Boolean  @default(false) // has the referrer been paid for this order
+  referralEligibleAmount Float? // powders-only subtotal the 15% applies to, snapshotted at order time
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
   @@index([status])
   @@index([createdAt])
+  @@index([phone])
+  @@index([referralCode])
+}
+
+model Referrer {
+  id        String   @id @default(cuid())
+  code      String   @unique // shared in the link, typed at checkout
+  name      String
+  phone     String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
   @@index([phone])
 }
 
@@ -67,12 +82,12 @@ model DeliverySettings {
 
 model AnalyticsEvent {
   id        String   @id @default(cuid())
-  type      String   // 'page_view' | 'cart_view' | 'add_to_cart' | 'checkout_start' | 'order_placed'
-  sessionId String?  // anonymous browser fingerprint
-  productId String?  // for product-level events
-  packSize  String?  // for add_to_cart
-  page      String?  // for page_view
-  metadata  Json?    // any extra context
+  type      String // 'page_view' | 'cart_view' | 'add_to_cart' | 'checkout_start' | 'order_placed'
+  sessionId String? // anonymous browser fingerprint
+  productId String? // for product-level events
+  packSize  String? // for add_to_cart
+  page      String? // for page_view
+  metadata  Json? // any extra context
   createdAt DateTime @default(now())
 
   @@index([type])
@@ -85,7 +100,7 @@ model Review {
   id        String   @id @default(cuid())
   name      String
   place     String
-  rating    Int      // 1–5
+  rating    Int // 1–5
   text      String
   approved  Boolean  @default(false)
   createdAt DateTime @default(now())
@@ -101,8 +116,8 @@ model Product {
   badge       String   @default("")
   description String
   ingredients String
-  usage       Json     // [{ type: string, instructions: string }]
-  prices      Json     // { "250g": 110, "500g": 190, ... }
+  usage       Json // [{ type: string, instructions: string }]
+  prices      Json // { "250g": 110, "500g": 190, ... }
   mrp         Json     @default("{}") // { "250g": 150, "500g": 250, ... } — optional MRP per size
   stock       Json     @default("{}") // { "250g": 50, "500g": 20 } — null/missing = unlimited
   images      Json     @default("[]") // ["/images/..."]
@@ -117,7 +132,7 @@ model SamplePack {
   id          String   @id @default(cuid())
   name        String   @default("Sample Pack")
   description String   @default("")
-  options     Json     // [{ key: "pack-3", label: "Pack of 3", count: 3, price: 199 }]
+  options     Json // [{ key: "pack-3", label: "Pack of 3", count: 3, price: 199 }]
   active      Boolean  @default(true)
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())

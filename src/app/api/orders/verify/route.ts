@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import prisma from '@/lib/db';
+import { resolveReferralCode } from '@/lib/referral';
+import { referralEligibleSubtotal } from '@/lib/referralRules';
 import { sanitize, isValidPhone, calculateCartTotal } from '@/lib/security';
 import { calcDeliveryCharge } from '@/lib/delivery';
 import { notifyNewOrder } from '@/lib/notify';
@@ -83,6 +85,13 @@ export async function POST(req: NextRequest) {
 
     const totalAmount = productSubtotal + sampleSubtotal + deliveryCharge;
 
+    // Powders only. Sample packs already exclude snacks/sweets, so they count.
+    const resolvedReferral = await resolveReferralCode(body.referralCode);
+    const categoryById = Object.fromEntries(dbProducts.map(p => [p.id, p.category]));
+    const referralEligibleAmount = resolvedReferral
+      ? referralEligibleSubtotal(validItems, priceMap, categoryById) + sampleSubtotal
+      : null;
+
     const allProductNames = await prisma.product.findMany({ select: { id: true, shortName: true } });
     const productNameMap: Record<string, string> = Object.fromEntries(allProductNames.map(p => [p.id, p.shortName]));
 
@@ -113,6 +122,8 @@ export async function POST(req: NextRequest) {
         deliveryCharge,
         isKarnataka,
         count: totalCount,
+        referralCode: resolvedReferral,
+        referralEligibleAmount,
         status: 'confirmed',
       },
     });

@@ -36,7 +36,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (!id || id.length > 30) return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
 
     const body = await req.json();
-    const { status, notes, totalAmount } = body;
+    const { status, notes, totalAmount, referralPaid } = body;
 
     const validStatuses = ['pending', 'verified', 'confirmed', 'shipped', 'delivered', 'cancelled'];
     if (status && !validStatuses.includes(status)) {
@@ -49,6 +49,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         ...(status && { status }),
         ...(typeof notes === 'string' && { notes: notes.slice(0, 500) }),
         ...(typeof totalAmount === 'number' && totalAmount >= 0 && { totalAmount }),
+        ...(typeof referralPaid === 'boolean' && { referralPaid }),
       },
     });
 
