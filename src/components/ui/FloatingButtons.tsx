@@ -31,6 +31,29 @@ export default function FloatingButtons() {
   return (
     <div className={`fixed ${mobileBottom} md:bottom-8 right-4 z-[8000] flex flex-col items-end gap-2.5`}>
 
+      {/* Refer & Earn */}
+      <Link href="/refer"
+        className="group flex items-center no-underline active:scale-95 transition-all duration-200">
+        <span className="mr-2.5 hidden md:block opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-200
+          text-[0.65rem] font-bold tracking-[2px] uppercase px-3 py-1.5 rounded-full pointer-events-none"
+          style={{ background: 'rgba(10,18,8,0.90)', color: 'rgba(212,148,42,0.95)', border: '1px solid rgba(212,148,42,0.30)' }}>
+          Refer &amp; Earn
+        </span>
+        <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+          style={{
+            background: 'linear-gradient(135deg,#D4942A,#B87323)',
+            boxShadow: '0 4px 16px rgba(212,148,42,0.45)',
+          }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 12 20 22 4 22 4 12"/>
+            <rect x="2" y="7" width="20" height="5"/>
+            <line x1="12" y1="22" x2="12" y2="7"/>
+            <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+            <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+          </svg>
+        </div>
+      </Link>
+
       {/* Track Order — circle matching WhatsApp */}
       <Link href="/track"
         className="no-underline active:scale-95 transition-all duration-200 w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"

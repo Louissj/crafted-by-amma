@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import PageTracker from '@/components/ui/PageTracker';
 import FloatingButtons from '@/components/ui/FloatingButtons';
+import ReferSplash from '@/components/ui/ReferSplash';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <PageTracker />
         {children}
         <FloatingButtons />
+        <ReferSplash />
       </body>
     </html>
   );

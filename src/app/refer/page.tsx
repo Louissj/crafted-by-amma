@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Navbar from '@/components/ui/Navbar';
 import { trackEvent } from '@/lib/analytics';
 
@@ -14,11 +14,29 @@ export default function ReferPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState('');
+  const [canShare, setCanShare] = useState(false);
+
+  // Web Share API is absent on most desktop browsers; decide after mount to avoid a hydration mismatch
+  useEffect(() => { setCanShare(typeof navigator !== 'undefined' && !!navigator.share); }, []);
 
   const shareUrl = code ? `${SITE_URL}/?ref=${code}` : '';
-  const shareText = code
-    ? `Try Crafted by Amma — homemade powders, snacks & sweets from Amma's kitchen in Mysuru.\n\nUse my referral code ${code} at checkout:\n${shareUrl}`
+  // Kept apart so navigator.share can pass text and url separately; wa.me needs them joined
+  const shareMessage = code
+    ? `Try Crafted by Amma — homemade powders, snacks & sweets from Amma's kitchen in Mysuru.
+
+Use my referral code ${code} at checkout:`
     : '';
+  const shareText = code ? `${shareMessage}
+${shareUrl}` : '';
+
+  async function shareDirect() {
+    try {
+      await navigator.share({ title: 'Crafted by Amma', text: shareMessage, url: shareUrl });
+      trackEvent('referral_share', { metadata: { code } });
+    } catch {
+      // dismissing the sheet throws AbortError - not a failure
+    }
+  }
 
   async function generate() {
     setError('');
@@ -175,19 +193,26 @@ export default function ReferPage() {
                 style={{ background: 'rgba(0,0,0,0.20)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(235,225,200,0.75)' }}>
                 {shareUrl}
               </div>
+              <a href={`https://wa.me/?text=${encodeURIComponent(shareText)}`}
+                target="_blank" rel="noopener noreferrer"
+                onClick={() => trackEvent('referral_share', { metadata: { code } })}
+                className="block w-full py-3 mb-2 rounded-xl text-xs font-bold text-center no-underline transition-all active:scale-[.98]"
+                style={{ background: 'rgba(37,211,102,0.90)', color: '#0B2818' }}>
+                Share on WhatsApp
+              </a>
               <div className="flex gap-2">
                 <button onClick={() => copy(shareUrl, 'link')}
                   className="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-[.98]"
                   style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(235,225,200,0.8)' }}>
                   {copied === 'link' ? '✓ Copied' : 'Copy link'}
                 </button>
-                <a href={`https://wa.me/?text=${encodeURIComponent(shareText)}`}
-                  target="_blank" rel="noopener noreferrer"
-                  onClick={() => trackEvent('referral_share', { metadata: { code } })}
-                  className="flex-1 py-2.5 rounded-xl text-xs font-bold text-center no-underline transition-all active:scale-[.98]"
-                  style={{ background: 'rgba(37,211,102,0.85)', color: '#0B2818' }}>
-                  Share on WhatsApp
-                </a>
+                {canShare && (
+                  <button onClick={shareDirect}
+                    className="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-[.98]"
+                    style={{ background: 'rgba(212,148,42,0.16)', border: '1px solid rgba(212,148,42,0.35)', color: '#D4942A' }}>
+                    Share to any app
+                  </button>
+                )}
               </div>
             </div>
 
