@@ -9,7 +9,7 @@ export default function Hero() {
 
       {/* Background image */}
       <div className="absolute inset-0 bg-cover bg-center brightness-[.42] saturate-[.85] contrast-[1.05]"
-        style={{ backgroundImage: "url('/images/dosa-bowl.jpg')" }} />
+        style={{ backgroundImage: "url('https://crafted-by-amma-media.s3.ap-south-1.amazonaws.com/images/multigrain4.png')" }} />
 
       {/* Strong directional overlay — heavy where text sits, lighter at edges */}
       <div className="absolute inset-0"

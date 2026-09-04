@@ -3,13 +3,10 @@
 import { useState, useEffect } from 'react';
 import { RevealSection } from '../ui/RevealSection';
 
-// The old crafted-by-amma bucket was disabled by AWS (403 AllAccessDisabled),
-// so these come from crafted-by-amma-media. Only the JPEGs are used - every
-// other image on that bucket is a 2.5MB+ PNG, too heavy to rotate through.
 const STORY_IMAGES = [
-  'https://crafted-by-amma-media.s3.ap-south-1.amazonaws.com/products/a6c319ff-542f-4a1e-a08c-1984f204b7d8.jpeg',
-  'https://crafted-by-amma-media.s3.ap-south-1.amazonaws.com/products/8e871211-e37e-4f5a-82e6-b69d8d863d39.jpeg',
-  'https://crafted-by-amma-media.s3.ap-south-1.amazonaws.com/products/81a15ce2-42af-4395-93e7-13326342b627.jpeg',
+  'https://crafted-by-amma-media.s3.ap-south-1.amazonaws.com/images/multigrain1.png',
+  'https://crafted-by-amma-media.s3.ap-south-1.amazonaws.com/images/multigrain2.png',
+  'https://crafted-by-amma-media.s3.ap-south-1.amazonaws.com/images/multigrain3.png',
 ];
 
 /* ── Decorative SVG ornament ── */
