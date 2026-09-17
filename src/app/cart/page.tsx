@@ -9,7 +9,7 @@ import { useProducts } from '@/lib/useProducts';
 import { useSampleCart } from '@/lib/useSampleCart';
 import { PRODUCTS } from '@/lib/constants';
 import { trackEvent } from '@/lib/analytics';
-import { parseGrams } from '@/lib/delivery';
+import { calcDeliveryCharge } from '@/lib/delivery';
 
 type DeliverySlab = { maxGrams: number; charge: number };
 type DeliverySettings = {
@@ -102,27 +102,12 @@ export default function CartPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pincode]);
 
-  // Computed every render — guarantees instant update when cart changes
-  function calcSlabCharge(slabs: DeliverySlab[], grams: number, fallback: number): number {
-    if (!slabs?.length) return fallback;
-    const sorted = [...slabs].sort((a, b) => a.maxGrams - b.maxGrams);
-    return (sorted.find(s => grams <= s.maxGrams) ?? sorted[sorted.length - 1]).charge;
-  }
-
-  const chargeableGrams = !delivery || !pincodeState || deliveryZone === 'international' ? 0
-    : cart.reduce((sum, item) => {
-        const g = parseGrams(item.packSize);
-        if (deliveryZone === 'karnataka' && g >= 1000) return sum; // 1kg+ free only in Karnataka
-        return sum + g * item.count;
-      }, 0) + sampleItems.reduce((sum, i) => sum + 50 * i.count * i.qty, 0);
-
-  const deliveryCharge = (() => {
-    if (!delivery || !pincodeState || deliveryZone === 'international') return 0;
-    if (chargeableGrams === 0) return 0;
-    if (deliveryZone === 'karnataka') return calcSlabCharge(delivery.karnatakaSlabs, chargeableGrams, delivery.baseCharge || 60);
-    if (deliveryZone === 'south-india') return calcSlabCharge(delivery.southIndiaSlabs, chargeableGrams, delivery.outstationCharge);
-    return calcSlabCharge(delivery.northIndiaSlabs, chargeableGrams, delivery.outstationCharge);
-  })();
+  // Computed every render — guarantees instant update when cart changes.
+  // Shares calcDeliveryCharge with the order APIs so the two cannot drift.
+  const sampleGrams = sampleItems.reduce((sum, i) => sum + 50 * i.count * i.qty, 0);
+  const deliveryCharge = !delivery || !pincodeState || deliveryZone === 'international'
+    ? 0
+    : calcDeliveryCharge(deliveryZone, cart, delivery, sampleGrams);
 
   const grandTotal = cartTotal + sampleTotal + deliveryCharge;
 
@@ -432,7 +417,7 @@ export default function CartPage() {
                                 {pincodeState}
                               </p>
                               <p className="text-xs" style={{ color: deliveryZone === 'karnataka' ? '#5A7A3A99' : '#B8732399' }}>
-                                {deliveryZone === 'karnataka' ? 'Karnataka · Free delivery on 1kg packs' :
+                                {deliveryZone === 'karnataka' ? 'Karnataka · Free on 1kg-only orders' :
                                  deliveryZone === 'south-india' ? 'South India · Weight-based delivery' :
                                  'North India · Weight-based delivery'}
                               </p>
@@ -656,7 +641,7 @@ export default function CartPage() {
                         style={{ background: 'rgba(90,122,58,0.08)', border: '1px solid rgba(90,122,58,0.15)' }}>
                         <span className="text-sm">🏷️</span>
                         <span className="text-sm font-bold text-sage">
-                          Free delivery on 1kg packs — Karnataka
+                          Free delivery applied — Karnataka
                         </span>
                       </div>
                     )}

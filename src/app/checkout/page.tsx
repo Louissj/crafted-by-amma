@@ -8,7 +8,7 @@ import { useCart } from '@/lib/useCart';
 import { useProducts } from '@/lib/useProducts';
 import { useSampleCart } from '@/lib/useSampleCart';
 import { trackEvent } from '@/lib/analytics';
-import { parseGrams } from '@/lib/delivery';
+import { calcDeliveryCharge } from '@/lib/delivery';
 import { getReferralCode, clearReferralCode } from '@/lib/referralClient';
 
 type DeliverySlab = { maxGrams: number; charge: number };
@@ -160,27 +160,11 @@ export default function CheckoutPage() {
     return () => clearTimeout(t);
   }, [referralCode]);
 
-  function coSlabCharge(slabs: DeliverySlab[], grams: number, fallback: number) {
-    if (!slabs?.length) return fallback;
-    const sorted = [...slabs].sort((a, b) => a.maxGrams - b.maxGrams);
-    return (sorted.find(s => grams <= s.maxGrams) ?? sorted[sorted.length - 1]).charge;
-  }
-
-  const coGrams = !delivery || deliveryZone === 'international' ? 0
-    : cart.reduce((sum, item) => {
-        const g = parseGrams(item.packSize);
-        if (deliveryZone === 'karnataka' && g >= 1000) return sum;
-        return sum + g * item.count;
-      }, 0)
-      + sampleItems.reduce((sum, i) => sum + 50 * i.count * i.qty, 0); // each sample = 50g
-
-  const deliveryCharge = (() => {
-    if (!delivery || deliveryZone === 'international') return 0;
-    if (coGrams === 0) return 0;
-    if (deliveryZone === 'karnataka') return coSlabCharge(delivery.karnatakaSlabs, coGrams, delivery.baseCharge || 60);
-    if (deliveryZone === 'south-india') return coSlabCharge(delivery.southIndiaSlabs, coGrams, delivery.outstationCharge);
-    return coSlabCharge(delivery.northIndiaSlabs, coGrams, delivery.outstationCharge);
-  })();
+  // Shares calcDeliveryCharge with the order APIs so the two cannot drift
+  const sampleGrams = sampleItems.reduce((sum, i) => sum + 50 * i.count * i.qty, 0); // each sample = 50g
+  const deliveryCharge = !delivery || deliveryZone === 'international'
+    ? 0
+    : calcDeliveryCharge(deliveryZone, cart, delivery, sampleGrams);
 
   const grandTotal = cartTotal + sampleTotal + deliveryCharge;
 

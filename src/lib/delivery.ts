@@ -49,21 +49,31 @@ export function calcDeliveryCharge(
 ): number {
   if (zone === 'international') return 0;
 
-  // Total chargeable grams — 1kg+ packs are FREE in Karnataka, still charged outside
-  const chargeableGrams = items.reduce((sum, item) => {
-    const g = parseGrams(item.packSize);
-    if (zone === 'karnataka' && g >= 1000) return sum; // 1kg free in Karnataka
-    return sum + g * item.count;
-  }, 0) + extraGrams;
+  // Karnataka promo: an order made up entirely of 1kg+ packs ships free.
+  // Anything else pays on the real parcel weight. Dropping the big pack's
+  // weight from a mixed order billed a 2.6kg parcel as though it were 1.6kg.
+  if (
+    zone === 'karnataka' &&
+    extraGrams === 0 &&
+    items.length > 0 &&
+    items.every(item => parseGrams(item.packSize) >= 1000)
+  ) {
+    return 0;
+  }
 
-  if (chargeableGrams === 0) return 0;
+  const totalGrams = items.reduce(
+    (sum, item) => sum + parseGrams(item.packSize) * item.count,
+    0,
+  ) + extraGrams;
+
+  if (totalGrams === 0) return 0;
 
   if (zone === 'karnataka') {
-    return slabCharge(ds.karnatakaSlabs, chargeableGrams, ds.baseCharge || 60);
+    return slabCharge(ds.karnatakaSlabs, totalGrams, ds.baseCharge || 60);
   }
   if (zone === 'south-india') {
-    return slabCharge(ds.southIndiaSlabs, chargeableGrams, ds.outstationCharge);
+    return slabCharge(ds.southIndiaSlabs, totalGrams, ds.outstationCharge);
   }
   // north-india and anything else
-  return slabCharge(ds.northIndiaSlabs, chargeableGrams, ds.outstationCharge);
+  return slabCharge(ds.northIndiaSlabs, totalGrams, ds.outstationCharge);
 }
