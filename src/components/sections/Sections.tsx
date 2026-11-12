@@ -496,7 +496,6 @@ const FALLBACK_OFFERS: Offer[] = [
   { id: '1', icon: '📦', text: 'Free Shipping in Karnataka' },
   { id: '2', icon: '🌍', text: 'Worldwide Delivery Available' },
   { id: '3', icon: '✨', text: '5% Off on Every Order' },
-  { id: '4', icon: '👥', text: 'Refer 5 Friends → Get 50% Off' },
 ];
 
 export function Shipping() {

@@ -15,8 +15,6 @@ type Order = {
   quantity: string;
   city: string; address: string; pincode: string | null; paymentScreenshot: string | null; notes: string | null;
   status: string; totalAmount: number | null; deliveryCharge: number | null; isKarnataka: boolean; createdAt: string; paymentMethod: string | null;
-  referralCode: string | null; referralPaid: boolean; referralEligibleAmount: number | null;
-  referrer: { code: string; name: string; phone: string } | null;
 };
 
 type Offer = { id: string; icon: string; text: string; active: boolean; sortOrder: number };
@@ -53,55 +51,6 @@ const STATUS_META: Record<string, { label: string; color: string; bg: string; ic
   delivered: { label: 'Delivered', color: '#10B981', bg: 'rgba(16,185,129,0.12)',  icon: '🎉' },
   cancelled: { label: 'Cancelled', color: '#EF4444', bg: 'rgba(239,68,68,0.12)',   icon: '✕' },
 };
-
-// Referrer behind an order, their number (needed to verify and pay them),
-// and whether the 15% has gone out. A cancelled order is never payable.
-function ReferralTag({ order, onTogglePaid }: { order: Order; onTogglePaid: (o: Order) => void }) {
-  if (!order.referralCode) return null;
-  const paid = order.referralPaid;
-  const cancelled = order.status === 'cancelled';
-  // Offer covers powders only; a snacks/sweets-only order has nothing to pay on
-  const eligible = order.referralEligibleAmount ?? 0;
-  const noPowders = eligible <= 0;
-  const payable = !cancelled && !noPowders;
-  return (
-    <div className="flex items-center gap-1.5 flex-wrap mt-1.5" onClick={e => e.stopPropagation()}>
-      <span className="text-[.8rem] font-bold px-2 py-0.5 rounded-md"
-        style={cancelled
-          ? { color: 'rgba(255,255,255,0.30)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.10)' }
-          : { color: '#C8B44A', background: 'rgba(200,180,74,0.10)', border: '1px solid rgba(200,180,74,0.22)' }}>
-        ref: {order.referrer ? order.referrer.name : order.referralCode}
-        {order.referrer && (
-          <span className="font-normal opacity-70"> - {order.referrer.phone}</span>
-        )}
-        {!noPowders && (
-          <span className="font-normal opacity-70"> - powders Rs {eligible.toLocaleString()}</span>
-        )}
-      </span>
-
-      {!payable && !paid ? (
-        <span className="text-[.8rem] font-bold px-2 py-0.5 rounded-md"
-          style={{ color: 'rgba(255,255,255,0.30)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.10)' }}
-          title={cancelled ? 'Order was cancelled - nothing to pay out' : 'No powders in this order - offer covers powders only'}>
-          {cancelled ? 'Not payable - cancelled' : 'Not payable - no powders'}
-        </span>
-      ) : (
-        <button onClick={() => onTogglePaid(order)}
-          className="text-[.8rem] font-bold px-2 py-0.5 rounded-md transition-all"
-          style={paid
-            ? (cancelled
-                ? { color: '#fbbf24', background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.30)' }
-                : { color: '#34d399', background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.25)' })
-            : { color: 'rgba(239,68,68,0.75)', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.20)' }}
-          title={cancelled && paid
-            ? 'Already paid on an order that was later cancelled'
-            : 'Toggle whether the referrer has been paid'}>
-          {paid ? (cancelled ? 'Paid - order cancelled' : 'Paid') : 'Unpaid'}
-        </button>
-      )}
-    </div>
-  );
-}
 
 function StatusBadge({ status, size = 'sm' }: { status: string; size?: 'xs' | 'sm' }) {
   const meta = STATUS_META[status] || { label: status, color: '#888', bg: 'rgba(136,136,136,0.1)', icon: '•' };
@@ -146,7 +95,7 @@ export default function AdminDashboard() {
   const emptyOfflineForm = {
     name: '', phone: '', city: '', address: '', pincode: '',
     paymentMethod: 'cash', status: 'confirmed',
-    deliveryCharge: '0', notes: '', isKarnataka: false, referralCode: '',
+    deliveryCharge: '0', notes: '', isKarnataka: false,
     totalOverride: '',
     items: [{ productId: '', packSize: '', count: 1 }] as OfflineItem[],
   };
@@ -371,7 +320,6 @@ export default function AdminDashboard() {
         body: JSON.stringify({
           name: offlineForm.name, phone: offlineForm.phone, city: offlineForm.city,
           address: offlineForm.address, pincode: offlineForm.pincode, notes: offlineForm.notes,
-          referralCode: offlineForm.referralCode,
           items: validItems, deliveryCharge: parseFloat(offlineForm.deliveryCharge) || 0,
           isKarnataka: offlineForm.isKarnataka, paymentMethod: offlineForm.paymentMethod,
           status: offlineForm.status,
@@ -502,28 +450,6 @@ export default function AdminDashboard() {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-    }
-  };
-
-  // Mark the referrer's 15% as paid / not paid for this order
-  const toggleReferralPaid = async (order: Order) => {
-    const next = !order.referralPaid;
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/orders/${order.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ referralPaid: next }),
-      });
-      if (!res.ok) throw new Error('failed');
-      await fetchOrders();
-      // the detail modal holds its own copy of the order
-      setSelected(prev => (prev && prev.id === order.id ? { ...prev, referralPaid: next } : prev));
-      showToast(next ? 'Marked referral as paid' : 'Marked referral as unpaid', 'success');
-    } catch {
-      showToast('Could not update referral payout', 'error');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -1230,7 +1156,6 @@ export default function AdminDashboard() {
                     </div>
                     {/* Products */}
                     <div className="text-sm text-white/25 mt-2.5 truncate pl-12">{getProductNames(order.products)}</div>
-                    <div className="pl-12"><ReferralTag order={order} onTogglePaid={toggleReferralPaid} /></div>
                     {/* Status select — full width below, easy to tap */}
                     <div className="mt-2.5 pl-12 flex items-center gap-2" onClick={e => e.stopPropagation()}>
                       {(() => {
@@ -1290,7 +1215,6 @@ export default function AdminDashboard() {
                         <td className="px-4 py-3.5">
                           <div className="font-semibold text-sm text-white/90">{order.name}</div>
                           <div className="text-[.85rem] text-white/30 mt-0.5">{order.phone}</div>
-                          <ReferralTag order={order} onTogglePaid={toggleReferralPaid} />
                         </td>
                         <td className="px-4 py-3.5">
                           <span className="text-sm text-white/40 line-clamp-1 max-w-[200px] block">{getProductNames(order.products)}</span>
@@ -2934,70 +2858,6 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                {/* Referral */}
-                {selected.referralCode && (() => {
-                  const eligible = selected.referralEligibleAmount ?? 0;
-                  const cancelled = selected.status === 'cancelled';
-                  const noPowders = eligible <= 0;
-                  const payable = !cancelled && !noPowders;
-                  const waPhone = selected.referrer ? selected.referrer.phone.replace(/[^0-9]/g, '').slice(-10) : '';
-                  return (
-                    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(200,180,74,0.20)' }}>
-                      <div className="px-4 py-2.5 flex items-center justify-between gap-2"
-                        style={{ background: 'rgba(200,180,74,0.06)', borderBottom: '1px solid rgba(200,180,74,0.12)' }}>
-                        <p className="text-sm font-bold uppercase tracking-[2px]" style={{ color: 'rgba(200,180,74,0.5)' }}>Referral</p>
-                        {!payable && !selected.referralPaid ? (
-                          <span className="text-sm font-bold px-2.5 py-1 rounded-lg"
-                            style={{ color: 'rgba(255,255,255,0.35)', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }}>
-                            {cancelled ? 'Not payable - cancelled' : 'Not payable - no powders'}
-                          </span>
-                        ) : (
-                          <button onClick={() => toggleReferralPaid(selected)} disabled={loading}
-                            className="text-sm font-bold px-2.5 py-1 rounded-lg transition-all disabled:opacity-50"
-                            style={selected.referralPaid
-                              ? (cancelled
-                                  ? { color: '#fbbf24', background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.30)' }
-                                  : { color: '#34d399', background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.25)' })
-                              : { color: 'rgba(239,68,68,0.80)', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.22)' }}>
-                            {selected.referralPaid ? (cancelled ? 'Paid - cancelled' : 'Paid') : 'Mark as paid'}
-                          </button>
-                        )}
-                      </div>
-                      <div className="p-4 grid grid-cols-2 gap-3">
-                        <div className="p-3 rounded-xl border border-white/[.07]" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                          <p className="text-sm font-bold uppercase tracking-[2px] mb-0.5" style={{ color: 'rgba(200,180,74,0.4)' }}>Referred by</p>
-                          <p className="text-sm text-white/70 font-medium">{selected.referrer ? selected.referrer.name : 'Not on file'}</p>
-                        </div>
-                        <div className="p-3 rounded-xl border border-white/[.07]" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                          <p className="text-sm font-bold uppercase tracking-[2px] mb-0.5" style={{ color: 'rgba(200,180,74,0.4)' }}>Their number</p>
-                          {selected.referrer ? (
-                            <a href={`tel:${selected.referrer.phone}`} className="text-sm font-semibold no-underline" style={{ color: '#C8B44A' }}>
-                              {selected.referrer.phone}
-                            </a>
-                          ) : <p className="text-sm text-white/40">-</p>}
-                        </div>
-                        <div className="p-3 rounded-xl border border-white/[.07]" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                          <p className="text-sm font-bold uppercase tracking-[2px] mb-0.5" style={{ color: 'rgba(200,180,74,0.4)' }}>Code used</p>
-                          <p className="text-sm font-mono font-bold" style={{ color: '#C8B44A' }}>{selected.referralCode}</p>
-                        </div>
-                        <div className="p-3 rounded-xl border border-white/[.07]" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                          <p className="text-sm font-bold uppercase tracking-[2px] mb-0.5" style={{ color: 'rgba(200,180,74,0.4)' }}>Powders eligible</p>
-                          <p className="text-sm font-bold" style={{ color: noPowders ? 'rgba(255,255,255,0.35)' : '#C8B44A' }}>
-                            {noPowders ? 'None' : `Rs ${eligible.toLocaleString()}`}
-                          </p>
-                        </div>
-                        {selected.referrer && payable && (
-                          <a href={`https://wa.me/91${waPhone}`} target="_blank" rel="noopener noreferrer"
-                            className="col-span-2 py-2.5 rounded-xl text-sm font-bold text-center no-underline transition-all"
-                            style={{ background: 'rgba(37,211,102,0.14)', border: '1px solid rgba(37,211,102,0.30)', color: '#25D366' }}>
-                            Message referrer on WhatsApp
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })()}
-
                 {/* Order items */}
                 <div className="rounded-xl border border-white/[.07] overflow-hidden">
                   <div className="px-4 py-2.5 border-b border-white/[.06]" style={{ background: 'rgba(200,180,74,0.04)' }}>
@@ -3186,11 +3046,6 @@ export default function AdminDashboard() {
                     onChange={e => setOfflineForm(f => ({ ...f, totalOverride: e.target.value }))}
                     placeholder={`Total (auto: ₹${offlineComputedTotal})`} className="px-3.5 py-2.5 rounded-xl text-sm bg-white/[.04] border border-white/[.08] text-white outline-none placeholder:text-white/25" />
                 </div>
-
-                <input value={offlineForm.referralCode}
-                  onChange={e => setOfflineForm(f => ({ ...f, referralCode: e.target.value.toUpperCase().slice(0, 32) }))}
-                  placeholder="Referral code (optional)" autoCapitalize="characters" spellCheck={false}
-                  className="w-full px-3.5 py-2.5 rounded-xl text-sm bg-white/[.04] border border-white/[.08] text-white outline-none placeholder:text-white/25" />
 
                 <textarea value={offlineForm.notes} onChange={e => setOfflineForm(f => ({ ...f, notes: e.target.value.slice(0, 500) }))}
                   placeholder="Notes (optional)" rows={2}

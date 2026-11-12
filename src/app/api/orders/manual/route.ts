@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
-import { resolveReferralCode } from '@/lib/referral';
-import { referralEligibleSubtotal } from '@/lib/referralRules';
 import { getAuthUser } from '@/lib/auth';
 import { sanitize, isValidPhone, calculateCartTotal } from '@/lib/security';
 
@@ -19,7 +17,7 @@ export async function POST(req: NextRequest) {
     const {
       name, phone, city, address, pincode, notes,
       items, deliveryCharge, isKarnataka,
-      paymentMethod, status, totalAmountOverride, referralCode,
+      paymentMethod, status, totalAmountOverride,
     } = body;
 
     const cleanName = sanitize(name || '');
@@ -57,12 +55,6 @@ export async function POST(req: NextRequest) {
     const totalCount = validItems.reduce((s, i) => s + i.count, 0);
     const uniqueSizes = validItems.map(i => i.packSize).filter((s, idx, arr) => arr.indexOf(s) === idx).join(',');
 
-    const resolvedReferral = await resolveReferralCode(referralCode);
-    const categoryById = Object.fromEntries(dbProducts.map(p => [p.id, p.category]));
-    const referralEligibleAmount = resolvedReferral
-      ? referralEligibleSubtotal(validItems, priceMap, categoryById)
-      : null;
-
     const cleanStatus = VALID_STATUSES.includes(status) ? status : 'confirmed';
     const cleanPaymentMethod = VALID_PAYMENT_METHODS.includes(paymentMethod) ? paymentMethod : 'cash';
 
@@ -81,8 +73,6 @@ export async function POST(req: NextRequest) {
         deliveryCharge: cleanDeliveryCharge,
         isKarnataka: !!isKarnataka,
         count: totalCount,
-        referralCode: resolvedReferral,
-        referralEligibleAmount,
         status: cleanStatus,
       },
     });

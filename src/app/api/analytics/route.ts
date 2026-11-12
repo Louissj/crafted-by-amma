@@ -5,7 +5,6 @@ import { rateLimitApi } from '@/lib/rateLimit';
 
 const VALID_TYPES = [
   'page_view', 'cart_view', 'add_to_cart', 'checkout_start', 'order_placed',
-  'referral_link_visit', 'referral_code_created', 'referral_share',
 ] as const;
 
 export async function POST(req: NextRequest) {

@@ -52,7 +52,6 @@ export const CONTACT = {
 
 export const OFFERS = [
   { icon: '✨', text: '5% OFF on every purchase' },
-  { icon: '👥', text: 'Refer 5 friends → Get 50% OFF' },
   { icon: '📦', text: 'Free shipping all over Karnataka (1 kg+)' },
   { icon: '🌍', text: 'Worldwide shipping available' },
 ];
