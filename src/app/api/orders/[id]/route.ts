@@ -43,11 +43,22 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
     }
 
+    // Keep the offline marker when notes are edited, or the order would turn "online"
+    let nextNotes: string | undefined;
+    if (typeof notes === 'string') {
+      const existing = await prisma.order.findUnique({ where: { id }, select: { notes: true } });
+      const wasOffline = !!existing?.notes?.startsWith('[Offline order]');
+      const clean = notes.slice(0, 500);
+      nextNotes = wasOffline && !clean.startsWith('[Offline order]')
+        ? `[Offline order]${clean ? ' ' + clean : ''}`
+        : clean;
+    }
+
     const order = await prisma.order.update({
       where: { id },
       data: {
         ...(status && { status }),
-        ...(typeof notes === 'string' && { notes: notes.slice(0, 500) }),
+        ...(nextNotes !== undefined && { notes: nextNotes }),
         ...(typeof totalAmount === 'number' && totalAmount >= 0 && { totalAmount }),
       },
     });

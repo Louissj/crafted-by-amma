@@ -136,20 +136,24 @@ export async function GET(req: NextRequest) {
     const where: Record<string, unknown> = { deleted: false };
     if (status && status !== 'all') where.status = status;
     if (phone) where.phone = phone;
-    if (type === 'offline') where.notes = { startsWith: '[Offline order]' };
-    // Online = notes is null OR notes does not start with '[Offline order]'
-    if (type === 'online') where.OR = [
-      { notes: null },
-      { notes: { not: { startsWith: '[Offline order]' } } },
+    // Offline = marker in notes (can be wiped by editing notes) OR a manual payment
+    // method, which only the offline-order form ever sets and notes edits never touch
+    const OFFLINE_METHODS = ['cash', 'upi', 'bank-transfer', 'other'];
+    const offlineCond = [
+      { notes: { startsWith: '[Offline order]' } },
+      { paymentMethod: { in: OFFLINE_METHODS } },
     ];
+    const onlineCond = [
+      { OR: [{ notes: null }, { notes: { not: { startsWith: '[Offline order]' } } }] },
+      { OR: [{ paymentMethod: null }, { paymentMethod: { notIn: OFFLINE_METHODS } }] },
+    ];
+    if (type === 'offline') where.OR = offlineCond;
+    if (type === 'online') where.AND = onlineCond;
 
-    // Stats follow the Online/Offline filter (not the status filter)
     const baseWhere: Record<string, unknown> = { deleted: false };
-    if (type === 'offline') baseWhere.notes = { startsWith: '[Offline order]' };
-    if (type === 'online') baseWhere.OR = [
-      { notes: null },
-      { notes: { not: { startsWith: '[Offline order]' } } },
-    ];
+    if (type === 'offline') baseWhere.OR = offlineCond;
+    if (type === 'online') baseWhere.AND = onlineCond;
+
     const [orders, total, revenueAgg, pendingCount, confirmedCount, globalTotal] = await Promise.all([
       prisma.order.findMany({
         where, orderBy: { createdAt: 'desc' },
